@@ -1,0 +1,54 @@
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow-lg">
+        <div class="card-header bg-secondary text-white">
+          <h4 class="mb-0">Register</h4>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="registerForm" (ngSubmit)="register()">
+            <div class="mb-3">
+              <label class="form-label">Name</label>
+              <input type="text" formControlName="name" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">User ID</label>
+              <input type="text" formControlName="userId" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" formControlName="email" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Branch</label>
+              <input type="text" formControlName="branch" class="form-control">
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Role</label>
+              <select formControlName="role" class="form-select">
+                <option value="">Select Role</option>
+                <option value="admin">Admin</option>
+                <option value="bankManager">Bank Manager</option>
+                <option value="bankOfficer">Bank Officer</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select formControlName="status" class="form-select">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" [disabled]="registerForm.invalid">Register</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
