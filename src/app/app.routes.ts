@@ -5,12 +5,12 @@ import { ManagerComponent } from './manager/manager.component';
 import { OfficerComponent } from './officer/officer.component';
 import { roleGuard } from './auth/auth.guard';
 
-
 export const routes: Routes = [
   { path: 'landing', component: LandingPageComponent },
-  { path: 'admin', component: AdminComponent, canActivate: [roleGuard], data: { data: 'admin' } },
-  { path: 'manager', component: ManagerComponent, canActivate: [roleGuard], data: { data: 'bankManager' } },
-  { path: 'officer', component: OfficerComponent, canActivate: [roleGuard], data: { data: 'bankOfficer' } },
+
+  { path: 'admin', component: AdminComponent, canActivate: [roleGuard], data: { role: 'admin' } },
+  { path: 'manager', component: ManagerComponent, canActivate: [roleGuard], data: { role: 'bankManager' } },
+  { path: 'officer', component: OfficerComponent, canActivate: [roleGuard], data: { role: 'bankOfficer' } },
+
   { path: '', redirectTo: '/landing', pathMatch: 'full' }
 ];
-
