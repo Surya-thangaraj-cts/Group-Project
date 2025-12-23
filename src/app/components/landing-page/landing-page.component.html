@@ -1,86 +1,107 @@
-<!-- Navbar --> <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm"> <div class="container"> <!-- Logo + Bank Name --> <a class="navbar-brand d-flex align-items-center" href="#"> <!-- Dummy SVG logo --> <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-bank me-2 text-primary" viewBox="0 0 16 16"> <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/> </svg> <span class="fw-bold text-primary">MyBank</span> </a> <!-- Buttons always visible (no collapse) --> <div class="d-flex ms-auto"> <button class="btn btn-primary me-2" (click)="toggleForm('signin')">Sign In</button> <button class="btn btn-outline-secondary" (click)="toggleForm('signup')">Register</button> </div> </div> </nav>
+<!-- Background Wrapper -->
+<div class="bg">
 
-
-<!-- Forms Section -->
-<div class="d-flex justify-content-center align-items-start vh-100 pt-5">
-  <div class="col-md-4">
-    <!-- Sign In Form -->
-    <div *ngIf="showSignIn" class="card shadow-lg">
-      <div class="card-header bg-primary text-white text-center">
-        <h4 class="mb-0">Sign In</h4>
-      </div>
-      <div class="card-body">
-        <form [formGroup]="signinForm" (ngSubmit)="signin()">
-          <div class="mb-3">
-            <label class="form-label">User ID</label>
-            <input type="text" formControlName="userId" class="form-control" placeholder="Enter user ID">
-            <small class="text-danger" *ngIf="signinForm.get('userId')?.invalid && signinForm.get('userId')?.touched">
-              User ID is required.
-            </small>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" formControlName="email" class="form-control" placeholder="Enter email">
-            <small class="text-danger" *ngIf="signinForm.get('email')?.invalid && signinForm.get('email')?.touched">
-              Enter a valid email.
-            </small>
-          </div>
-
-          <button type="submit" class="btn btn-success w-100" [disabled]="signinForm.invalid">Sign In</button>
-        </form>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <div class="container">
+      <!-- Logo + Bank Name -->
+      <a class="navbar-brand d-flex align-items-center" href="#">
+        <!-- Dummy SVG logo -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor"
+             class="bi bi-bank me-2 text-primary" viewBox="0 0 16 16">
+          <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/>
+        </svg>
+        <span class="fw-bold text-primary">MyBank</span>
+      </a>
+      <!-- Buttons -->
+      <div class="d-flex ms-auto">
+        <button class="btn btn-primary me-2" (click)="toggleForm('signin')">Sign In</button>
+        <button class="btn btn-outline-secondary" (click)="toggleForm('signup')">Register</button>
       </div>
     </div>
+  </nav>
 
-    <!-- Register Form -->
-    <div *ngIf="!showSignIn" class="card shadow-lg">
-      <div class="card-header bg-secondary text-white text-center">
-        <h4 class="mb-0">Register</h4>
+  <!-- Forms Section -->
+  <div class="d-flex justify-content-center align-items-start vh-100 pt-5">
+    <div class="col-md-4">
+      <!-- Sign In Form -->
+      <div *ngIf="showSignIn" class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+          <h4 class="mb-0">Sign In</h4>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="signinForm" (ngSubmit)="signin()">
+            <!-- User ID -->
+            <div class="mb-3">
+              <label class="form-label">User ID</label>
+              <input type="text" formControlName="userId" class="form-control" placeholder="Enter user ID">
+              <small class="text-danger" *ngIf="signinForm.get('userId')?.invalid && signinForm.get('userId')?.touched">
+                User ID is required.
+              </small>
+            </div>
+            <!-- Email -->
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" formControlName="email" class="form-control" placeholder="Enter email">
+              <small class="text-danger" *ngIf="signinForm.get('email')?.invalid && signinForm.get('email')?.touched">
+                Enter a valid email.
+              </small>
+            </div>
+            <button type="submit" class="btn btn-success w-100" [disabled]="signinForm.invalid">Sign In</button>
+          </form>
+        </div>
       </div>
-      <div class="card-body">
-        <form [formGroup]="signupForm" (ngSubmit)="signup()">
-          <div class="mb-3">
-            <label class="form-label">Name</label>
-            <input type="text" formControlName="name" class="form-control" placeholder="Enter your name">
-          </div>
 
-          <div class="mb-3">
-            <label class="form-label">User ID</label>
-            <input type="text" formControlName="userId" class="form-control" placeholder="Enter user ID">
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Email</label>
-            <input type="email" formControlName="email" class="form-control" placeholder="Enter email">
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Branch</label>
-            <input type="text" formControlName="branch" class="form-control" placeholder="Enter branch">
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Role</label>
-            <select formControlName="role" class="form-select">
-              <option value="">Select Role</option>
-              <option value="admin">Admin</option>
-              <option value="bankManager">Bank Manager</option>
-              <option value="bankOfficer">Bank Officer</option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Status</label>
-            <select formControlName="status" class="form-select">
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-
-          <button type="submit" class="btn btn-primary w-100" [disabled]="signupForm.invalid">Register</button>
-        </form>
+      <!-- Register Form -->
+      <div *ngIf="!showSignIn" class="card shadow-lg">
+        <div class="card-header bg-secondary text-white text-center">
+          <h4 class="mb-0">Register</h4>
+        </div>
+        <div class="card-body">
+          <form [formGroup]="signupForm" (ngSubmit)="signup()">
+            <!-- Name -->
+            <div class="mb-3">
+              <label class="form-label">Name</label>
+              <input type="text" formControlName="name" class="form-control" placeholder="Enter your name">
+            </div>
+            <!-- User ID -->
+            <div class="mb-3">
+              <label class="form-label">User ID</label>
+              <input type="text" formControlName="userId" class="form-control" placeholder="Enter user ID">
+            </div>
+            <!-- Email -->
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" formControlName="email" class="form-control" placeholder="Enter email">
+            </div>
+            <!-- Branch -->
+            <div class="mb-3">
+              <label class="form-label">Branch</label>
+              <input type="text" formControlName="branch" class="form-control" placeholder="Enter branch">
+            </div>
+            <!-- Role -->
+            <div class="mb-3">
+              <label class="form-label">Role</label>
+              <select formControlName="role" class="form-select">
+                <option value="">Select Role</option>
+                <option value="admin">Admin</option>
+                <option value="bankManager">Bank Manager</option>
+                <option value="bankOfficer">Bank Officer</option>
+              </select>
+            </div>
+            <!-- Status -->
+            <div class="mb-3">
+              <label class="form-label">Status</label>
+              <select formControlName="status" class="form-select">
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary w-100" [disabled]="signupForm.invalid">Register</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<!-- <router-outlet></router-outlet> -->
+
+</div> <!-- ✅ Closing .bg wrapper -->
