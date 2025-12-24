@@ -1,6 +1,5 @@
-
 <!-- Top Nav Bar -->
-<nav class="top-nav">
+<!-- <nav class="top-nav">
   <div class="brand">AccountTrack — Bank Officer</div>
   <ul class="nav-links">
     <li [class.active]="activeTab === 'create'">
@@ -13,7 +12,53 @@
       <button (click)="activeTab='history'">Transaction History</button>
     </li>
   </ul>
+</nav> -->
+
+<!-- <Top Navigation Bar> -->
+<nav class="top-nav">
+  <div class="brand">
+    <a class="navbar-brand d-flex align-items-center" href="">
+      <!-- Dummy SVG logo -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
+           class="bi bi-bank me-2" viewBox="0 0 16 16">
+        <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/>
+      </svg>
+      <span class="fw-bold" id="logo-text">MyBank</span>
+    </a>
+  </div>
+ 
+  <!-- mid nav-bar -->
+  <ul class="nav-links">
+    <li [class.active]="activeTab === 'create'">
+      <button (click)="activeTab='create'">Create Bank Account</button>
+    </li>
+    <li [class.active]="activeTab === 'update'">
+      <button (click)="activeTab='update'">Update Bank Account</button>
+    </li>
+    <li [class.active]="activeTab === 'history'">
+      <button (click)="activeTab='history'">Transaction History</button>
+    </li>
+  </ul>
+ 
+  <!-- Profile Section -->
+  <div class="profile">
+  <!-- User SVG icon -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
+       fill="currentColor" class="bi bi-person-circle profile-icon" viewBox="0 0 16 16">
+    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468
+    11.37C3.242 11.226 4.805 10 8 10s4.757 1.226 5.468
+    2.37A7 7 0 0 0 8 1z"/>
+  </svg>
+ 
+  <!-- User details -->
+  <div class="profile-details">
+    <span class="profile-name">John Doe</span>
+  </div>
+</div>
+ 
 </nav>
+ 
 
 <section class="container">
   <!-- Alerts -->
@@ -71,7 +116,7 @@
 
     <hr />
     <h3>Existing Accounts ({{ accounts.length }})</h3>
-    <div class="table-wrap" *ngIf="accounts.length; else noAccounts">
+    <div class="table-wrap" *ngIf="accounts.length; else noAccountsCreate">
       <table>
         <thead>
           <tr>
@@ -91,7 +136,11 @@
             <td>{{ a.customerName }}</td>
             <td>{{ a.customerId }}</td>
             <td>{{ a.accountType }}</td>
-            <td><span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">{{ a.status }}</span></td>
+            <td>
+              <span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">
+                {{ a.status }}
+              </span>
+            </td>
             <td>{{ a.balance | number:'1.2-2' }}</td>
             <td>{{ a.openedAt | date:'medium' }}</td>
             <td>
@@ -102,7 +151,7 @@
         </tbody>
       </table>
     </div>
-    <ng-template #noAccounts>
+    <ng-template #noAccountsCreate>
       <p class="muted">No accounts yet. Create one using the form above.</p>
     </ng-template>
   </div>
@@ -159,6 +208,47 @@
     <ng-template #noLoad>
       <p class="muted">Enter an Account ID and click <b>Load</b> to edit.</p>
     </ng-template>
+
+    <hr />
+    <h3>Existing Accounts ({{ accounts.length }})</h3>
+    <div class="table-wrap" *ngIf="accounts.length; else noAccountsUpdate">
+      <table>
+        <thead>
+          <tr>
+            <th>Account ID</th>
+            <th>Customer Name</th>
+            <th>Customer ID</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Balance</th>
+            <th>Opened</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of accounts">
+            <td>{{ a.accountId }}</td>
+            <td>{{ a.customerName }}</td>
+            <td>{{ a.customerId }}</td>
+            <td>{{ a.accountType }}</td>
+            <td>
+              <span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">
+                {{ a.status }}
+              </span>
+            </td>
+            <td>{{ a.balance | number:'1.2-2' }}</td>
+            <td>{{ a.openedAt | date:'medium' }}</td>
+            <td>
+              <!-- Only Edit button in Update tab -->
+              <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <ng-template #noAccountsUpdate>
+      <p class="muted">No accounts yet. Create one using the form above.</p>
+    </ng-template>
   </div>
 
   <!-- TRANSACTION HISTORY & RECORD -->
@@ -170,7 +260,9 @@
         Select Account
         <select [(ngModel)]="selectedHistoryAccountId">
           <option [ngValue]="undefined">— Select —</option>
-          <option *ngFor="let a of accounts" [ngValue]="a.accountId">{{ a.accountId }} — {{ a.customerName }}</option>
+          <option *ngFor="let a of accounts" [ngValue]="a.accountId">
+            {{ a.accountId }} — {{ a.customerName }}
+          </option>
         </select>
       </label>
 
@@ -181,7 +273,9 @@
 
       <div class="inline">
         <button class="secondary" (click)="goToCreate()">New Account</button>
-        <button class="secondary" (click)="prefillUpdate(selectedHistoryAccountId!)" [disabled]="!selectedHistoryAccountId">Edit Account</button>
+        <button class="secondary" (click)="prefillUpdate(selectedHistoryAccountId!)" [disabled]="!selectedHistoryAccountId">
+          Edit Account
+        </button>
       </div>
     </div>
 
@@ -221,7 +315,7 @@
         </div>
 
         <div class="actions">
-          <button class="primary" type="submit" [disabled]="txnForm.invalid">Record</button>
+          <button class="primary" type="submit" [disabled]="txnForm.invalid || !selectedHistoryAccountId">Record</button>
           <button class="secondary" type="button" (click)="resetTxnForm()">Reset</button>
         </div>
         <small class="muted">Closed accounts cannot receive transactions. Withdrawals/transfers require sufficient balance.</small>
@@ -253,7 +347,9 @@
             <td>{{ t.accountId }}</td>
             <td>{{ t.toAccountId || '—' }}</td>
             <td>
-              <span class="pill" [class.ok]="t.flagged" [class.bad]="!t.flagged">{{ t.flagged ? 'HIGH' : 'Normal' }}</span>
+              <span class="pill" [class.ok]="t.flagged" [class.bad]="!t.flagged">
+                {{ t.flagged ? 'HIGH' : 'Normal' }}
+              </span>
             </td>
             <td>{{ t.narrative || '—' }}</td>
             <td>
@@ -263,6 +359,7 @@
         </tbody>
       </table>
     </div>
+
     <ng-template #noTxns>
       <p class="muted" *ngIf="selectedHistoryAccountId">No transactions yet for {{ selectedHistoryAccountId }}.</p>
       <p class="muted" *ngIf="!selectedHistoryAccountId">Select an account to view history.</p>

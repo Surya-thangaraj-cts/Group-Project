@@ -4,6 +4,35 @@
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, 'Noto Sans', sans-serif;
   color: #1f2937;
 }
+/* Base style for link buttons */
+button.link {
+  background: #007bff;       /* primary blue */
+  color: #fff;               /* white text */
+  border: none;
+  padding: 6px 14px;
+  margin: 2px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+/* Hover effect */
+button.link:hover {
+  background: #0056b3;       /* darker blue */
+  transform: translateY(-2px);
+  
+}
+
+/* Active (click) effect */
+button.link:active {
+  background: #004085;
+  transform: translateY(0);
+}
+
+/* Optional: add an icon before text */
+
+
 
 /* Top Nav */
 .top-nav {
@@ -35,6 +64,8 @@
 }
 .nav-links li.active button {
   background: rgba(255, 255, 255, 0.15);
+  font-weight: 600;
+  transform: scale(1.05);
 }
 
 /* Layout */
@@ -197,4 +228,52 @@ td {
   border: none;
   cursor: pointer;
   font-weight: bold;
+}
+
+.brand{
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Logo + Bank Name styling */
+.brand a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+ 
+.brand svg {
+  fill: #fff;          /* force logo to white */
+  margin-right: 0.5rem;
+}
+ 
+#logo-text {
+  color: #fff;         /* make "MyBank" text white */
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+ 
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff; /* visible on blue navbar */
+  gap: 0.25rem;
+}
+ 
+.profile-icon {
+  width: 30px;
+  height: 30px;
+  color: #fff; /* ensures icon is visible */
+}
+ 
+.profile-details {
+  text-align: center;
+  line-height: 1.2;
+}
+ 
+.profile-name {
+  font-size: 14px;
+  opacity: 50%;
+  font-weight: 500;
 }
