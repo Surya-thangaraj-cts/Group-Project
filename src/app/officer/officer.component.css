@@ -35,7 +35,10 @@
 }
 .nav-links li.active button {
   background: rgba(255, 255, 255, 0.15);
+  font-weight: 600; 
+  transform: scale(1.05);
 }
+
 
 /* Layout */
 .container {
@@ -198,3 +201,47 @@ td {
   cursor: pointer;
   font-weight: bold;
 }
+
+/* Logo + Bank Name styling */
+.brand a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.brand svg {
+  fill: #fff;          /* force logo to white */
+  margin-right: 0.5rem;
+}
+
+#logo-text {
+  color: #fff;         /* make "MyBank" text white */
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff; /* visible on blue navbar */
+  gap: 0.25rem;
+}
+
+.profile-icon {
+  width: 30px;
+  height: 30px;
+  color: #fff; /* ensures icon is visible */
+}
+
+.profile-details {
+  text-align: center;
+  line-height: 1.2;
+}
+
+.profile-name {
+  font-size: 14px;
+  opacity: 50%;
+  font-weight: 500;
+}
+

@@ -1,7 +1,18 @@
-
-<!-- Top Nav Bar -->
+<!-- <Top Navigation Bar> -->
+<!-- <Top Navigation Bar> -->
 <nav class="top-nav">
-  <div class="brand">AccountTrack — Bank Officer</div>
+  <div class="brand">
+    <a class="navbar-brand d-flex align-items-center" href="">
+      <!-- Dummy SVG logo -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" 
+           class="bi bi-bank me-2" viewBox="0 0 16 16">
+        <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/>
+      </svg>
+      <span class="fw-bold" id="logo-text">MyBank</span>
+    </a>
+  </div>
+
+  <!-- mid nav-bar -->
   <ul class="nav-links">
     <li [class.active]="activeTab === 'create'">
       <button (click)="activeTab='create'">Create Bank Account</button>
@@ -13,8 +24,27 @@
       <button (click)="activeTab='history'">Transaction History</button>
     </li>
   </ul>
+
+  <!-- Profile Section -->
+  <div class="profile">
+  <!-- User SVG icon -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" 
+       fill="currentColor" class="bi bi-person-circle profile-icon" viewBox="0 0 16 16">
+    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 
+    11.37C3.242 11.226 4.805 10 8 10s4.757 1.226 5.468 
+    2.37A7 7 0 0 0 8 1z"/>
+  </svg>
+
+  <!-- User details -->
+  <div class="profile-details">
+    <span class="profile-name">John Doe</span>
+  </div>
+</div>
+
 </nav>
 
+<br><br>
 <section class="container">
   <!-- Alerts -->
   <div *ngIf="alert.message" class="alert" [class.error]="alert.type==='error'" [class.success]="alert.type==='success'">
