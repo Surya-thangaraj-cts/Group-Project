@@ -186,9 +186,9 @@ td {
   border-color: #a5f3fc;
 }
 .pill.bad {
-  background: #f8fafc;
-  color: #64748b;
-  border-color: #e2e8f0;
+  background: #eb797947;
+  color: #b32222;
+  border-color: #b32222;
 }
 .muted {
   color: #6b7280;

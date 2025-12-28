@@ -19,7 +19,7 @@ export class LandingPageComponent implements OnInit {
   showForm: 'signin' | 'register' | null = null;
 
   // Welcome message rotation
-  welcomeMessages: string[] = ['Welcome', 'स्वागत है', 'வணக்கம்', 'స్వాగతం','വണക്കം'];
+  welcomeMessages: string[] = ['Welcome', 'स्वागत है', 'வணக்கம்', 'స్వాగతం','സ്വാഗതം'];
   currentMessage: string = this.welcomeMessages[0];
   messageIndex: number = 0;
   fade: boolean = false;

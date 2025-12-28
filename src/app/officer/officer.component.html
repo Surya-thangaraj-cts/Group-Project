@@ -42,7 +42,7 @@
   </div>
 </div>
  
-</nav>
+</nav><br>
  
  
 <section class="container">
@@ -256,13 +256,13 @@
         <input type="number" [(ngModel)]="highValueThreshold" min="0" step="1" />
       </label>
  
-      <div class="inline">
+      <!-- <div class="inline">
         <button class="secondary" (click)="goToCreate()">New Account</button>
         <button class="secondary" (click)="prefillUpdate(selectedHistoryAccountId!)" [disabled]="!selectedHistoryAccountId">
           Edit Account
         </button>
-      </div>
-    </div>
+      </div> -->
+    </div><br><br>
  
     <!-- Record Transaction -->
     <div class="card subtle" *ngIf="selectedHistoryAccountId as accId">

@@ -35,7 +35,8 @@ interface Transaction {
   templateUrl: './officer.component.html',
   styleUrls: ['./officer.component.css']
 })
-export class OfficerComponent implements OnInit {
+export class OfficerComponent implements OnInit 
+{
   activeTab: 'create' | 'update' | 'history' = 'create';
 
   // Forms
@@ -280,6 +281,7 @@ export class OfficerComponent implements OnInit {
   private setError(message: string): void {
     this.alert = { type: 'error', message };
   }
+
 }
 
 // Utility functions
@@ -297,3 +299,5 @@ function cryptoRandomId(): string {
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+
