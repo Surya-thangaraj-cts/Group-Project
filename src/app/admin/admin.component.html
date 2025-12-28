@@ -1,1 +1,282 @@
-<p>admin works!</p>
+
+<!-- Top bar -->
+<div class="topbar">
+  <span>Admin Dashboard</span>
+  <span class="spacer"></span>
+
+  <!-- Filters and search -->
+  <button class="btn btn-outline" (click)="roleFilter='All'">All</button>
+  <button class="btn btn-outline" (click)="roleFilter='Officer'">Officers</button>
+  <button class="btn btn-outline" (click)="roleFilter='Manager'">Managers</button>
+  <button class="btn btn-outline" (click)="roleFilter='Admin'">Admins</button>
+
+  <label class="search-field">
+    <span class="search-label">Search users</span>
+    <input type="text" [(ngModel)]="searchTerm" />
+    <!-- simple magnifier icon -->
+    <svg class="icon-suffix" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"></circle>
+      <line x1="20" y1="20" x2="16" y2="16" stroke="currentColor" stroke-width="2"></line>
+    </svg>
+  </label>
+</div>
+
+<div class="admin-shell">
+
+  <!-- Pending Registrations -->
+  <section class="card mb-4">
+    <h2 class="card-title text-white p-2">Pending Registrations</h2>
+    <div class="card-body">
+      <div *ngIf="pendingUsers.length; else noPending" class="table-wrap pending-table">
+
+        <!-- Shared column widths via colgroup -->
+        <table class="table table-dark">
+          <colgroup>
+            <col style="width: var(--col-userId)" />
+            <col style="width: var(--col-name)" />
+            <col style="width: var(--col-role)" />
+            <col style="width: var(--col-email)" />
+            <col style="width: var(--col-branch)" />
+            <col style="width: var(--col-actions)" />
+          </colgroup>
+
+          <thead>
+            <tr class="t-header">
+              <th>User ID</th>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Email</th>
+              <th>Branch</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let u of pendingUsers" class="t-row">
+              <td>{{ u.userId }}</td>
+              <td>{{ u.name }}</td>
+              <td>{{ u.role }}</td>
+              <td title="{{ u.email }}" class="nowrap ellipsis">{{ u.email }}</td>
+              <td>{{ u.branch }}</td>
+              <td class="text-center">
+                <div class="row-actions">
+                  <button class="btn btn-primary" (click)="approveUser(u)">
+                    <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+                      <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                    Approve
+                  </button>
+                  <button class="btn btn-danger" (click)="rejectUser(u)">
+                    <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+                      <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>
+                    </svg>
+                    Reject
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <ng-template #noPending>
+        <p class="muted">No pending registrations.</p>
+      </ng-template>
+    </div>
+  </section>
+
+  <!-- Manage Users -->
+  <section class="card mb-4">
+    <h2 class="card-title p-2">Manage Users</h2>
+    <div class="card-body">
+
+      <!-- Invite form -->
+      <form [formGroup]="inviteUserForm" (ngSubmit)="inviteUser()" class="invite-form">
+        <label class="form-field">
+          <span class="form-label">Name</span>
+          <input type="text" formControlName="name" />
+        </label>
+
+        <label class="form-field">
+          <span class="form-label">Email</span>
+          <input type="email" formControlName="email" />
+        </label>
+
+        <label class="form-field">
+          <span class="form-label">Branch</span>
+          <input type="text" formControlName="branch" />
+        </label>
+
+        <label class="form-field">
+          <span class="form-label">Role</span>
+          <select formControlName="role">
+            <option value="Officer">Officer</option>
+            <option value="Manager">Manager</option>
+          </select>
+        </label>
+
+        <button class="btn btn-primary" type="submit" [disabled]="inviteUserForm.invalid">
+          <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+            <path d="M12 12a5 5 0 100-10 5 5 0 000 10zm-9 9c0-4 6-6 9-6s9 2 9 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>
+          </svg>
+          Add to Pending
+        </button>
+      </form>
+
+      <hr class="divider" />
+
+      <!-- Users table -->
+      <div class="table-wrap manage-users" *ngIf="filteredUsers().length; else noUsers">
+
+        <table class="table table-dark">
+          <colgroup>
+            <col style="width: var(--col-userId)" />
+            <col style="width: var(--col-name)" />
+            <col style="width: var(--col-role)" />
+            <col style="width: var(--col-email)" />
+            <col style="width: var(--col-branch)" />
+            <col style="width: var(--col-status)" />
+            <col style="width: var(--col-actions)" />
+          </colgroup>
+
+          <thead>
+            <tr class="t-header">
+              <th>User ID</th>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Email</th>
+              <th>Branch</th>
+              <th>Status</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let u of filteredUsers()" class="t-row">
+              <td>{{ u.userId }}</td>
+              <td>{{ u.name }}</td>
+              <td>{{ u.role }}</td>
+              <td title="{{ u.email }}" class="nowrap ellipsis">{{ u.email }}</td>
+              <td>{{ u.branch }}</td>
+              <td>
+                <span class="pill" [class.ok]="u.status==='Active'" [class.bad]="u.status==='Inactive'">
+                  {{ u.status }}
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="row-actions">
+                  <button class="btn btn-outline" (click)="startEdit(u)">
+                    <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+                      <path d="M4 20h4l10-10-4-4L4 16v4zM14 6l4 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>
+                    </svg>
+                    Edit
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <ng-template #noUsers>
+        <p class="muted">No users match your filter.</p>
+      </ng-template>
+
+      <!-- Inline edit panel -->
+      <div *ngIf="editingUserId && selectedUser" class="edit-panel">
+        <div class="edit-header">
+          <h3>Edit user</h3>
+          <button class="icon-button" (click)="cancelEdit()" aria-label="Close">
+            <svg viewBox="0 0 24 24" class="icon-20" aria-hidden="true">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form [formGroup]="editUserForm" (ngSubmit)="updateUser()" class="edit-form">
+          <label class="form-field">
+            <span class="form-label">Name</span>
+            <input type="text" formControlName="name" />
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Email</span>
+            <input type="email" formControlName="email" />
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Role</span>
+            <select formControlName="role">
+              <option value="Officer">Officer</option>
+              <option value="Manager">Manager</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Branch</span>
+            <input type="text" formControlName="branch" />
+          </label>
+
+          <label class="form-field">
+            <span class="form-label">Status</span>
+            <select formControlName="status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </label>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" [disabled]="editUserForm.invalid">
+              <svg viewBox="0 0 24 24" class="btn-icon" aria-hidden="true">
+                <path d="M5 12l5 5L20 7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"></path>
+              </svg>
+              Save
+            </button>
+            <button class="btn" type="button" (click)="cancelEdit()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Compliance dashboard -->
+  <section class="card">
+    <h2 class="card-title p-2">Compliance Dashboard</h2>
+    <div class="card-body">
+      <div class="metrics">
+        <article class="metric">
+          <h3>Total Transactions</h3>
+          <div class="metric-value">{{ compliance.totalTransactions | number }}</div>
+        </article>
+        <article class="metric">
+          <h3>High-Value Count</h3>
+          <div class="metric-value">{{ compliance.highValueCount | number }}</div>
+        </article>
+        <article class="metric">
+          <h3>Account Growth Rate</h3>
+          <div class="metric-value">{{ compliance.accountGrowthRate }}%</div>
+        </article>
+      </div>
+
+      <div class="trend">
+        <div class="trend-header">
+          <span>Monthly Transaction Volume</span>
+        </div>
+        <svg viewBox="0 0 600 120" preserveAspectRatio="none" class="trend-svg">
+          <path [attr.d]="trendPath(600, 120)" class="trend-path"></path>
+          <g class="axis">
+            <text *ngFor="let label of compliance.monthlyLabels; let i = index"
+                  [attr.x]="i * (600 / (compliance.monthlyLabels.length - 1))"
+                  [attr.y]="110"
+                  text-anchor="middle">
+              {{ label }}
+            </text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+</div>
