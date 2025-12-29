@@ -1,1 +1,65 @@
-<p>manager works!</p>
+<main class="manager-main">
+  <h2>Manager Dashboard</h2>
+  <p>Welcome, {{ currentUser?.name }}. Use the navigation above to manage approvals, view reports, and monitor alerts.</p>
+
+  <section class="transactions">
+    <h3>Transaction History</h3>
+    <div class="tx-controls">
+      <input type="search" placeholder="Search transactions (id, account, type, status, amount, date)" [(ngModel)]="searchTerm" />
+      <label class="filter-label">From: <input type="date" [(ngModel)]="dateFrom" /></label>
+      <label class="filter-label">To: <input type="date" [(ngModel)]="dateTo" /></label>
+      <select [(ngModel)]="statusFilter" aria-label="Filter by status">
+        <option value="">All Status</option>
+        <option value="Completed">Completed</option>
+        <option value="Pending">Pending</option>
+        <option value="Failed">Failed</option>
+      </select>
+      <select [(ngModel)]="typeFilter" aria-label="Filter by type">
+        <option value="">All Types</option>
+        <option value="Deposit">Deposit</option>
+        <option value="Withdrawal">Withdrawal</option>
+        <option value="Transfer">Transfer</option>
+      </select>
+      <select [(ngModel)]="sortField" aria-label="Sort by">
+        <option value="date">Date</option>
+        <option value="amount">Amount</option>
+        <option value="transactionId">Transaction ID</option>
+        <option value="accountId">Account ID</option>
+        <option value="type">Type</option>
+        <option value="status">Status</option>
+      </select>
+      <button class="btn-sort" (click)="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'" title="Toggle sort direction">{{ sortDirection === 'asc' ? '▲' : '▼' }}</button>
+      <button class="btn-clear" (click)="searchTerm=''; dateFrom=null; dateTo=null; statusFilter=''; typeFilter='';" title="Clear filters">Clear</button>
+    </div>
+    <div class="table-wrap">
+      <table class="tx-table" aria-label="Transaction history table">
+        <thead>
+          <tr>
+            <th (click)="setSort('transactionId')" class="sortable">Transaction ID <span class="col-ind">{{ sortField === 'transactionId' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span></th>
+            <th (click)="setSort('accountId')" class="sortable">Account ID <span class="col-ind">{{ sortField === 'accountId' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span></th>
+            <th (click)="setSort('type')" class="sortable">Type <span class="col-ind">{{ sortField === 'type' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span></th>
+            <th (click)="setSort('amount')" class="sortable">Amount <span class="col-ind">{{ sortField === 'amount' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span></th>
+            <th (click)="setSort('date')" class="sortable">Date <span class="col-ind">{{ sortField === 'date' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span></th>
+            <th (click)="setSort('status')" class="sortable">Status <span class="col-ind">{{ sortField === 'status' ? (sortDirection === 'asc' ? '▲' : '▼') : '' }}</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tx of filteredTransactions">
+            <td>{{ tx.transactionId }}</td>
+            <td>{{ tx.accountId }}</td>
+            <td>{{ tx.type }}</td>
+            <td>{{ tx.amount | currency:'USD':'symbol' }}</td>
+            <td>{{ tx.date | date:'short' }}</td>
+            <td>
+              <span class="status" [class.pending]="tx.status === 'Pending'" [class.completed]="tx.status === 'Completed'">{{ tx.status }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="filteredTransactions.length === 0">
+            <td colspan="6" class="empty">No transactions match your search.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>

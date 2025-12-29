@@ -1,0 +1,20 @@
+<nav class="manager-navbar" role="navigation" aria-label="Manager navigation">
+  <div class="nav-left">
+    <a class="brand" routerLink="/manager">AccountTrack - Manager</a>
+  </div>
+
+  <ul class="nav-links">
+    <li><a routerLink="/manager" routerLinkActive="active">Dashboard</a></li>
+    <li><a routerLink="/manager/approvals" routerLinkActive="active">Approvals</a></li>
+    <li><a routerLink="/manager/reports" routerLinkActive="active">Reports</a></li>
+    <li><a routerLink="/manager/alerts" routerLinkActive="active">Alerts</a></li>
+    <li><a routerLink="/manager/profile" routerLinkActive="active">Profile</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <span class="user">{{ currentUser?.name }}</span>
+    <button class="btn-logout" (click)="logout()">Logout</button>
+  </div>
+</nav>
+
+<router-outlet></router-outlet>

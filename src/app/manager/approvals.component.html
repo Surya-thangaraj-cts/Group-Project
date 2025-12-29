@@ -1,0 +1,135 @@
+<div class="approvals-container">
+  <h1>Approvals</h1>
+  
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+    <button class="nav-tab" [class.active]="activeTab === 'pending'" (click)="switchTab('pending')">
+      📋 Pending
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'approved'" (click)="switchTab('approved')">
+      ✅ Approved
+    </button>
+    <button class="nav-tab" [class.active]="activeTab === 'rejected'" (click)="switchTab('rejected')">
+      ❌ Rejected
+    </button>
+  </div>
+
+  <table class="approvals-table">
+    <thead>
+      <tr>
+        <th>Approval ID</th>
+        <th>Request Type</th>
+        <th>Customer Name</th>
+        <th>Customer ID</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let approval of getFilteredApprovals()">
+        <td>{{ approval.approvalId }}</td>
+        <td>{{ approval.requestType }}</td>
+        <td>{{ approval.customerName }}</td>
+        <td>{{ approval.customerId }}</td>
+        <td>{{ approval.status }}</td>
+        <td>
+          <button *ngIf="approval.status === 'Pending'" (click)="approve(approval)" class="btn approve">Approve</button>
+          <button *ngIf="approval.status === 'Pending'" (click)="reject(approval)" class="btn reject">Reject</button>
+        </td>
+      </tr>
+      <tr *ngIf="getFilteredApprovals().length === 0">
+        <td colspan="6" class="empty">No {{ activeTab }} approvals found</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop" *ngIf="isModalOpen" (click)="closeModal()"></div>
+
+<!-- Modal Dialog -->
+<div class="modal" *ngIf="isModalOpen">
+  <div class="modal-header">
+    <h2>{{ action === 'approve' ? '✅ Approve' : '❌ Reject' }} Request</h2>
+    <button class="close-btn" (click)="closeModal()">✕</button>
+  </div>
+
+  <div class="modal-body">
+    <!-- Approval Details -->
+    <div class="details-section">
+      <h3>Approval Details</h3>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <label>Approval ID</label>
+          <span>{{ selectedApproval?.approvalId }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Request Type</label>
+          <span>{{ selectedApproval?.requestType }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Customer Name</label>
+          <span>{{ selectedApproval?.customerName }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Customer ID</label>
+          <span>{{ selectedApproval?.customerId }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Account ID</label>
+          <span>{{ selectedApproval?.accountId || '-' }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Status</label>
+          <span>{{ selectedApproval?.status }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reason Selection -->
+    <div class="reason-section">
+      <div *ngIf="action === 'approve'" class="reason-dropdown">
+        <label for="approveReason">Select Approval Reason <span class="required">*</span></label>
+        <select id="approveReason" [(ngModel)]="selectedApproveReason" class="dropdown">
+          <option value="">-- Choose a reason --</option>
+          <option *ngFor="let reason of approveReasons" [value]="reason">{{ reason }}</option>
+        </select>
+      </div>
+
+      <div *ngIf="action === 'reject'" class="reason-dropdown">
+        <label for="rejectReason">Select Rejection Reason <span class="required">*</span></label>
+        <select id="rejectReason" [(ngModel)]="selectedRejectReason" class="dropdown">
+          <option value="">-- Choose a reason --</option>
+          <option *ngFor="let reason of rejectReasons" [value]="reason">{{ reason }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Comment Section -->
+    <div class="comment-section">
+      <label for="comment">
+        Additional Comment
+        <span *ngIf="isReasonOther()" class="required">*</span>
+        <span *ngIf="!isReasonOther()" class="optional">(Optional)</span>
+      </label>
+      <textarea 
+        id="comment" 
+        [(ngModel)]="comment" 
+        placeholder="Add your comment here..." 
+        class="comment-box"
+        [class.required-field]="isReasonOther()">
+      </textarea>
+      <small *ngIf="isReasonOther()" class="helper-text">Please provide details when selecting &quot;Other&quot;</small>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+    <button 
+      [ngClass]="action === 'approve' ? 'btn-approve' : 'btn-reject'" 
+      (click)="submitAction()"
+      [disabled]="isSubmitDisabled()">
+      {{ action === 'approve' ? '✅ Approve' : '❌ Reject' }}
+    </button>
+  </div>
+</div>
