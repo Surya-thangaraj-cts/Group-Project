@@ -1,314 +1,259 @@
 
-/* =========================
-   Shell and topbar
-   ========================= */
-.admin-shell {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 24px;
+/* Container pads are handled by Bootstrap; add only what's needed */
+
+/* Use a modern geometric font for the admin UI */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+/* Theme variables (cool / neon theme) */
+:host {
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #0b3d91 40%, #3a4ea8 100%);
+  --card-bg: rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.06);
+  --glass: rgba(255,255,255,0.03);
+  --accent: #7c3aed; /* violet */
+  --accent-2: #06b6d4; /* cyan */
+  --muted: rgba(255,255,255,0.75);
+  --glass-blur: 8px;
 }
 
-.topbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  background: #241f27;
-  color: #fff;
-  border-bottom: 1px solid #3a3340;
+.admin-page { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+
+.card-header h1, .card-header h2, .h4 { color: #fff; }
+
+/* Apply background to the admin page container */
+.admin-page {
+  background: var(--bg-gradient);
+  color: var(--muted);
+  min-height: 100vh;
+  padding-top: 24px;
+  padding-bottom: 48px;
 }
 
-.spacer { flex: 1 1 auto; }
-
-/* Native search field */
-.search-field {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  border: 1px solid #4a4452;
-  border-radius: 8px;
-  background: #2b2530;
-  color: #cfc9d6;
+/* Improve alignment of filter controls */
+.admin-page form.row.align-items-center .form-label {
+  margin-bottom: 0.25rem; /* slightly reduce label bottom spacing */
 }
-.search-field input {
-  border: 0;
-  outline: none;
-  background: transparent;
-  color: inherit;
-  width: 260px;
-}
-.search-field .icon-suffix { width: 18px; height: 18px; }
-
-/* =========================
-   Buttons
-   ========================= */
-.btn {
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid #4a4452;
-  background: #2b2530;
-  color: #eae6f2;
-  cursor: pointer;
-}
-.btn:hover { background: #352f3a; }
-
-.btn-outline {
-  background: transparent;
-  color: #eae6f2;
+.admin-page .form-select, .admin-page .form-control {
+  min-height: 44px; /* unify control heights */
 }
 
-.btn-primary {
-  background: #6b3fa0;
-  border-color: #6b3fa0;
+/* Filter column helper to vertically center label+control */
+.admin-page .filter-col {
+  padding-top: 0.25rem; /* small top pad so centering looks natural */
 }
-.btn-primary:hover { background: #7b4eb1; }
-
-.btn-danger {
-  background: #a03f3f;
-  border-color: #a03f3f;
-}
-.btn-danger:hover { background: #b54c4c; }
-
-.btn-icon {
-  width: 18px;
-  height: 18px;
-  margin-right: 6px;
+.admin-page .filter-col .form-label {
+  margin-bottom: 0.35rem;
 }
 
-/* icon-only button */
-.icon-button {
-  background: transparent;
-  border: 1px solid #4a4452;
-  border-radius: 8px;
-  padding: 4px;
-  cursor: pointer;
-  color: #eae6f2;
+/* Nudge the role filter slightly up to align with search input (desktop) */
+.admin-page .role-filter-col {
+  transform: translateY(-16px);
 }
-.icon-20 { width: 20px; height: 20px; }
 
-/* =========================
-   Cards
-   ========================= */
+/* On small screens, reset the nudge so stacked layout looks natural */
+@media (max-width: 768px) {
+  .admin-page .role-filter-col { transform: none; }
+}
+
+/* Glassy cards */
 .card {
-  margin-top: 16px;
-  background: #1f1a22;
-  color: #eae6f2;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
-.card-title { margin: 0; }
-.card-body { padding: 12px; }
-
-/* =========================
-   Shared column widths (via CSS vars)
-   ========================= */
-:root {
-  --col-userId: 90px;
-  --col-name: 160px;
-  --col-role: 110px;
-  --col-email: auto;     /* email flexes in remaining space */
-  --col-branch: 120px;
-  --col-status: 110px;   /* only used in Manage Users */
-  --col-actions: 160px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(2,6,23,0.6);
+  backdrop-filter: blur(var(--glass-blur));
+  color: var(--muted);
 }
 
-/* =========================
-   Tables (native)
-   ========================= */
-.table-wrap { overflow-x: auto; border-radius: 12px; }
-.table {
-  width: 100%;
-  border-collapse: separate;   /* draw our own separators */
-  border-spacing: 0;
-  background: #211b25;
-  color: #eae6f2;
+/* Header */
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
 }
 
-/* SAFETY: force real table semantics inside .table to prevent external .row/.grid/flex collisions */
-.table { display: table; }
-.table thead { display: table-header-group; }
-.table tbody { display: table-row-group; }
-.table tr { display: table-row !important; }       /* overrides `.row { display:flex }` etc. */
-.table td, .table th { display: table-cell !important; }
+/* Theme toggle button */
+.theme-toggle {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border: none;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(124,58,237,0.18);
+}
+.theme-toggle:hover { transform: translateY(-1px); }
 
-/* Header and cell base */
-.table th,
-.table td {
-  padding: 12px 16px;
-  box-sizing: border-box;
+/* KPI styles - neon accent */
+.kpi {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-left: 4px solid var(--accent);
+}
+
+/* Table rows hover glow */
+.table-hover tbody tr:hover {
+  box-shadow: inset 0 -4px 30px rgba(124,58,237,0.06);
+  transform: translateY(-1px);
+}
+
+/* Clickable cell hover with neon underline */
+.table td[style*="cursor: pointer;"] {
+  position: relative;
+}
+.table td[style*="cursor: pointer;"]:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 220ms ease;
+}
+.table td[style*="cursor: pointer;"]:hover:after { width: 100%; }
+
+/* Placeholder details */
+.card .empty-placeholder {
+  color: rgba(255,255,255,0.65);
+}
+
+/* Accent buttons */
+.btn-outline-primary {
+  border-color: rgba(124,58,237,0.18);
+  color: #e9eaf6;
+}
+.btn-outline-primary:hover {
+  background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));
+}
+
+/* Slight animation for selection */
+.selected-row {
+  animation: pop-in 320ms ease;
+}
+@keyframes pop-in { from { transform: translateY(6px); opacity:0 } to { transform:none; opacity:1 } }
+
+/* KPIs */
+.kpi {
+  background: #f8f9fa;
+}
+
+/* Chart wrappers */
+.chart-block .legend .swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
   vertical-align: middle;
 }
 
-/* Dark header */
-.table thead {
-  background: #2a232e;
+.svg-wrap {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+  overflow: hidden; /* prevent overflow on small screens */
 }
-.table thead th {
-  font-weight: 600;
-  color: #d9d3e0;
+.svg-chart {
+  display: block;
+  width: 100%;      /* responsive SVG across full width */
+  height: auto;
+}
+.x-labels text {
+  fill: #6c757d;
 }
 
-/* Row separators: single continuous line per row */
-.table tr { position: relative; }
-.table tbody tr::after,
-.table thead tr::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  height: 1px;
-  background: #3a3340;
-  opacity: 0.7;
+/* Bars */
+.bars {
+  display: grid;
+  gap: 8px;
 }
-.table tbody tr:last-child::after { display: none; }
-
-/* Keep separators flush with rounded corners */
-.table-wrap { overflow: hidden; }
-
-/* Utilities */
-.nowrap { white-space: nowrap; }
-.ellipsis { overflow: hidden; text-overflow: ellipsis; }
-.text-center { text-align: center; }
-
-/* Actions cell content */
-.row-actions {
-  display: inline-flex;
-  justify-content: center;
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 160px) 1fr 100px; /* label / track / value */
   align-items: center;
   gap: 8px;
-  white-space: nowrap;
 }
-.row-actions .btn {
-  height: 30px;
-  line-height: 30px;
-  padding: 0 12px;
-  border-radius: 18px;
-  font-size: 13px;
+.bar-label {
+  font-size: 0.95rem;
 }
-
-/* =========================
-   Pills for status
-   ========================= */
-.pill {
-  display: inline-block;
-  padding: 4px 10px;
+.bar-track {
+  position: relative;
+  height: 12px;
   border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid #e5e7eb;
+  background: #f1f3f5;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
 }
-.pill.ok {
-  color: #16a34a;
-  background: #eefbf3;
-  border-color: #c5ead1;
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #1976d2; /* transactions color */
+  transition: width 250ms ease; /* smooth growth */
 }
-.pill.bad {
-  color: #dc2626;
-  background: #fff1f1;
-  border-color: #f7c6c6;
+.bar-fill.alt {
+  background: #5c6bc0; /* channel mix color */
 }
-.muted { color: #6b7280; }
-
-/* =========================
-   Invite form (native)
-   ========================= */
-.invite-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-  align-items: end;
-  margin-bottom: 12px;
-}
-.form-field { display: grid; gap: 6px; }
-.form-label { color: #cfc9d6; }
-.form-field input,
-.form-field select {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #4a4452;
-  background: #2b2530;
-  color: #eae6f2;
+.bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #6c757d;
 }
 
-.divider {
-  border: 0;
-  border-top: 1px solid #3a3340;
-  margin: 8px 0 16px;
+/* Status badge tweaks (Bootstrap 5.3 friendly) */
+.bg-success-subtle {
+  background-color: #eaf7ea !important;
+}
+.bg-danger-subtle {
+  background-color: #fdeaea !important;
+}
+.bg-warning-subtle {
+  background-color: #fff4e5 !important;
 }
 
-/* =========================
-   Inline edit panel
-   ========================= */
-.edit-panel {
-  margin-top: 16px;
-  padding: 16px;
-  border-radius: 12px;
-  background: #fff;
-  color: #1f1a22;
+/* ---- FULL-BLEED CHART ---- */
+/* Break the chart block out of the Bootstrap .container to span full viewport width */
+.chart-full {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 }
-.edit-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+.chart-full .container-fluid {
+  /* Match Bootstrap's px-3 and px-md-4 (1rem / 1.5rem) so the chart aligns with page content */
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
-.edit-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 12px;
-}
-.form-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-/* =========================
-   Metrics
-   ========================= */
-.metrics {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-.metric .metric-value {
-  font-size: 22px;
-  font-weight: 700;
-  color: #8f2d56;
-}
-
-/* =========================
-   Trend chart
-   ========================= */
-.trend { margin-top: 12px; }
-.trend-header { color: #6b7280; margin-bottom: 8px; }
-.trend-svg {
-  width: 100%;
-  height: 160px;
-  border: 1px dashed #e5e7eb;
-  border-radius: 8px;
-  background: #fff;
-}
-.trend-path { fill: none; stroke: #8f2d56; stroke-width: 3; }
-.axis text { font-size: 10px; fill: #6b7280; }
-
-/* =========================
-   Responsive
-   ========================= */
-@media (max-width: 768px) {
-  .metrics { grid-template-columns: 1fr; }
-  .search-field input { width: 180px; }
-
-  :root {
-    --col-userId: 74px;
-    --col-name: 140px;
-    --col-role: 100px;
-    --col-branch: 100px;
-    --col-status: 100px;
-    --col-actions: 140px;
+@media (min-width: 768px) {
+  .chart-full .container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
+}
+
+/* Ensure the chart header and legend align vertically with other card headers */
+.chart-block .d-flex.align-items-center { align-items: center; }
+
+/* KPI/legend alignment helpers */
+.kpis-row .kpi { min-height: 96px; }
+.legend { gap: 12px; }
+.legend span { white-space: nowrap; }
+
+/* Responsive */
+@media (max-width: 992px) {
+  .bar-row {
+    grid-template-columns: minmax(100px, 140px) 1fr 80px;
+  }
+}
+@media (max-width: 768px) {
+  .bar-row {
+    grid-template-columns: 1fr; /* stack label/track/value vertically */
+  }
+  .bar-value {
+    text-align: left;
+  }
+  .legend {
+    gap: 10px;
+  }
+}
+
+/* Optional: subtle hover on clickable cells */
+.table td[style*="cursor: pointer;"] {
+  transition: background-color 150ms ease;
+}
+.table td[style*="cursor: pointer;"]:hover {
+  background-color: #f8f9fa;
 }
