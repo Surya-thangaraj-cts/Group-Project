@@ -94,6 +94,33 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   chartWidth = 1200;        // will be updated to actual available width
   chartHeight = 220;        // SVG height (viewBox height)
   private resizeObs?: ResizeObserver;
+  // Plot margins for axes
+  chartLeftMargin = 48;
+  chartRightPadding = 8;
+
+  plotWidth(): number {
+    return Math.max(240, this.chartWidth - this.chartLeftMargin - this.chartRightPadding);
+  }
+
+  getYMax(): number {
+    const vals = [ ...(this.compliance.monthlyTxnVolume || []), ...(this.compliance.monthlySuspicious || []) ];
+    return Math.max(...vals, 1);
+  }
+
+  yTicks(count = 5): number[] {
+    const max = this.getYMax();
+    const step = max / (count - 1);
+    const ticks: number[] = [];
+    for (let i = 0; i < count; i++) {
+      ticks.push(Math.round(i * step));
+    }
+    return ticks.reverse(); // largest first for drawing top-to-bottom
+  }
+
+  yPosInPlot(val: number, height: number): number {
+    const max = this.getYMax() || 1;
+    return height - (val / max) * height;
+  }
 
   constructor(private fb: FormBuilder, private auth: AuthService) {
     console.debug('[Admin] constructor');

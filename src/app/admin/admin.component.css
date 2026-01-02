@@ -7,6 +7,7 @@
 /* Theme variables (cool / neon theme) */
 :host {
   --bg-gradient: linear-gradient(135deg, #0f172a 0%, #0b3d91 40%, #3a4ea8 100%);
+  /* --bg-gradient: linear-gradient(135deg, #0f172a 0%, #460c78 40%, #6b1685 100%); */
   --card-bg: rgba(255,255,255,0.04);
   --card-border: rgba(255,255,255,0.06);
   --glass: rgba(255,255,255,0.03);
@@ -155,8 +156,11 @@
   height: auto;
 }
 .x-labels text {
-  fill: #6c757d;
+  fill: #000; /* scale text in black */
 }
+
+/* Y-axis labels inside SVG */
+.svg-chart .y-axis text { fill: #000; font-family: Inter, system-ui, sans-serif; }
 
 /* Bars */
 .bars {

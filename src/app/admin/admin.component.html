@@ -1,5 +1,5 @@
 
-<div class="container py-3 admin-page">
+<div class="container py-3 admin-page" oncontextmenu="return false">
   <!-- Header -->
   <div class="mb-3">
     <div class="d-flex align-items-center justify-content-between gap-3">
@@ -106,7 +106,7 @@
       </ng-container>
 
       <ng-template #emptyDetails>
-        <div class="text-center text-dark py-4">
+        <div class="text-center text-white py-4">
           <div class="mb-2">No user selected</div>
           <div class="small">Type in the search box or click a user row to view details.</div>
         </div>
@@ -188,7 +188,7 @@
                 <td (click)="selectUser(u)" style="cursor: pointer;">{{ u.branch }}</td>
                 <td>
                   <span
-                    class="badge"
+                    class="badge "
                     [ngClass]="{
                       'bg-success-subtle text-success border border-success': u.status === 'Active',
                       'bg-danger-subtle text-danger border border-danger': u.status === 'Inactive',
@@ -360,25 +360,36 @@
               [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
               preserveAspectRatio="xMidYMid meet"
             >
+              <!-- Y axis ticks & grid -->
+              <g class="y-axis" *ngIf="compliance.monthlyTxnVolume.length">
+                <g *ngFor="let t of yTicks()">
+                  <!-- draw grid lines aligned with the plotted area (account for left margin) -->
+                  <line [attr.x1]="chartLeftMargin" [attr.y1]="yPosInPlot(t, chartHeight - 60)" [attr.x2]="chartLeftMargin + plotWidth()" [attr.y2]="yPosInPlot(t, chartHeight - 60)" stroke="rgba(0,0,0,0.06)" />
+                  <text [attr.x]="chartLeftMargin - 8" [attr.y]="yPosInPlot(t, chartHeight - 60) + 4" text-anchor="end" font-size="11">{{ t | number }}</text>
+                </g>
+              </g>
+
+              <!-- Move plot area right to make room for Y axis labels -->
+              <g [attr.transform]="'translate(' + chartLeftMargin + ',0)'">
               <!-- baseline -->
               <line
                 [attr.x1]="0"
                 [attr.y1]="chartHeight - 60"
-                [attr.x2]="chartWidth"
+                [attr.x2]="plotWidth()"
                 [attr.y2]="chartHeight - 60"
                 stroke="#cfd8dc"
               />
 
               <!-- series -->
               <path
-                [attr.d]="linePath(compliance.monthlyTxnVolume, chartWidth, chartHeight - 60)"
+                [attr.d]="linePath(compliance.monthlyTxnVolume, plotWidth(), chartHeight - 60)"
                 fill="none"
                 stroke="#1976d2"
                 stroke-width="2"
               ></path>
 
               <path
-                [attr.d]="linePath(compliance.monthlySuspicious, chartWidth, chartHeight - 60)"
+                [attr.d]="linePath(compliance.monthlySuspicious, plotWidth(), chartHeight - 60)"
                 fill="none"
                 stroke="#d32f2f"
                 stroke-width="2"
@@ -386,16 +397,17 @@
               ></path>
 
               <!-- x-axis labels -->
-              <g class="x-labels">
+              <g class="x-labels text-dark">
                 <text
                   *ngFor="let lbl of compliance.monthlyLabels; let i = index"
-                  [attr.x]="(chartWidth / (compliance.monthlyLabels.length - 1)) * i"
+                  [attr.x]="(plotWidth() / (compliance.monthlyLabels.length - 1)) * i"
                   [attr.y]="chartHeight - 25"
                   text-anchor="middle"
                   font-size="12"
                 >
                   {{ lbl }}
                 </text>
+              </g>
               </g>
             </svg>
           </div>
@@ -411,7 +423,7 @@
             <div class="bar-track">
               <div class="bar-fill" [style.width.%]="(b.count / maxBucket) * 100"></div>
             </div>
-            <div class="bar-value">{{ b.count | number }}</div>
+            <div class="bar-value text-white">{{ b.count | number }}</div>
           </div>
         </div>
       </div>
