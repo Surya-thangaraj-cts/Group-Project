@@ -1,4 +1,3 @@
- 
 <!-- <Top Navigation Bar> -->
 <nav class="top-nav">
   <div class="brand">
@@ -48,9 +47,10 @@
 <body>
 <section class="container">
   <!-- Alerts -->
-  <div *ngIf="alert.message" class="alert" [class.error]="alert.type==='error'" [class.success]="alert.type==='success'">
-    {{ alert.message }}
-    <button class="close" (click)="clearAlert()">×</button>
+
+  <div *ngIf="alert.message" class="console-alert" [class.error]="alert.type==='error'" [class.success]="alert.type==='success'">
+    <span class="msg">{{ alert.message }}</span>
+    <button class="close" (click)="clearAlert()" style="color: aliceblue;">X</button>
   </div>
  
   <!-- CREATE ACCOUNT -->
@@ -169,7 +169,7 @@
       <button class="secondary" (click)="prefillUpdate(lookupAccountId)">Load</button>
     </div>
  
-    <form [formGroup]="updateForm" (ngSubmit)="updateAccount()" *ngIf="updateFormLoaded; else noLoad">
+    <form [formGroup]="updateForm" (ngSubmit)="updateAccount()" *ngIf="updateFormLoaded">
       <div class="grid">
         <label>
           Account ID
@@ -204,56 +204,50 @@
       </div><br>
  
       <div class="actions">
-        <button class="primary" type="submit" [disabled]="updateForm.invalid">Update Account</button>
+        <button class="primary" type="submit" [disabled]="updateForm.invalid">Submit Update Request</button>
         <button type="button" class="secondary" (click)="updateForm.reset(); updateFormLoaded=false">Cancel</button>
       </div>
-    </form>
- 
-    <ng-template #noLoad>
-      <p class="muted">Enter an Account ID and click <b>Load</b> to edit.</p>
-    </ng-template>
- 
-    <hr />
-    <h3>Existing Accounts ({{ accounts.length }})</h3><br>
-    <div class="table-wrap" *ngIf="accounts.length; else noAccountsUpdate">
-      <table class="scroll-table">
-        <thead>
-          <tr>
-            <th>Account ID</th>
-            <th>Customer Name</th>
-            <th>Customer ID</th>
-            <th>Type</th>
-            <th>Status</th>
-            <!-- <th>Balance</th> -->
-            <th>Opened</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let a of accounts">
-            <td>{{ a.accountId }}</td>
-            <td>{{ a.customerName }}</td>
-            <td>{{ a.customerId }}</td>
-            <td>{{ a.accountType }}</td>
-            <td>
-              <span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">
-                {{ a.status }}
-              </span>
-            </td>
-            <!-- <td>{{ a.balance | number:'1.2-2' }}</td> -->
-            <td>{{ a.openedAt | date:'medium' }}</td>
-            <td>
-              <!-- Only Edit button in Update tab -->
-              <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <ng-template #noAccountsUpdate>
-      <p class="muted">No accounts yet. Create one using the form above.</p>
-    </ng-template>
+    </form><hr />
+
+
+   <!-- 🔹 UPDATION STATUS TABLE -->
+  <h3>Updation Status</h3><br>
+
+  <div class="table-wrap" *ngIf="updateRequests.length; else noUpdates">
+    <table class="scroll-table">
+      <thead>
+        <tr>
+          <th>Update ID</th>
+          <th>Account ID</th>
+          <th>Customer Name</th>
+          <th>Customer ID</th>
+          <th>Type</th>
+          <th>Changes Summary</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let u of updateRequests">
+          <td>{{ u.updateId }}</td>
+          <td>{{ u.accountId }}</td>
+          <td>{{ u.customerName }}</td>
+          <td>{{ u.customerId }}</td>
+          <td>{{ u.accountType }}</td>
+          <td>{{ u.changeSummary }}</td>
+          <td>
+            <span class="pill bad">{{ u.status }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+
+  <ng-template #noUpdates>
+    <p class="muted">No update requests submitted yet.</p>
+  </ng-template>
+
+</div>
  
   <!-- TRANSACTION HISTORY & RECORD -->
   <div *ngIf="activeTab==='history'" class="card">
@@ -326,48 +320,82 @@
       </form>
     </div><br>
  
-    <!-- History Table -->
-    <div class="table-wrap" *ngIf="selectedHistoryAccountId && transactionsFor(selectedHistoryAccountId).length; else noTxns">
-      <table class="scroll-table">
+    <!-- 🔹 Transaction History Table -->
+
+    <h3>Transaction History</h3><br>
+
+    <div class="table-wrap"
+     *ngIf="selectedHistoryAccountId && transactionsFor(selectedHistoryAccountId).length; else noTxns">
+
+      <table class="scroll-table">  
         <thead>
           <tr>
-            <th>Time</th>
+            <th>Transaction ID</th>
+            <th>Account ID</th>
             <th>Type</th>
             <th>Amount</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Flagged</th>
-            <th>Narrative</th>
-            <th></th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Flag Status</th>
+            <th>Action</th>
           </tr>
         </thead>
-        <tbody>
-          <tr *ngFor="let t of transactionsFor(selectedHistoryAccountId)">
-            <td>{{ t.time | date:'medium' }}</td>
-            <td>{{ t.type }}</td>
-            <td [class.red]="t.type==='WITHDRAWAL' || (t.type==='TRANSFER' && t.accountId===selectedHistoryAccountId)">
-              {{ t.amount | number:'1.2-2' }}
-            </td>
-            <td>{{ t.accountId }}</td>
-            <td>{{ t.toAccountId || '—' }}</td>
-            <td>
-              <span class="pill" [class.ok]="t.flagged" [class.bad]="!t.flagged">
-                {{ t.flagged ? 'HIGH' : 'Normal' }}
-              </span>
-            </td>
-            <td>{{ t.narrative || '—' }}</td>
-            <td>
-              <button class="link" (click)="flagTransaction(t)" [disabled]="t.flagged">Flag</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
- 
-    <ng-template #noTxns>
-      <p class="muted" *ngIf="selectedHistoryAccountId">No transactions yet for {{ selectedHistoryAccountId }}.</p>
-      <p class="muted" *ngIf="!selectedHistoryAccountId">Select an account to view history.</p>
-    </ng-template>
+
+    <tbody>
+      <tr *ngFor="let t of transactionsFor(selectedHistoryAccountId)">
+
+        <td>{{ t.id }}</td>
+
+        <td>{{ t.accountId }}</td>
+
+        <td>{{ t.type }}</td>
+
+        <td [class.red]="t.type !== 'DEPOSIT'">
+          ₹{{ t.amount | number:'1.2-2' }}
+        </td>
+
+        <td>{{ t.time | date:'medium' }}</td>
+
+        <!-- ✅ Status based on threshold -->
+        <td>
+          <span class="pill"
+                [class.ok]="t.amount < highValueThreshold"
+                [class.bad]="t.amount >= highValueThreshold">
+            {{ t.amount < highValueThreshold ? 'Completed' : 'Pending' }}
+          </span>
+        </td>
+
+        <!-- ✅ Flag status -->
+        <td>
+          <span class="pill"
+                [class.ok]="!t.flagged"
+                [class.bad]="t.flagged">
+            {{ t.flagged ? 'High' : 'Normal' }}
+          </span>
+        </td>
+
+        <!-- ✅ Toggle Flag -->
+        <td>
+          <button class="link"
+                  (click)="toggleFlag(t)">
+            {{ t.flagged ? 'Unflag' : 'Flag' }}
+          </button>
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #noTxns>
+  <p class="muted" *ngIf="selectedHistoryAccountId">
+    No transactions found for {{ selectedHistoryAccountId }}.
+  </p>
+  <p class="muted" *ngIf="!selectedHistoryAccountId">
+    Select an account to view transaction history.
+  </p>
+</ng-template>
+
   </div>
 </section>
 </body>

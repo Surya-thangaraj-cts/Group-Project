@@ -2,10 +2,13 @@
 html, body {
   height: 100%;
   background: #0f172a; /* <-- your app bg color; replace as needed */
+  margin: 0;
 }
 
 :host {
   display: block;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--primary), var(--primary-700));
   /* Theme tokens */
   --bg: #0b0f14;                  /* app background */
   --bg-elevate: #0f141b;
@@ -46,6 +49,7 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); margin: 0; }
 /* Top Nav (glass + neon underline on active) */
 .top-nav {
   display: flex;
+  position: sticky;
   justify-content: space-between;
   align-items: center;
   padding: 0.8rem 1rem;
@@ -114,16 +118,19 @@ h1, h2, h3, h4, h5, h6 { color: var(--text); margin: 0; }
 
 /* Layout */
 .container {
+  min-height: 100vh;
+  width: 100%;
   max-width: 1100px;
-  margin: 1rem auto;
-  padding: 0 1rem;
-  background-color: rgba(18, 24, 31, 0.7);
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: transparent;
 }
 
 /* Cards (frosted glass) */
 .card {
   background: var(--card);
-  border: var(--glass-border);
+  /* border: var(--glass-border); */
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 14px;
   padding: 1rem;
   box-shadow: var(--shadow);
@@ -314,38 +321,64 @@ tr:hover td {
   color: var(--text-muted);
 }
 
-.alert {
+.console-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 320px;
+  max-width: 480px;
+  padding: 0.875rem 1.125rem;
+  border-radius: 10px;
+  /* font-family: 'Courier New', Courier, monospace; */
+  font-size: 14px;
+  color: #eaeaea;
+  background: #1e1e1e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.6rem 0.9rem;
-  border-radius: 12px;
-  margin-bottom: 0.75rem;
-  border: var(--glass-border);
-  background: rgba(18, 24, 31, 0.65);
-  backdrop-filter: var(--glass-backdrop);
-  -webkit-backdrop-filter: var(--glass-backdrop);
-  color: var(--text);
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
 }
 
-.alert.success {
-  background: linear-gradient(180deg, rgba(16, 185, 129, 0.15), rgba(18, 24, 31, 0.65));
-  border-color: rgba(16, 185, 129, 0.35);
-  color: #d1fae5;
+.console-alert.success {
+  background: #00c853; /* Green background */
+  color: #fff;
+  border-left: 5px solid #00c853;
 }
 
-.alert.error {
-  background: linear-gradient(180deg, rgba(239, 68, 68, 0.18), rgba(18, 24, 31, 0.65));
-  border-color: rgba(239, 68, 68, 0.35);
-  color: #fee2e2;
+.console-alert.error {
+  background: #ff5252; /* Red background */
+  color: #fff; 
+  border-left: 5px solid #ff5252;
 }
 
-.alert .close {
+.console-alert .close {
   background: transparent;
   border: none;
+  color: #aaa;
+  font-size: 16px;
   cursor: pointer;
-  font-weight: bold;
-  color: var(--text);
+}
+
+.console-alert .close:hover {
+  color: #fff;
+}
+
+/*Animation for alert slide-in*/
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(30px);
+  }
+  to{
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Focus & Accessibility */

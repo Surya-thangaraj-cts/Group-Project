@@ -8,6 +8,7 @@ type AccountType = 'SAVINGS' | 'CURRENT';
 type AccountStatus = 'ACTIVE' | 'CLOSED';
 type TxnType = 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER';
 
+// interfaces
 interface Account {
   accountId: string;
   customerName: string;
@@ -29,6 +30,18 @@ interface Transaction {
   narrative?: string;
 }
 
+interface UpdateRequest {
+  updateId: string;
+  accountId: string;
+  customerName: string;
+  customerId: string;
+  accountType: AccountType;
+  changeSummary: string;
+  status: 'PENDING';
+  // status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  time: string;
+}
+
 @Component({
   selector: 'officer',
   standalone: true,
@@ -45,10 +58,9 @@ export class OfficerComponent implements OnInit
   // Forms
   createForm: FormGroup;
   updateForm: FormGroup;
+
   updateFormLoaded = false;
-
   lookupAccountId = '';
-
   txnForm: FormGroup;
   selectedHistoryAccountId?: string;
 
@@ -58,6 +70,9 @@ export class OfficerComponent implements OnInit
 
   // High-value threshold (₹)
   highValueThreshold = 100000;
+
+  //Update Request Array
+  updateRequests: UpdateRequest[] = [];
 
   // Alerts
   alert: { type: 'success' | 'error'; message: string } = { type: 'success', message: '' };
@@ -92,6 +107,7 @@ export class OfficerComponent implements OnInit
   ngOnInit(): void {
     this.loadState();
     this.currentUser = this.authService.currentUser;
+    this.updateFormLoaded = true;
   }
 
   // setting the current user
@@ -182,20 +198,20 @@ export class OfficerComponent implements OnInit
     this.activeTab = 'update';
   }
 
-  updateAccount(): void {
-    if (this.updateForm.invalid) return;
-    const value = this.updateForm.getRawValue() as Account;
-    const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
-    if (idx === -1) return this.setError('Account not found.');
+  // ``updateAccount(): void {
+  //   if (this.updateForm.invalid) return;
+  //   const value = this.updateForm.getRawValue() as Account;
+  //   const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
+  //   if (idx === -1) return this.setError('Account not found.');
 
-    // Preserve openedAt
-    const openedAt = this.accounts[idx].openedAt;
-    this.accounts[idx] = { ...value, openedAt };
-    this.saveState();
-    this.setSuccess(`Account ${value.accountId} updated.`);
-    this.updateFormLoaded = false;
-    this.lookupAccountId = '';
-  }
+  //   // Preserve openedAt
+  //   const openedAt = this.accounts[idx].openedAt;
+  //   this.accounts[idx] = { ...value, openedAt };
+  //   this.saveState();
+  //   this.setSuccess(`Account ${value.accountId} updated.`);
+  //   this.updateFormLoaded = false;
+  //   this.lookupAccountId = '';
+  // }``
 
   // ---------- Transactions ----------
   onTxnTypeChange() {
@@ -302,6 +318,60 @@ export class OfficerComponent implements OnInit
   private setError(message: string): void {
     this.alert = { type: 'error', message };
   }
+  updateAccount(): void {
+  if (this.updateForm.invalid) return;
+
+  const value = this.updateForm.getRawValue() as Account;
+  const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
+  if (idx === -1) return this.setError('Account not found.');
+
+  const oldAcc = this.accounts[idx];
+
+  // 🔹 Generate change summary
+  const changes: string[] = [];
+
+  if (oldAcc.customerName !== value.customerName)
+    changes.push(`Customer Name: "${oldAcc.customerName}" → "${value.customerName}"`);
+
+  if (oldAcc.customerId !== value.customerId)
+    changes.push(`Customer ID: "${oldAcc.customerId}" → "${value.customerId}"`);
+
+  if (oldAcc.accountType !== value.accountType)
+    changes.push(`Account Type: ${oldAcc.accountType} → ${value.accountType}`);
+
+  if (oldAcc.balance !== value.balance)
+    changes.push(`Balance: ₹${oldAcc.balance} → ₹${value.balance}`);
+
+  if (oldAcc.status !== value.status)
+    changes.push(`Status: ${oldAcc.status} → ${value.status}`);
+
+  // 🔹 Create update request (instead of directly applying changes)
+  const updateRequest: UpdateRequest = {
+    updateId: cryptoRandomId(),
+    accountId: value.accountId,
+    customerName: value.customerName,
+    customerId: value.customerId,
+    accountType: value.accountType,
+    changeSummary: changes.length ? changes.join(' | ') : 'No changes detected',
+    status: 'PENDING',
+    time: new Date().toISOString()
+  };
+
+  this.updateRequests.unshift(updateRequest);
+
+  this.setSuccess(`Update request created for Account ${value.accountId}.`);
+  this.updateFormLoaded = false;
+  this.lookupAccountId = '';
+}
+toggleFlag(t: Transaction): void {
+  t.flagged = !t.flagged;
+
+  this.setSuccess(
+    `Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`
+  );
+
+  this.saveState();
+}
 
 }
 
@@ -320,5 +390,7 @@ function cryptoRandomId(): string {
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+
 
 
