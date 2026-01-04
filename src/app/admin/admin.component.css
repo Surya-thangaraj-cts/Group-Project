@@ -1,0 +1,263 @@
+
+/* Container pads are handled by Bootstrap; add only what's needed */
+
+/* Use a modern geometric font for the admin UI */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+/* Theme variables (cool / neon theme) */
+:host {
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #0b3d91 40%, #3a4ea8 100%);
+  /* --bg-gradient: linear-gradient(135deg, #0f172a 0%, #460c78 40%, #6b1685 100%); */
+  --card-bg: rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.06);
+  --glass: rgba(255,255,255,0.03);
+  --accent: #7c3aed; /* violet */
+  --accent-2: #06b6d4; /* cyan */
+  --muted: rgba(255,255,255,0.75);
+  --glass-blur: 8px;
+}
+
+.admin-page { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+
+.card-header h1, .card-header h2, .h4 { color: #fff; }
+
+/* Apply background to the admin page container */
+.admin-page {
+  background: var(--bg-gradient);
+  color: var(--muted);
+  min-height: 100vh;
+  padding-top: 24px;
+  padding-bottom: 48px;
+}
+
+/* Improve alignment of filter controls */
+.admin-page form.row.align-items-center .form-label {
+  margin-bottom: 0.25rem; /* slightly reduce label bottom spacing */
+}
+.admin-page .form-select, .admin-page .form-control {
+  min-height: 44px; /* unify control heights */
+}
+
+/* Filter column helper to vertically center label+control */
+.admin-page .filter-col {
+  padding-top: 0.25rem; /* small top pad so centering looks natural */
+}
+.admin-page .filter-col .form-label {
+  margin-bottom: 0.35rem;
+}
+
+/* Nudge the role filter slightly up to align with search input (desktop) */
+.admin-page .role-filter-col {
+  transform: translateY(-16px);
+}
+
+/* On small screens, reset the nudge so stacked layout looks natural */
+@media (max-width: 768px) {
+  .admin-page .role-filter-col { transform: none; }
+}
+
+/* Glassy cards */
+.card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--card-border);
+  box-shadow: 0 8px 24px rgba(2,6,23,0.6);
+  backdrop-filter: blur(var(--glass-blur));
+  color: var(--muted);
+}
+
+/* Header */
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  border: none;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(124,58,237,0.18);
+}
+.theme-toggle:hover { transform: translateY(-1px); }
+
+/* KPI styles - neon accent */
+.kpi {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-left: 4px solid var(--accent);
+}
+
+/* Table rows hover glow */
+.table-hover tbody tr:hover {
+  box-shadow: inset 0 -4px 30px rgba(124,58,237,0.06);
+  transform: translateY(-1px);
+}
+
+/* Clickable cell hover with neon underline */
+.table td[style*="cursor: pointer;"] {
+  position: relative;
+}
+.table td[style*="cursor: pointer;"]:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 220ms ease;
+}
+.table td[style*="cursor: pointer;"]:hover:after { width: 100%; }
+
+/* Placeholder details */
+.card .empty-placeholder {
+  color: rgba(255,255,255,0.65);
+}
+
+/* Accent buttons */
+.btn-outline-primary {
+  border-color: rgba(124,58,237,0.18);
+  color: #e9eaf6;
+}
+.btn-outline-primary:hover {
+  background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));
+}
+
+/* Slight animation for selection */
+.selected-row {
+  animation: pop-in 320ms ease;
+}
+@keyframes pop-in { from { transform: translateY(6px); opacity:0 } to { transform:none; opacity:1 } }
+
+/* KPIs */
+.kpi {
+  background: #f8f9fa;
+}
+
+/* Chart wrappers */
+.chart-block .legend .swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.svg-wrap {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px;
+  overflow: hidden; /* prevent overflow on small screens */
+}
+.svg-chart {
+  display: block;
+  width: 100%;      /* responsive SVG across full width */
+  height: auto;
+}
+.x-labels text {
+  fill: #000; /* scale text in black */
+}
+
+/* Y-axis labels inside SVG */
+.svg-chart .y-axis text { fill: #000; font-family: Inter, system-ui, sans-serif; }
+
+/* Bars */
+.bars {
+  display: grid;
+  gap: 8px;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 160px) 1fr 100px; /* label / track / value */
+  align-items: center;
+  gap: 8px;
+}
+.bar-label {
+  font-size: 0.95rem;
+}
+.bar-track {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: #f1f3f5;
+  border: 1px solid #dee2e6;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: #1976d2; /* transactions color */
+  transition: width 250ms ease; /* smooth growth */
+}
+.bar-fill.alt {
+  background: #5c6bc0; /* channel mix color */
+}
+.bar-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: #6c757d;
+}
+
+/* Status badge tweaks (Bootstrap 5.3 friendly) */
+.bg-success-subtle {
+  background-color: #eaf7ea !important;
+}
+.bg-danger-subtle {
+  background-color: #fdeaea !important;
+}
+.bg-warning-subtle {
+  background-color: #fff4e5 !important;
+}
+
+/* ---- FULL-BLEED CHART ---- */
+/* Break the chart block out of the Bootstrap .container to span full viewport width */
+.chart-full {
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+.chart-full .container-fluid {
+  /* Match Bootstrap's px-3 and px-md-4 (1rem / 1.5rem) so the chart aligns with page content */
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 768px) {
+  .chart-full .container-fluid {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Ensure the chart header and legend align vertically with other card headers */
+.chart-block .d-flex.align-items-center { align-items: center; }
+
+/* KPI/legend alignment helpers */
+.kpis-row .kpi { min-height: 96px; }
+.legend { gap: 12px; }
+.legend span { white-space: nowrap; }
+
+/* Responsive */
+@media (max-width: 992px) {
+  .bar-row {
+    grid-template-columns: minmax(100px, 140px) 1fr 80px;
+  }
+}
+@media (max-width: 768px) {
+  .bar-row {
+    grid-template-columns: 1fr; /* stack label/track/value vertically */
+  }
+  .bar-value {
+    text-align: left;
+  }
+  .legend {
+    gap: 10px;
+  }
+}
+
+/* Optional: subtle hover on clickable cells */
+.table td[style*="cursor: pointer;"] {
+  transition: background-color 150ms ease;
+}
+.table td[style*="cursor: pointer;"]:hover {
+  background-color: #f8f9fa;
+}

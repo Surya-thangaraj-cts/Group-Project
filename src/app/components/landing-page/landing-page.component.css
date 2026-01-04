@@ -1,216 +1,132 @@
-/* Full-page background GIF */
-body, html {
-  height: 100%;
-  margin: 0;
+
+/* ============================
+   Global / Page Background
+   ============================ */
+.bg-dark-subtle {
+  background: #0f0f10; /* dark frame like the reference */
 }
 
-.landing-background {
-  /* Replace the URL below with the path to your desired GIF */
-  background-image: radial-gradient(rgb(57, 142, 222),rgb(28, 147, 174));
-  background-size: cover;
-  height: 100%;
-}
-.welcome { text-align: center; margin: 4rem 0; overflow: hidden; /* ensures text stays inside */ height: 4rem; /* fixed height for rolling effect */ }
-.welcome h1 {
-  font-size: 3rem;
-  transition: opacity 1s ease-in-out;
-}
-.welcome h1 { font-size: 3rem; font-weight: bold; display: inline-block; animation: rollText 1s ease forwards; }
-.welcome h1.fade {
-  opacity: 0;
-}
-/* Overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 1040;
-}
-
-/* Modal Box */
-.modal-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 90%;
-  max-width: 500px;
-  transform: translate(-50%, -50%);
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-  z-index: 1050;
-  overflow: hidden;
-}
-
-/* Modal Header */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid #eee;
-}
-
-/* Modal Body */
-.modal-body {
-  padding: 1rem 1.25rem;
-}
-
-/* Close Button */
-.btn-close {
-  border: none;
-  /* background: transparent; */
-  font-size: 1.2rem;
-  cursor: pointer;
-}
-
-/* Welcome fade transition */
-/* Welcome Section */
-.welcome h1 {
-  font-size: 3.5rem;
-  font-weight: bold;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fadeSlide 1s ease forwards;
-}
-
-/* @keyframes fadeSlide {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-} */
- @keyframes rollText { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-.welcome h1.fade {
-  opacity: 0;
-}
-.hero {
-  text-align: center;
-  padding: 6rem 2rem;
-  background: linear-gradient(135deg, #007bff, #6610f2);
-  color: #fff;
-  border-radius: 0 0 50% 50% / 10%;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
-.hero h1 {
-  font-size: 3.5rem;
-  font-weight: bold;
-  animation: glow 1s infinite alternate;
-}
-.hero .tagline {
-  font-size: 1.5rem;
-  margin-top: 1rem;
-  opacity: 0.9;
-}
-@keyframes glow {
-  from { text-shadow: 0 0 10px #fff; }
-  to { text-shadow: 0 0 20px #ffdd00, 0 0 30px #ffdd00; }
-}
-
-section {
-  padding: 4rem 2rem;
-}
-section h2 {
-  font-weight: bold;
-  margin-bottom: 1.5rem;
-  position: relative;
-}
-section h2::after {
-  content: '';
-  display: block;
-  width: 60px;
-  height: 4px;
-  background: #007bff;
-  margin-top: 0.5rem;
-  border-radius: 2px;
-}
-.features .col-md-4, .how-it-works .col-md-4 {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  padding: 1rem;
-}
-.features .col-md-4:hover, .how-it-works .col-md-4:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-}
-.testimonials blockquote {
-  font-style: italic;
-  border-left: 4px solid #007bff;
-  padding-left: 1rem;
-  margin-bottom: 1rem;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
+/* ============================
+   Navbar / Brand
+   ============================ */
 .navbar {
-  background: #fff;
-  transition: box-shadow 0.3s ease;
-}
-.navbar:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.navbar a.btn-link {
-  color: #007bff;
-  font-weight: 500;
-}
-.navbar a.btn-link:hover {
-  text-decoration: underline;
+  padding-top: 0.35rem;   /* slightly tighter navbar vertical spacing */
+  padding-bottom: 0.35rem;
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 1040;
-  animation: fadeIn 0.5s ease forwards;
-}
-.modal-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 90%;
-  max-width: 500px;
-  transform: translate(-50%, -50%) scale(0.9);
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
-  z-index: 1050;
-  overflow: hidden;
-  animation: popUp 0.4s ease forwards;
-}
-.modal-header {
+/* Move the brand text a little bit upward */
+.brand-up {
   position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.25rem;
+  top: -2px;              /* adjust to taste: -2px to -6px */
+  line-height: 1.1;       /* keeps it tight with the logo */
 }
-.btn-close {
-  /* border: none; */
-  /* background: transparent; */
-  height: 1rem;
-  width: 1rem;
-  cursor: pointer;
+.brand-up strong {
   display: inline-block;
-  border: none;
+  transform: translateY(-2px);  /* subtle nudge for text only */
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+
+/* ============================
+   Card / Layout
+   ============================ */
+/* Rounded card already handled by Bootstrap classes,
+   but keep it consistent across browsers */
+.rounded-4 {
+  border-radius: 1.25rem !important;
 }
-@keyframes popUp {
-  from { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+
+/* Make the main split card taller (fills viewport nicely) */
+.main-card {
+  min-height: 78vh;       /* try 78–88vh depending on your preference */
 }
-\.footer {
-  background: linear-gradient(135deg, #007bff, #6610f2);
-  color: #fff;
-  font-size: 0.9rem;
+
+/* Equal height behavior: ensure right column stretches to match the card height */
+.col-12.col-lg-6.position-relative,
+.col-12.col-lg-6.d-flex {
+  display: flex;
+  align-items: stretch; /* child fills the column height */
 }
-.footer p {
-  margin: 0;
+
+/* ============================
+   Hero / Welcome (if enabled)
+   ============================ */
+.hero-title {
+  transition: opacity 300ms ease;
+}
+.hero-title.fade {
+  opacity: 0.25;          /* driven by your TS 'fade' boolean */
+}
+/* .outer2{
+  opacity: 0.6;
+  z-index: -2;
+}
+.outer1{
+  opacity: 0.2;
+  z-index: -1;
+}
+.main-card{
+  z-index: 1;
+} */
+ .outer2{
+  background-color: #5e5e63;
+ }
+
+/* ============================
+   Right Image Panel — Background Cover
+   ============================ */
+/* Single, consolidated .bg-cover (no duplicates) */
+.bg-cover {
+  /* Make sure the image area is visible on mobile when columns stack */
+  min-height: 320px;
+
+  /* Fill available height when the parent allows it (columns are flex) */
+  flex: 1 1 auto;
+  height: 100%;
+
+  /* Background behavior */
+  background-position: center 40%; /* bias slightly upward; tweak 30–50% to taste */
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  /* Positioning for optional overlays */
+  position: relative;
+}
+
+/* Glossy overlay similar to your reference */
+.bg-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    120% 120% at 80% 20%,
+    rgba(255, 255, 255, 0.10) 0%,
+    rgba(0, 0, 0, 0.25) 65%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* On larger screens, ensure full column height */
+@media (min-width: 992px) {
+  .bg-cover {
+    min-height: 100%;
+    height: 100%;
+  }
+}
+
+/* ============================
+   Helpers
+   ============================ */
+.backdrop-blur {
+  backdrop-filter: blur(6px);
+}
+
+/* Optional: increase touch targets on small devices */
+@media (max-width: 576px) {
+  .form-control-lg,
+  .btn-lg,
+  .form-select-lg {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
 }

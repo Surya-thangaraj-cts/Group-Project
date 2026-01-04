@@ -1,19 +1,19 @@
-<!-- Navbar --> <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm"> 
-  <div class="container"> 
-    <!-- Logo + Bank Name -->
-      <a class="navbar-brand d-flex align-items-center" href=""> 
-        <!-- Dummy SVG logo --> 
-         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-bank me-2 text-primary" viewBox="0 0 16 16">
-           <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/> 
-          </svg> <span class="fw-bold text-primary">MyBank</span> 
-        </a> 
-        <!-- Buttons always visible (no collapse) --> 
-         <div class="d-flex ms-auto"> 
-          <button class="btn btn-primary me-2" (click)="toggleForm('signin')">Sign In</button> 
-          <button class="btn btn-outline-secondary" (click)="toggleForm('register')">Register</button> 
-        </div> 
-      </div> 
-    </nav>
+
+<!-- Wrapper: dark background + center the card -->
+<div class="container-fluid min-vh-100 d-flex flex-column bg-dark-subtle px-3 px-md-4">
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-body rounded-4 shadow-sm my-3 px-3">
+    <a class="navbar-brand" href="#">
+      <span class="rounded-3 mx-4 d-inline-block" style="width:32px;height:32px;background:#1e60ff;"></span>
+      <div class="brand-up"><strong>MY BANK</strong></div>
+    </a>
+
+    <div class="ms-auto">
+      <button class="btn btn-primary me-2" (click)="toggleForm('signin')">Sign In</button>
+      <button class="btn btn-outline-secondary" (click)="toggleForm('register')">Register</button>
+    </div>
+  </nav>
 
 
 <!-- Hero / Welcome Section -->
@@ -91,82 +91,89 @@
 <!-- Overlay -->
 <div class="modal-overlay" *ngIf="showForm" (click)="showForm = null"></div>
 
-
 <!-- Sign In Modal -->
 <div class="modal-box" *ngIf="showForm === 'signin'">
-  <div class="modal-header bg-primary text-white d-flex justify-content-between align-items-center">
-    <h5 class="mb-0">Sign In</h5>
-      <button
-        type="button"
-        class="btn-close btn-close-white"
-        aria-label="Close"
-        (click)="showForm = null">
-      </button>
-
+  <div class="modal-header bg-primary text-white">
+    <h5>Sign In</h5>
+    <button class="btn-close" (click)="showForm = null"></button>
   </div>
-
   <div class="modal-body">
     <form [formGroup]="signinForm" (ngSubmit)="signin()">
       <div class="mb-3">
         <label>User ID</label>
         <input type="text" formControlName="userId" class="form-control">
       </div>
-
       <div class="mb-3">
         <label>Email</label>
         <input type="email" formControlName="email" class="form-control">
       </div>
-
-      <button type="submit" class="btn btn-success w-100" [disabled]="signinForm.invalid">
-        Sign In
-      </button>
+      <button type="submit" class="btn btn-success w-100" [disabled]="signinForm.invalid">Sign In</button>
     </form>
-
     <p class="mt-2 text-center text-danger">{{ message }}</p>
   </div>
 </div>
 
-<!-- Register Modal -->
-<div class="modal-box" *ngIf="showForm === 'register'">
-  <div class="modal-header bg-secondary text-white">
-    <h5>Register</h5>
-    <button class="btn-close" (click)="showForm = null"></button>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control form-control-lg" formControlName="email" placeholder="Your email" />
+                <div class="invalid-feedback d-block"
+                     *ngIf="signupForm.controls['email'].touched && signupForm.controls['email'].invalid">
+                  Valid email required.
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Branch</label>
+                <input type="text" class="form-control form-control-lg" formControlName="branch" placeholder="Branch name or code" />
+                <div class="invalid-feedback d-block"
+                     *ngIf="signupForm.controls['branch'].touched && signupForm.controls['branch'].invalid">
+                  Branch is required.
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select class="form-select form-select-lg" formControlName="role">
+                  <option value="" disabled>Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="bankManager">Bank Manager</option>
+                  <option value="bankOfficer">Bank Officer</option>
+                </select>
+                <div class="invalid-feedback d-block"
+                     *ngIf="signupForm.controls['role'].touched && signupForm.controls['role'].invalid">
+                  Role is required.
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label">Status</label>
+                <select class="form-select form-select-lg" formControlName="status">
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signupForm.invalid">
+                Register
+              </button>
+            </form>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: Image (stacks on mobile) -->
+        <div class="col-12 col-lg-6 position-relative  rounded-4">
+          <!-- Background image div (preferred for wallpapers) -->
+          <div class="bg-cover h-100 rounded-4" style="background-image: url('assets/bg2.jpg');">
+            
+          </div>
+         
+        </div>
+
+      </div>
+      </div>
+    </div>
   </div>
-  <div class="modal-body">
-    <form [formGroup]="signupForm" (ngSubmit)="signup()">
-      <div class="mb-3">
-        <label>Name</label>
-        <input type="text" formControlName="name" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label>User ID</label>
-        <input type="text" formControlName="userId" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label>Email</label>
-        <input type="email" formControlName="email" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label>Branch</label>
-        <input type="text" formControlName="branch" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label>Role</label>
-        <select formControlName="role" class="form-select">
-          <option value="">Select Role</option>
-          <option value="admin">Admin</option>
-          <option value="bankManager">Bank Manager</option>
-          <option value="bankOfficer">Bank Officer</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label>Status</label>
-        <select formControlName="status" class="form-select">
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary w-100" [disabled]="signupForm.invalid">Register</button>
-    </form>
-  </div>
+
+
 </div>
