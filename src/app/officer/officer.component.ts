@@ -2,6 +2,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { AuthService, User } from "../../app/auth/auth.service";
 
 type AccountType = 'SAVINGS' | 'CURRENT';
 type AccountStatus = 'ACTIVE' | 'CLOSED';
@@ -37,6 +38,8 @@ interface Transaction {
 })
 export class OfficerComponent implements OnInit 
 {
+  currentUser: User | null = null;
+  submitted = false;
   activeTab: 'create' | 'update' | 'history' = 'create';
 
   // Forms
@@ -59,7 +62,7 @@ export class OfficerComponent implements OnInit
   // Alerts
   alert: { type: 'success' | 'error'; message: string } = { type: 'success', message: '' };
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.createForm = this.fb.group({
       accountId: ['', [Validators.required, Validators.minLength(3)]],
       customerName: ['', [Validators.required]],
@@ -88,8 +91,19 @@ export class OfficerComponent implements OnInit
 
   ngOnInit(): void {
     this.loadState();
+    this.currentUser = this.authService.currentUser;
   }
 
+  // setting the current user
+ private setCurrentUser(): void {
+  // Now this only needs name, role, and anything else you want to show
+  this.currentUser = {
+    name: 'Officer Aditi Sharma',
+    role: 'Senior Bank Manager',
+    lastLogin: new Date().toLocaleString(),
+    avatarUrl: 'https://ui-avatars.com/api/?name=Aditi+Sharma'
+  };
+}
   // ---------- Persistence ----------
   private saveState(): void {
     localStorage.setItem('accounts', JSON.stringify(this.accounts));
@@ -121,7 +135,11 @@ export class OfficerComponent implements OnInit
   }
 
   createAccount(): void {
-    if (this.createForm.invalid) return;
+    this.submitted = true;
+    if (this.createForm.invalid){
+      this.createForm.markAllAsTouched();
+      return;
+    }
 
     const value = this.createForm.getRawValue() as Omit<Account, 'openedAt'>;
     const exists = this.accounts.some(a => a.accountId === value.accountId);
@@ -137,7 +155,10 @@ export class OfficerComponent implements OnInit
     this.accounts.unshift(newAcc);
     this.saveState();
     this.setSuccess(`Account ${newAcc.accountId} created successfully.`);
+    this.submitted = false;
     this.createForm.reset(this.defaultCreateForm());
+    this.createForm.markAsPristine();
+    this.createForm.markAsUntouched();
   }
 
   // ---------- Update ----------
@@ -275,7 +296,7 @@ export class OfficerComponent implements OnInit
 
   private setSuccess(message: string): void {
     this.alert = { type: 'success', message };
-    setTimeout(() => this.clearAlert(), 3000);
+    setTimeout(() => this.clearAlert(), 10000);
   }
 
   private setError(message: string): void {

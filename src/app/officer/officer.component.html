@@ -25,26 +25,27 @@
     </li>
   </ul>
  
-  <!-- Profile Section -->
-  <div class="profile">
-  <!-- User SVG icon -->
-  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
-       fill="currentColor" class="bi bi-person-circle profile-icon" viewBox="0 0 16 16">
-    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468
-    11.37C3.242 11.226 4.805 10 8 10s4.757 1.226 5.468
-    2.37A7 7 0 0 0 8 1z"/>
-  </svg>
- 
+  
+<!-- Profile Section -->
+<div class="glass-profile-card" *ngIf="currentUser">
+  <div class="avatar-circle">
+    <span class="avatar-letter">
+      {{ (currentUser.name || 'U') | slice:0:1 | uppercase }}
+    </span>
+  </div>
+
   <!-- User details -->
-  <div class="profile-details">
-    <span class="profile-name">John Doe</span>
+  <div class="user-info">
+    <p class="user-name">{{ currentUser.name }}</p>
+    <span class="user-role">{{ currentUser.role }}</span>
+    <!-- <small>Last Login: {{ currentUser.lastLogin || 'N/A' }}</small> -->
   </div>
 </div>
+
  
 </nav><br>
  
- 
+<body>
 <section class="container">
   <!-- Alerts -->
   <div *ngIf="alert.message" class="alert" [class.error]="alert.type==='error'" [class.success]="alert.type==='success'">
@@ -53,56 +54,74 @@
   </div>
  
   <!-- CREATE ACCOUNT -->
-  <div *ngIf="activeTab==='create'" class="card">
-    <h2>Create Bank Account</h2>
+    <div *ngIf="activeTab==='create'" class="card">
+    <header class="card-header"><h2>Create Bank Account</h2></header>
+    
+    <!-- account creation form -->
     <form [formGroup]="createForm" (ngSubmit)="createAccount()">
-      <div class="grid">
-        <label>
-          Account ID
-          <input type="text" formControlName="accountId" placeholder="Enter Account ID" />
-        </label>
-        <label>
-          Customer Name
-          <input type="text" formControlName="customerName" placeholder="Enter Customer Name" />
-        </label>
-        <label>
-          Customer ID
-          <input type="text" formControlName="customerId" placeholder="Enter Customer ID" />
-        </label>
-        <label>
-          Account Type
-          <select formControlName="accountType">
-            <option value="SAVINGS">Savings</option>
-            <option value="CURRENT">Current</option>
-          </select>
-        </label>
-        <label>
-          Balance
-          <input type="number" formControlName="balance" min="0" step="0.01" />
-        </label>
-        <label>
-          Status
-          <select formControlName="status">
-            <option value="ACTIVE">Active</option>
-            <option value="CLOSED">Closed</option>
-          </select>
-        </label>
+     <div class="grid">
+      <label>
+      Account ID
+      <input type="text" formControlName="accountId" placeholder="Enter Account ID" />
+      <div class="error"
+           *ngIf="createForm.get('accountId')?.invalid && (createForm.get('accountId')?.touched || submitted)">
+        <small *ngIf="createForm.get('accountId')?.errors?.['required']" style="color: red;">Account ID is required!</small>
+        <small *ngIf="createForm.get('accountId')?.errors?.['minlength']">Account ID must be at least 3 characters!</small>
       </div>
- 
-      <div class="actions">
-        <button class="primary" type="submit" [disabled]="createForm.invalid">Create Account</button>
-        <button type="button" class="secondary" (click)="createForm.reset(defaultCreateForm())">Reset</button>
+    </label>
+
+    <label>
+      Customer Name
+      <input type="text" formControlName="customerName" placeholder="Enter Customer Name" />
+      <div class="error"
+           *ngIf="createForm.get('customerName')?.invalid && (createForm.get('customerName')?.touched || submitted)">
+        <small *ngIf="createForm.get('customerName')?.errors?.['required']" style="color: red;">Customer Name is required!</small>
       </div>
- 
-      <div class="helper" *ngIf="createForm.invalid">
-        <small>All fields are required. Balance must be ≥ 0.</small>
+    </label>
+
+    <label>
+      Customer ID
+      <input type="text" formControlName="customerId" placeholder="Enter Customer ID" />
+      <div class="error"
+           *ngIf="createForm.get('customerId')?.invalid && (createForm.get('customerId')?.touched || submitted)">
+        <small *ngIf="createForm.get('customerId')?.errors?.['required']" style="color: red;">Customer ID is required!</small>
       </div>
-    </form>
+    </label>
+
+    <label>
+      Account Type
+      <select formControlName="accountType">
+        <option value="SAVINGS">Savings</option>
+        <option value="CURRENT">Current</option>
+      </select>
+      <div class="error"
+           *ngIf="createForm.get('accountType')?.invalid && (createForm.get('accountType')?.touched || submitted)">
+        <small *ngIf="createForm.get('accountType')?.errors?.['required']" style="color: red;">Account Type is required!</small>
+      </div>
+    </label>
+
+
+    
+  </div><br>
+  <div class="actions">
+    <!-- Remove [disabled]; let submit trigger validation -->
+    <button class="primary" type="submit">Create Account</button>
+    <button type="button" class="secondary" (click)="createForm.reset(defaultCreateForm()); submitted=false">
+      Reset
+    </button>
+  </div>
+
+  <!-- Optional overall helper shown after submit if invalid -->
+  <div class="helper" *ngIf="submitted && createForm.invalid">
+    <small>There are errors above. Please fix them to continue.</small>
+  </div>
+</form>
+
  
     <hr />
-    <h3>Existing Accounts ({{ accounts.length }})</h3>
+    <h3>Existing Accounts ({{ accounts.length }})</h3><br>
     <div class="table-wrap" *ngIf="accounts.length; else noAccountsCreate">
-      <table>
+      <table class="scroll-table">
         <thead>
           <tr>
             <th>Account ID</th>
@@ -110,7 +129,7 @@
             <th>Customer ID</th>
             <th>Type</th>
             <th>Status</th>
-            <th>Balance</th>
+            <!-- <th>Balance</th> -->
             <th>Opened</th>
             <th></th>
           </tr>
@@ -126,11 +145,11 @@
                 {{ a.status }}
               </span>
             </td>
-            <td>{{ a.balance | number:'1.2-2' }}</td>
+            <!-- <td>{{ a.balance | number:'1.2-2' }}</td> -->
             <td>{{ a.openedAt | date:'medium' }}</td>
             <td>
               <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
-              <button class="link" (click)="goToHistory(a.accountId)">Txns</button>
+              <!-- <button class="link" (click)="goToHistory(a.accountId)">Txns</button> -->
             </td>
           </tr>
         </tbody>
@@ -182,7 +201,7 @@
             <option value="CLOSED">Closed</option>
           </select>
         </label>
-      </div>
+      </div><br>
  
       <div class="actions">
         <button class="primary" type="submit" [disabled]="updateForm.invalid">Update Account</button>
@@ -195,9 +214,9 @@
     </ng-template>
  
     <hr />
-    <h3>Existing Accounts ({{ accounts.length }})</h3>
+    <h3>Existing Accounts ({{ accounts.length }})</h3><br>
     <div class="table-wrap" *ngIf="accounts.length; else noAccountsUpdate">
-      <table>
+      <table class="scroll-table">
         <thead>
           <tr>
             <th>Account ID</th>
@@ -205,7 +224,7 @@
             <th>Customer ID</th>
             <th>Type</th>
             <th>Status</th>
-            <th>Balance</th>
+            <!-- <th>Balance</th> -->
             <th>Opened</th>
             <th></th>
           </tr>
@@ -221,7 +240,7 @@
                 {{ a.status }}
               </span>
             </td>
-            <td>{{ a.balance | number:'1.2-2' }}</td>
+            <!-- <td>{{ a.balance | number:'1.2-2' }}</td> -->
             <td>{{ a.openedAt | date:'medium' }}</td>
             <td>
               <!-- Only Edit button in Update tab -->
@@ -297,7 +316,7 @@
             Narrative (optional)
             <input type="text" formControlName="narrative" maxlength="140" placeholder="e.g., Salary credit / ATM withdrawal" />
           </label>
-        </div>
+        </div><br>
  
         <div class="actions">
           <button class="primary" type="submit" [disabled]="txnForm.invalid || !selectedHistoryAccountId">Record</button>
@@ -305,11 +324,11 @@
         </div>
         <small class="muted">Closed accounts cannot receive transactions. Withdrawals/transfers require sufficient balance.</small>
       </form>
-    </div>
+    </div><br>
  
     <!-- History Table -->
     <div class="table-wrap" *ngIf="selectedHistoryAccountId && transactionsFor(selectedHistoryAccountId).length; else noTxns">
-      <table>
+      <table class="scroll-table">
         <thead>
           <tr>
             <th>Time</th>
@@ -351,5 +370,6 @@
     </ng-template>
   </div>
 </section>
+</body>
  
  
