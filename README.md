@@ -1,24 +1,91 @@
 # Manager
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.19.
+# Manager Dashboard - Modern Analytics & Reporting Platform
+
+A stunning, modern Angular 19 dashboard application featuring extraordinary styling with gradient color schemes, glassmorphism effects, and smooth animations.
+
+## ✨ Features
+
+- **Modern Navbar** with gradient background and smooth hover animations
+- **Dashboard Overview Cards** with glassmorphism effects and animated icons
+- **Advanced Transaction Table** with search, filters, pagination, and export
+- **Analytics Reports** with charts and insights
+- **Responsive Design** that works on all devices
+- **Gradient Color Schemes** with vibrant, modern colors
+- **Smooth Animations** and interactive effects
+
+## 🚀 Quick Start
 
 ## Development server
 
-To start a local development server, run:
+Install dependencies:
+```bash
+npm install --legacy-peer-deps
+```
+
+Start the development server:
 
 ```bash
-ng serve
+npm start
+```
 ```
 
 Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+Build for production:
 ```bash
-ng generate component component-name
+npm run build
 ```
+
+## 📁 Project Structure
+
+- **Navbar Component**: Fixed navigation with gradient background
+- **Dashboard Overview**: 4 stat cards with key metrics
+- **Transaction Table**: Advanced filtering and sorting
+- **Reports Section**: Charts and analytics insights
+- **Data Service**: Mock data management
+
+## 🎨 Design Highlights
+
+- Gradient backgrounds: Purple to Violet, Pink to Red, Blue to Cyan
+- Glassmorphism effects with backdrop blur
+- Smooth transitions and animations
+- Responsive grid layouts
+- Google Fonts (Poppins & Roboto)
+
+## 📦 Tech Stack
+
+- Angular 19 (Standalone Components)
+- Angular Material 19
+- CSS3 Gradients & Animations
+- RxJS for state management
+- Chart.js for data visualization
+
+## 📊 Features in Detail
+
+### Dashboard Overview Cards
+- Total Users, Expenditure, Transactions, Pending Approvals
+- Gradient backgrounds with glassmorphism
+- Hover scaling effects
+- Animated icons
+
+### Transaction Table
+- Search by ID or User
+- Filter by Status, Category, Amount Range, Date Range
+- Pagination with customizable page size
+- Sorting capabilities
+- Export to CSV/Excel
+
+### Reports Section
+- Monthly expenditure trends chart
+- Category breakdown visualization
+- Key analytics insights cards
+
+## 🔐 Additional Information
+
+See [PROJECT_DOCUMENTATION.md](./PROJECT_DOCUMENTATION.md) for comprehensive documentation.
+
+
 
 For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 

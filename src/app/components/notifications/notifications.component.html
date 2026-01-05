@@ -1,0 +1,54 @@
+<div class="notifications-container">
+  <div class="notifications-header">
+    <h2 class="notifications-title">Notifications & Alerts</h2>
+    <div class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount }} New</div>
+  </div>
+
+  <div class="notifications-list" *ngIf="notifications.length > 0; else noNotifications">
+    <div
+      *ngFor="let notification of notifications"
+      class="notification-item"
+      [ngClass]="{
+        'unread': notification.status === 'Unread',
+        'suspicious': notification.type === 'SuspiciousActivity',
+        'approval': notification.type === 'ApprovalReminder'
+      }"
+    >
+      <div class="notification-icon">{{ getNotificationIcon(notification.type) }}</div>
+      
+      <div class="notification-content">
+        <div class="notification-header">
+          <div class="notification-type">
+            {{ notification.type === 'SuspiciousActivity' ? 'Suspicious Activity' : 'Approval Reminder' }}
+          </div>
+          <div class="notification-date">{{ formatDate(notification.createdDate) }}</div>
+        </div>
+        <p class="notification-message">{{ notification.message }}</p>
+      </div>
+
+      <div class="notification-actions">
+        <button
+          *ngIf="notification.status === 'Unread'"
+          class="btn-mark-read"
+          (click)="markAsRead(notification.notificationId)"
+          title="Mark as read"
+        >
+          Done
+        </button>
+        <button
+          class="btn-delete"
+          (click)="deleteNotification(notification.notificationId)"
+          title="Delete notification"
+        >
+          Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noNotifications>
+    <div class="no-notifications">
+      <p>You're all caught up! No notifications at the moment.</p>
+    </div>
+  </ng-template>
+</div>

@@ -1,0 +1,113 @@
+<div class="reports-container">
+  <h2 class="reports-title">Reports & Analytics</h2>
+
+  <div class="charts-grid">
+    <!-- Monthly Expenditure Trends -->
+    <div class="chart-card">
+      <h3 class="chart-title">Monthly Expenditure Trends</h3>
+      <div class="chart-wrapper">
+        <div class="bar-chart">
+          <div *ngFor="let item of monthlyData" class="bar-item">
+            <div class="bar-value">{{ (item.value / 1000).toFixed(1) }}K</div>
+            <div class="bar-container">
+              <div class="bar" [style.width.%]="(item.value / 30000) * 100"></div>
+            </div>
+            <div class="bar-label">{{ item.name }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Growth Trends -->
+    <div class="chart-card">
+      <h3 class="chart-title">Account Growth Trends</h3>
+      <div class="chart-wrapper">
+        <div class="growth-chart">
+          <div *ngFor="let item of accountGrowthTrends" class="growth-item">
+            <div class="growth-label">{{ item.month }}</div>
+            <div class="growth-bars">
+              <div class="growth-bar new-accounts" [style.width.%]="(item.newAccounts / 100) * 100" [title]="'New: ' + item.newAccounts"></div>
+              <div class="growth-bar active-accounts" [style.width.%]="(item.activeAccounts / 1000) * 100" [title]="'Active: ' + item.activeAccounts"></div>
+            </div>
+            <div class="growth-stats">
+              <span class="stat new">+{{ item.newAccounts }}</span>
+              <span class="stat active">{{ item.activeAccounts }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction Volume Analysis -->
+  <div class="analytics-section">
+    <h3 class="section-title">Transaction Volume Analysis</h3>
+    <div class="volume-grid">
+      <div *ngFor="let item of transactionVolumeAnalysis" class="volume-card">
+        <div class="volume-bracket">{{ item.bracket }}</div>
+        <div class="volume-metrics">
+          <div class="volume-number">{{ item.volume | number }}</div>
+          <div class="volume-bar-container">
+            <div class="volume-bar" [style.width.%]="item.percentage * 10"></div>
+          </div>
+          <div class="volume-percentage">{{ item.percentage }}%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reports Summary -->
+  <div class="reports-section">
+    <h3 class="section-title">Recent Reports</h3>
+    <div class="reports-grid">
+      <div *ngFor="let report of reports" class="report-card">
+        <div class="report-header">
+          <div class="report-id">{{ report.reportId }}</div>
+          <div class="report-scope" [ngClass]="'scope-' + report.scope.toLowerCase()">{{ report.scope }}</div>
+        </div>
+        <div class="report-metrics">
+          <div class="metric">
+            <span class="metric-label">Total Transactions</span>
+            <span class="metric-value">{{ report.metrics.totalTransactions | number }}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">High Value Count</span>
+            <span class="metric-value">{{ report.metrics.highValueCount | number }}</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Growth Rate</span>
+            <span class="metric-value">{{ report.metrics.accountGrowthRate }}%</span>
+          </div>
+        </div>
+        <div class="report-footer">
+          <span class="generated-date">{{ formatDate(report.generatedDate) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Key Insights -->
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-icon">📊</div>
+      <h4>Total Analyzed</h4>
+      <p>8,924 transactions processed</p>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">✅</div>
+      <h4>Approval Rate</h4>
+      <p>94.5% successful approvals</p>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">⏱️</div>
+      <h4>Avg Processing</h4>
+      <p>2.3 hours per transaction</p>
+    </div>
+    <div class="insight-card">
+      <div class="insight-icon">📈</div>
+      <h4>Growth Rate</h4>
+      <p>12.5% account growth</p>
+    </div>
+  </div>
+</div>
+

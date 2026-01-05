@@ -1,0 +1,290 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DataService, Approval, DataChangeApproval, Transaction } from '../../services/data.service';
+
+@Component({
+  selector: 'app-approvals',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './approvals.component.html',
+  styleUrls: ['./approvals.component.css']
+})
+export class ApprovalsComponent implements OnInit {
+  approvals: Approval[] = [];
+  dataChangeApprovals: DataChangeApproval[] = [];
+  transactions: Transaction[] = [];
+  
+  activeTab: 'pending' | 'approved' | 'rejected' | 'highvalue' = 'pending';
+  filteredItems: any[] = [];
+  approvalType: 'transaction' | 'datachange' = 'datachange';
+  
+  showApprovalModal = false;
+  selectedItemId: string | null = null;
+  approvalDecision: 'Approved' | 'Rejected' | null = null;
+  approvalComments = '';
+  commentError = '';
+  
+  // Alert system
+  showAlert = false;
+  alertMessage = '';
+  alertType: 'success' | 'error' | 'info' = 'info';
+  
+  searchQuery = '';
+  selectedDecision = '';
+
+
+  constructor(public dataService: DataService) {}
+
+  ngOnInit(): void {
+    this.loadApprovals();
+  }
+
+  loadApprovals(): void {
+    this.dataService.getDataChangeApprovals().subscribe((data: DataChangeApproval[]) => {
+      this.dataChangeApprovals = data;
+      this.filterApprovals();
+    });
+
+    this.dataService.getApprovals().subscribe((data: Approval[]) => {
+      this.approvals = data;
+      this.filterApprovals();
+    });
+    
+    this.dataService.getTransactions().subscribe((data: Transaction[]) => {
+      this.transactions = data;
+    });
+  }
+
+  selectTab(tab: 'pending' | 'approved' | 'rejected' | 'highvalue'): void {
+    this.activeTab = tab;
+    this.searchQuery = '';
+    this.filterApprovals();
+  }
+
+  filterApprovals(): void {
+    let filtered: any[] = [];
+
+    if (this.activeTab === 'pending') {
+      this.approvalType = 'datachange';
+      filtered = this.dataChangeApprovals.filter(d => d.decision === 'Pending');
+    } else if (this.activeTab === 'approved') {
+      this.approvalType = 'transaction';
+      // Show both approved data changes and approved transactions
+      const approvedTransactions = this.approvals.filter(a => a.decision === 'Approved');
+      const approvedDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Approved');
+      filtered = [...approvedTransactions, ...approvedDataChanges];
+    } else if (this.activeTab === 'rejected') {
+      this.approvalType = 'transaction';
+      // Show both rejected data changes and rejected transactions
+      const rejectedTransactions = this.approvals.filter(a => a.decision === 'Rejected');
+      const rejectedDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Rejected');
+      filtered = [...rejectedTransactions, ...rejectedDataChanges];
+    } else if (this.activeTab === 'highvalue') {
+      this.approvalType = 'transaction';
+      filtered = this.approvals.filter(a => {
+        const transaction = this.transactions.find(t => t.id === a.transactionId);
+        return a.decision === 'Pending' && transaction && transaction.amount > 3000;
+      });
+    }
+
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      if (this.approvalType === 'datachange') {
+        filtered = filtered.filter(d => 
+          d.changeId.toLowerCase().includes(query) ||
+          d.accountId.toLowerCase().includes(query) ||
+          d.changeType.toLowerCase().includes(query)
+        );
+      } else {
+        filtered = filtered.filter(a => {
+          const transaction = this.transactions.find(t => t.id === a.transactionId);
+          return (
+            a.transactionId?.toLowerCase().includes(query) ||
+            a.approvalId?.toLowerCase().includes(query) ||
+            a.changeId?.toLowerCase().includes(query) ||
+            (transaction && transaction.user.toLowerCase().includes(query))
+          );
+        });
+      }
+    }
+
+    this.filteredItems = filtered;
+  }
+
+  openApprovalModal(itemId: string): void {
+    this.selectedItemId = itemId;
+    this.showApprovalModal = true;
+    this.approvalDecision = null;
+    this.approvalComments = '';
+    this.commentError = '';
+  }
+
+  closeApprovalModal(): void {
+    this.showApprovalModal = false;
+    this.selectedItemId = null;
+    this.approvalDecision = null;
+    this.approvalComments = '';
+    this.commentError = '';
+  }
+
+  setDecision(decision: 'Approved' | 'Rejected'): void {
+    this.approvalDecision = decision;
+  }
+
+  submitApproval(): void {
+    if (!this.approvalComments.trim()) {
+      this.commentError = 'Comments are mandatory for approval decisions';
+      return;
+    }
+
+    if (!this.approvalDecision || !this.selectedItemId) {
+      return;
+    }
+
+    if (this.approvalType === 'datachange') {
+      this.dataService.updateDataChangeApproval(this.selectedItemId, this.approvalDecision, this.approvalComments);
+      // Notify requester about the decision
+      const dataChange = this.dataChangeApprovals.find(d => d.changeId === this.selectedItemId);
+      if (dataChange) {
+        const userId = dataChange.requestedBy || 'SYSTEM';
+        const msg = `${this.approvalDecision} decision recorded for Change ${dataChange.changeId}. Comments: ${this.approvalComments}`;
+        this.dataService.addNotification(userId, 'ApprovalReminder', msg);
+      }
+    } else {
+      this.dataService.updateApproval(this.selectedItemId, this.approvalDecision, this.approvalComments);
+      // Notify account owner about the decision
+      const approvalObj = this.approvals.find(a => a.approvalId === this.selectedItemId);
+      const txn = approvalObj ? this.getTransaction(approvalObj.transactionId) : undefined;
+      const userId = txn?.accountId || approvalObj?.reviewerId || 'SYSTEM';
+      const msg = `${this.approvalDecision} decision recorded for Transaction ${approvalObj?.transactionId || ''}. Comments: ${this.approvalComments}`;
+      this.dataService.addNotification(userId, 'ApprovalReminder', msg);
+    }
+
+    // Show success alert
+    const message = this.approvalDecision === 'Approved' 
+      ? `✓ Successfully approved! Item moved to Approved list.`
+      : `✓ Successfully rejected! Item moved to Rejected list.`;
+    
+    this.showSuccessAlert(message);
+
+    // Navigate to appropriate tab based on decision
+    if (this.approvalDecision === 'Approved') {
+      this.selectTab('approved');
+    } else if (this.approvalDecision === 'Rejected') {
+      this.selectTab('rejected');
+    }
+
+    this.loadApprovals();
+    this.closeApprovalModal();
+  }
+
+  showSuccessAlert(message: string): void {
+    this.alertMessage = message;
+    this.alertType = 'success';
+    this.showAlert = true;
+    
+    // Auto-hide alert after 4 seconds
+    setTimeout(() => {
+      this.showAlert = false;
+    }, 4000);
+  }
+
+  closeAlert(): void {
+    this.showAlert = false;
+  }
+
+  getTransaction(transactionId: string): Transaction | undefined {
+    return this.transactions.find(t => t.id === transactionId);
+  }
+
+  getApprovalDetails(approvalId: string): { approval: Approval; transaction: Transaction } | undefined {
+    return this.dataService.getApprovalWithTransaction(approvalId);
+  }
+
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  getNullableDate(date: Date | undefined): string {
+    if (!date) return 'N/A';
+    return this.formatDate(date);
+  }
+
+  getTransactionDate(): string {
+    const transaction = this.getSelectedTransaction();
+    if (!transaction || !transaction.transaction || !transaction.transaction.date) {
+      return 'N/A';
+    }
+    return this.formatDate(transaction.transaction.date);
+  }
+
+  getDataChangeDate(): string {
+    const dataChange = this.getSelectedDataChange();
+    if (!dataChange || !dataChange.requestDate) {
+      return 'N/A';
+    }
+    return this.formatDate(dataChange.requestDate);
+  }
+
+  // Transaction display methods with null safety
+  getTransactionType(): string {
+    const transaction = this.getSelectedTransaction();
+    return transaction?.transaction?.type || 'N/A';
+  }
+
+  getTransactionStatus(): string {
+    const transaction = this.getSelectedTransaction();
+    return transaction?.transaction?.status || 'N/A';
+  }
+
+  getTransactionAmount(): number {
+    const transaction = this.getSelectedTransaction();
+    return transaction?.transaction?.amount || 0;
+  }
+
+  getTransactionUser(): string {
+    const transaction = this.getSelectedTransaction();
+    return transaction?.transaction?.user || 'N/A';
+  }
+
+  getTransactionAccountId(): string {
+    const transaction = this.getSelectedTransaction();
+    return transaction?.transaction?.accountId || 'N/A';
+  }
+
+  getApprovalId(): string {
+    const transaction = this.getSelectedTransaction();
+    return transaction?.approval?.approvalId || 'N/A';
+  }
+
+  getTransactionId(): string {
+    const transaction = this.getSelectedTransaction();
+    return transaction?.approval?.transactionId || 'N/A';
+  }
+
+  getApprovalDetailsWithDefaults(approvalId: string): { approval: Approval; transaction: Transaction } {
+    const details = this.getApprovalDetails(approvalId);
+    if (!details) {
+      return {
+        approval: { approvalId: '', transactionId: '', reviewerId: '', decision: 'Pending', comments: '', approvalDate: new Date() },
+        transaction: { id: '', accountId: '', user: 'N/A', amount: 0, type: 'Transfer', date: new Date(), status: 'Pending' }
+      };
+    }
+    return details;
+  }
+
+  getSelectedDataChange(): DataChangeApproval | undefined {
+    return this.dataChangeApprovals.find(d => d.changeId === this.selectedItemId);
+  }
+
+  getSelectedTransaction(): { approval: Approval; transaction: Transaction } | undefined {
+    return this.getApprovalDetails(this.selectedItemId || '');
+  }
+}

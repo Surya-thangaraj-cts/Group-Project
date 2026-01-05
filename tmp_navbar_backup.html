@@ -1,0 +1,22 @@
+<!-- Backup of navbar.component.html before removing bell -->
+<nav class="navbar">
+  <div class="navbar-container">
+    <div class="navbar-logo">
+      <span class="logo-icon"></span>
+      <span class="logo-text">Manager Dashboard</span>
+    </div>
+    <div class="nav-items">
+      <button *ngFor="let item of navItems" class="nav-button" [class.active]="activeNav === item.label" (click)="setActive(item)">
+        <span class="nav-icon" *ngIf="item.icon && item.icon !== item.label">{{ item.icon }}</span>
+        {{ item.label }}
+        <span *ngIf="item.label === 'Alerts' && unreadNotificationsCount > 0" class="notification-badge">{{ unreadNotificationsCount }}</span>
+      </button>
+    </div>
+    <div class="navbar-notifications" (click)="toggleNotificationDropdown()">
+      <button class="notification-bell">
+        <span>Bell</span>
+        <span *ngIf="unreadNotificationsCount > 0" class="bell-badge">{{ unreadNotificationsCount }}</span>
+      </button>
+    </div>
+  </div>
+</nav>
