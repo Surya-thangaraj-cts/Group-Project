@@ -1,136 +1,87 @@
 
-<!-- Wrapper: dark background + center the card -->
-<div class="container-fluid min-vh-100 d-flex flex-column bg-dark-subtle px-3 px-md-4">
+<div class="auth-wrapper container-fluid min-vh-100 d-flex flex-column">
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg bg-body rounded-4 shadow-sm my-3 px-3">
-    <a class="navbar-brand" href="#">
-      <span class="rounded-3 mx-4 d-inline-block" style="width:32px;height:32px;background:#1e60ff;"></span>
-      <div class="brand-up"><strong>MY BANK</strong></div>
-    </a>
-
-    <div class="ms-auto">
-      <button class="btn btn-primary me-2" (click)="toggleForm('signin')">Sign In</button>
+  <nav class="navbar navbar-expand-lg rounded-4 shadow-sm my-3 px-3">
+    <span class="rounded-3 d-inline-block brand-dot"></span>
+    <strong>MY BANK</strong>
+    <div class="ms-auto d-flex gap-2">
+      <button class="btn btn-primary" (click)="toggleForm('signin')">Sign In</button>
       <button class="btn btn-outline-secondary" (click)="toggleForm('register')">Register</button>
     </div>
   </nav>
 
+  <!-- Main Split -->
+  <div class="container my-3 my-md-4 flex-grow-1 d-flex align-items-center">
+    <div class="rounded-4 shadow-lg overflow-hidden w-100">
+      <div class="row g-0">
 
-<!-- Hero / Welcome Section -->
-<section class="hero text-center my-5">
-  <h1 [class.fade]="fade">{{ currentMessage }}</h1>
-  <p class="tagline">Secure Banking Portal for Admins, Managers, and Officers</p>
-</section>
+        <!-- LEFT: Image with overlay text -->
+        <div class="col-12 col-lg-6 position-relative">
+          <div class="hero-panel">
+            assets/bg2.jpg
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+              <h1 class="display-5 fw-bold mb-2">Banking Made Easier</h1>
+              <p class="lead">
+                A secure and efficient internal customer account management system for branches,
+                managers, and officers—simplifying your banking operations.
+              </p>
+            </div>
+          </div>
+        </div>
 
-<!-- About Section -->
-<section id="about" class="container my-5">
-  <h2>About Us</h2>
-  <p>Our mission is to provide a secure, role-based banking portal that empowers administrators, managers, and officers to work efficiently.</p>
-</section>
+        <!-- RIGHT: Auth Forms -->
+        <div class="col-12 col-lg-6 d-flex">
+          <div class="auth-panel mx-auto w-100">
 
-<!-- Features Section -->
-<section class="features container my-5">
-  <h2>Features</h2>
-  <div class="row">
-    <div class="col-md-4">
-      <h4>🔒 Secure Login</h4>
-      <p>Role-based authentication ensures only authorized users access sensitive data.</p>
-    </div>
-    <div class="col-md-4">
-      <h4>👥 Role Management</h4>
-      <p>Admins, Managers, and Officers each have tailored dashboards.</p>
-    </div>
-    <div class="col-md-4">
-      <h4>📊 Analytics</h4>
-      <p>Track performance and branch activity with real-time insights.</p>
-    </div>
-  </div>
-</section>
+            <!-- Tabs -->
+            <div class="d-flex gap-3 mb-4" role="tablist">
+              <button type="button"
+                      class="btn flex-fill"
+                      [ngClass]="showForm === 'register' ? 'btn-light' : 'btn-primary'"
+                      (click)="toggleForm('signin')">
+                Sign In
+              </button>
+              <button type="button"
+                      class="btn flex-fill"
+                      [ngClass]="showForm === 'register' ? 'btn-primary' : 'btn-light'"
+                      (click)="toggleForm('register')">
+                Sign Up
+              </button>
+            </div>
 
-<!-- How It Works Section -->
-<section class="how-it-works container my-5">
-  <h2>How It Works</h2>
-  <div class="row text-center">
-    <div class="col-md-4">
-      <h4>1. Register</h4>
-      <p>Create your account with your role and branch details.</p>
-    </div>
-    <div class="col-md-4">
-      <h4>2. Sign In</h4>
-      <p>Log in securely with your credentials.</p>
-    </div>
-    <div class="col-md-4">
-      <h4>3. Dashboard</h4>
-      <p>Access your personalized dashboard based on your role.</p>
-    </div>
-  </div>
-</section>
+            <!-- Sign In Form -->
+            <form *ngIf="showForm !== 'register'" [formGroup]="signinForm" (ngSubmit)="signin()" novalidate>
+              <div class="mb-3">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-control form-control-lg" formControlName="userId" placeholder="Enter your user ID" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control form-control-lg" formControlName="email" placeholder="Enter your email" />
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signinForm.invalid">Login</button>
+            </form>
 
-<!-- Testimonials Section -->
-<section class="testimonials container my-5">
-  <h2>What People Say</h2>
-  <blockquote>
-    “This portal makes managing branches effortless.” – Bank Manager
-  </blockquote>
-  <blockquote>
-    “Secure and easy to use for officers.” – Bank Officer
-  </blockquote>
-</section>
-
-<!-- Contact Section -->
-<section id="contact" class="container my-5">
-  <h2>Contact Us</h2>
-  <p>Email: support&#64;example.com | Phone: +91-1234567890</p>
-</section>
-
-<!-- Footer -->
-<footer class="footer bg-light text-center py-3">
-  <p>&copy; 2025 MyBank. All rights reserved.</p>
-</footer>
-
-<!-- Overlay -->
-<div class="modal-overlay" *ngIf="showForm" (click)="showForm = null"></div>
-
-<!-- Sign In Modal -->
-<div class="modal-box" *ngIf="showForm === 'signin'">
-  <div class="modal-header bg-primary text-white">
-    <h5>Sign In</h5>
-    <button class="btn-close" (click)="showForm = null"></button>
-  </div>
-  <div class="modal-body">
-    <form [formGroup]="signinForm" (ngSubmit)="signin()">
-      <div class="mb-3">
-        <label>User ID</label>
-        <input type="text" formControlName="userId" class="form-control">
-      </div>
-      <div class="mb-3">
-        <label>Email</label>
-        <input type="email" formControlName="email" class="form-control">
-      </div>
-      <button type="submit" class="btn btn-success w-100" [disabled]="signinForm.invalid">Sign In</button>
-    </form>
-    <p class="mt-2 text-center text-danger">{{ message }}</p>
-  </div>
-</div>
-
+            <!-- Register Form -->
+            <form *ngIf="showForm === 'register'" [formGroup]="signupForm" (ngSubmit)="signup()" novalidate>
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control form-control-lg" formControlName="name" placeholder="Your name" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-control form-control-lg" formControlName="userId" placeholder="Choose a user ID" />
+              </div>
               <div class="mb-3">
                 <label class="form-label">Email</label>
                 <input type="email" class="form-control form-control-lg" formControlName="email" placeholder="Your email" />
-                <div class="invalid-feedback d-block"
-                     *ngIf="signupForm.controls['email'].touched && signupForm.controls['email'].invalid">
-                  Valid email required.
-                </div>
               </div>
-
               <div class="mb-3">
                 <label class="form-label">Branch</label>
                 <input type="text" class="form-control form-control-lg" formControlName="branch" placeholder="Branch name or code" />
-                <div class="invalid-feedback d-block"
-                     *ngIf="signupForm.controls['branch'].touched && signupForm.controls['branch'].invalid">
-                  Branch is required.
-                </div>
               </div>
-
               <div class="mb-3">
                 <label class="form-label">Role</label>
                 <select class="form-select form-select-lg" formControlName="role">
@@ -139,12 +90,7 @@
                   <option value="bankManager">Bank Manager</option>
                   <option value="bankOfficer">Bank Officer</option>
                 </select>
-                <div class="invalid-feedback d-block"
-                     *ngIf="signupForm.controls['role'].touched && signupForm.controls['role'].invalid">
-                  Role is required.
-                </div>
               </div>
-
               <div class="mb-4">
                 <label class="form-label">Status</label>
                 <select class="form-select form-select-lg" formControlName="status">
@@ -152,28 +98,13 @@
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
-
-              <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signupForm.invalid">
-                Register
-              </button>
+              <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signupForm.invalid">Register</button>
             </form>
 
           </div>
         </div>
 
-        <!-- RIGHT: Image (stacks on mobile) -->
-        <div class="col-12 col-lg-6 position-relative  rounded-4">
-          <!-- Background image div (preferred for wallpapers) -->
-          <div class="bg-cover h-100 rounded-4" style="background-image: url('assets/bg2.jpg');">
-            
-          </div>
-         
-        </div>
-
-      </div>
       </div>
     </div>
   </div>
-
-
 </div>

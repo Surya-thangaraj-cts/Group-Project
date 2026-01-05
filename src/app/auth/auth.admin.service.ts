@@ -2,19 +2,17 @@ import { Injectable } from '@angular/core';
 
 export interface User {
   name: string;
-  userId?: string ;
-  email?: string;
-  branch?: string;
+  userId: string;
+  email: string;
+  branch: string;
   role: string;
-  status?: string;
-  lastLogin?: string;
-  avatarUrl?: string;
+  status: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private users: User[] = [];
-  public currentUser: User | null = null;
+  private currentUser: User | null = null;
 
   constructor() {
     this.loadUsers();

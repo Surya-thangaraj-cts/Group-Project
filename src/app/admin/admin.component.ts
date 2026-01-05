@@ -147,18 +147,19 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       // Try to load persisted users from AuthService (users created via sign-up)
       const authUsers = this.auth.getAllUsers();
-      if (authUsers && authUsers.length) {
-      // Map AuthService users to the Admin view model
-      this.users = authUsers.map(u => ({
-        userId: u.userId,
-        name: u.name,
-        role: this.mapRole(u.role),
-        email: u.email,
-        branch: u.branch,
-        status: this.mapStatus(u.status)
-      }));
-    } else {
+    //   if (authUsers && authUsers.length) {
+    //   // Map AuthService users to the Admin view model
+    //   this.users = authUsers.map(u => ({
+    //     userId: u.userId ?? "no id",
+    //     name: u.name ?? "no name",
+    //     role: this.mapRole(u.role),
+    //     email: u.email ?? "",
+    //     branch: u.branch ?? "",
+    //     status: this.mapStatus(u.status) ?? "<no status>",
+    //   }));
+    // } else {
       // Fallback demo data
+      if(true){
       this.users = [
         { userId: 'U1001', name: 'Anita Sharma', role: 'Officer', email: 'anita@bank.local', branch: 'Gurgaon', status: 'Active' },
         { userId: 'U1002', name: 'Rahul Mehta', role: 'Manager', email: 'rahul@bank.local', branch: 'Delhi', status: 'Active' },
