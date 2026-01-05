@@ -42,7 +42,7 @@ interface ComplianceMetrics {
   monthlySuspicious: number[];
 
   amountBuckets: { label: string; count: number }[];
-  channelMix:   { label: string; count: number }[];
+  // channelMix:   { label: string; count: number }[];
 }
 
 @Component({
@@ -78,7 +78,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     monthlyLabels: [],
     monthlySuspicious: [],
     amountBuckets: [],
-    channelMix: []
+    // channelMix: []
   };
 
   // ----- UI state -----
@@ -190,13 +190,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         { label: '₹50k–₹1L',  count: 310 },
         { label: '> ₹1L',     count: 160 },
       ],
-      channelMix: [
-        { label: 'UPI',    count: 980 },
-        { label: 'NEFT',   count: 620 },
-        { label: 'RTGS',   count: 210 },
-        { label: 'Cash',   count: 150 },
-        { label: 'Cheque', count: 70 },
-      ]
+      // channelMix: [
+      //   { label: 'UPI',    count: 980 },
+      //   { label: 'NEFT',   count: 620 },
+      //   { label: 'RTGS',   count: 210 },
+      //   { label: 'Cash',   count: 150 },
+      //   { label: 'Cheque', count: 70 },
+      // ]
     };
 
     // Start with no selection; selection happens only when the admin starts a search
@@ -336,9 +336,9 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   get maxBucket(): number {
     return Math.max(...(this.compliance.amountBuckets.map(b => b.count)), 1);
   }
-  get maxChannel(): number {
-    return Math.max(...(this.compliance.channelMix.map(c => c.count)), 1);
-  }
+  // get maxChannel(): number {
+  //   return Math.max(...(this.compliance.channelMix.map(c => c.count)), 1);
+  // }
 
   // ----- Pending approvals -----
   approveUser(u: User): void {
