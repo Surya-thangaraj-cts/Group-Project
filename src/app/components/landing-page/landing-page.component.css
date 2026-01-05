@@ -1,149 +1,169 @@
-/* Global reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
 
-body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: white;
-  line-height: 1.6;
-}
+/* RESET */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: white; }
 
+/* NAVBAR */
+.axis-navbar { background: white; }
 
-/* Top bar */
 .top-bar {
   display: flex;
-  justify-content: space-between; /* logo left, links center, buttons right */
+  justify-content: space-between;   /* logo | center-links | right-buttons on large */
   align-items: center;
   background-color: #8f2d56;
-  padding: 10px;
+  padding: 10px 20px;
 }
 
+/* Logo */
+#logo-img {
+  color: white;
+  height: 40px;
+  margin-left: 90px;                /* keep spacing for large screens */
+}
+
+/* Center links (desktop/tablet) */
 .center-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6vw;
   flex: 1;
-  display: flex;
-  justify-content: center; /* centers the links horizontally */
-  gap: 35px;
 }
-
-.right-buttons {
-  display: flex;
-  gap: 15px;
-}
-
-.right-buttons button{
-  background-color: white;
-  color: #8f2d56;
-  width: 90px;
-  height: 30px;
-}
-
 .nav-link {
   color: white;
   font-weight: 500;
   text-decoration: none;
 }
 
-
-#logo-img{
-  color: white;
-  margin-left: 90px;
-  /* margin-top: 10px; */
-  height: 40px;
-
-}
-.c1 h2{
-  margin-bottom: 10px;
-}
-/* Category menu */
-.category-menu {
+/* Right buttons & brand text */
+.right-buttons {
   display: flex;
-  list-style: none;
-  gap: 15px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-right: 2vw;
+  position: relative;               /* for dropdown positioning */
 }
-
-.category-menu li {
-  color: #fff;
-  font-weight: 500;
+.right-buttons .btn {
+  background: white;
+  color: #8f2d56;
+  padding: 6px 14px;
+  border: 1px solid black;
+  font-weight: bold;
   cursor: pointer;
 }
 
-/* Row container */
+/* Inline brand text (hidden on large; shown on small) */
+.brand-text {
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: none;
+}
+
+/* Hamburger */
+.nav-toggle { display: none; }
+.hamburger {
+  display: none;
+  width: 36px; height: 28px;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.hamburger span {
+  display: block;
+  height: 2px;
+  background: white;
+  margin: 4px 0;
+}
+
+/* Mobile dropdown menu */
+.mobile-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  color: #8f2d56;
+  min-width: 180px;
+  border-radius: 8px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  padding: 10px;
+  z-index: 1000;
+  flex-direction: column;
+  gap: 8px;
+}
+.mobile-menu .nav-link {
+  color: #8f2d56;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 6px;
+}
+.mobile-menu .nav-link:hover { background: rgba(143,45,86,0.08); }
+
+/* Toggle dropdown when checked */
+.nav-toggle:checked ~ .mobile-menu { display: flex; }
+
+/* LOWER STRIP (desktop/tablet default) */
 .r2 {
   display: flex;
-  height: 50px;
+  height: 4vh;
   background-color: #8f2d56;
   line-height: 0;
 }
-
-/* Column 1 parent */
-.c1-p {
-  width: 20%;
-  height: 50px;
-  background-color: white;
-}
-
-/* Column 1 */
+.c1-p { width: 20%; height: 50px; background-color: white; }
 .c1 {
   background-color: #8f2d56;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   border-radius: 0 0 20px 0;
-  /* border: 0.1px solid rgb(131, 50, 50); */
   color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
-.logo-icon {
-  height: 20px;
-  width: 20px;
-  color: white;
+.c2 { width: 80%; background-color: white; border-radius: 20px 0 0 0; }
+
+/* ----------------------------- */
+/* RESPONSIVE */
+/* ----------------------------- */
+
+/* Tablet: tighten gaps; keep layout */
+@media (max-width: 992px) {
+  .center-links { gap: 4vw; }
+  #logo-img { margin-left: 60px; }
 }
 
-/* Column 2 */
-.c2 {
-  width: 80%;
-  background-color: white;
-  border-radius: 20px 0 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 0 10px;
+/* Mobile: simple straight row + hide second row */
+@media (max-width: 768px) {
+  /* Straight row order: Logo → MY BANK → Sign In → Register → Hamburger */
+  .top-bar {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto; /* logo | text | sign-in | register | hamburger */
+    gap: 10px;
+    align-items: center;
+  }
+
+  /* Visibility & order adjustments */
+  .center-links { display: none; }   /* move links into hamburger */
+  .brand-text { display: inline; }   /* show MY BANK inline */
+  .hamburger { display: inline-flex; align-items: center; justify-content: center; }
+
+  /* Keep buttons compact */
+  .right-buttons { margin-right: 0; gap: 10px; }
+  .right-buttons .btn { padding: 6px 10px; white-space: nowrap; }
+
+  /* Hide the second row entirely on small screens */
+  .r2 { display: none; }
+
+  /* Optional: reduce logo left margin to avoid overflow */
+  #logo-img { margin-left: 10px; }
 }
 
-/* Navbar links */
-.navbar-links {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
+/* Small mobile: tighter spacing */
+@media (max-width: 480px) {
+  .right-buttons .btn { padding: 5px 8px; }
+  .mobile-menu { min-width: 160px; }
 }
 
-.navbar-links .nav-link {
-  color: white;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.navbar-links .btn {
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: none;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.navbar-links .btn-primary {
-  background-color: white;
-  color: #8f2d56;
-  transition: background-color 0.3s ease;
-}
 /* Hero section */
 .hero {
   text-align: center;
@@ -424,9 +444,9 @@ section h2 {
 
 .steps {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;   /* center the steps horizontally */
   flex-wrap: wrap;
-  gap: 30px;
+  gap: 30px;                 /* equal spacing between cards */
 }
 
 .step {
@@ -539,4 +559,73 @@ section h2 {
   .hero h1 {
     font-size: 1.8rem;
   }
+}
+
+/* General modal styling */
+.modal-box {
+  border: 2px solid #8f2d56;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(143, 45, 86, 0.3);
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Modal headers */
+.modal-header {
+  background-color: #8f2d56 !important;
+  color: #ffffff !important;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h5 {
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Close button */
+.btn-close {
+  filter: invert(1); /* makes close button white */
+}
+
+/* Form labels */
+label {
+  color: #8f2d56;
+  font-weight: 600;
+}
+
+/* Inputs and selects */
+.form-control,
+.form-select {
+  border: 1px solid #8f2d56;
+  border-radius: 6px;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #8f2d56;
+  box-shadow: 0 0 6px rgba(143, 45, 86, 0.4);
+}
+
+/* Buttons */
+.btn-success,
+.btn-primary {
+  background-color: #8f2d56 !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+.btn-success:hover,
+.btn-primary:hover {
+  background-color: #732046 !important; /* darker shade */
+}
+
+/* Error / message text */
+.text-danger {
+  color: #8f2d56 !important;
+  font-weight: 500;
 }

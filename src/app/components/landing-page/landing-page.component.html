@@ -4,43 +4,55 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MyBank Portal</title>
-  <!-- <link rel="stylesheet" href="style.css"> -->
 </head>
 <body>
-  <!-- Axis Navbar -->
-  <header class="axis-navbar">
+  
+<header class="axis-navbar">
   <div class="top-bar">
     <!-- Logo -->
     <svg id="logo-img" xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor"
-      class="bi bi-bank" viewBox="0 0 16 16">
+      class="bi bi-bank" viewBox="0 0 16 16" aria-label="Bank logo">
       <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/>
     </svg>
 
-    <!-- Centered links -->
-    <div class="center-links">
+    <!-- Center links (desktop/tablet only) -->
+    <nav class="center-links">
       <a class="nav-link" href="#about">About Us</a>
       <a class="nav-link" href="#contact">Contact Us</a>
       <a class="nav-link" href="#features">Features</a>
-    </div>
+    </nav>
 
-    <!-- Right buttons -->
+    <!-- Right side: brand text (inline on mobile), buttons, hamburger -->
     <div class="right-buttons">
+      <span class="brand-text">MY BANK</span>
+
       <button class="btn btn-primary" (click)="showForm = 'signin'">Sign In</button>
       <button class="btn btn-primary" (click)="showForm = 'register'">Register</button>
+
+      <!-- Hamburger toggle -->
+      <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
+      <label for="nav-toggle" class="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </label>
+
+      <!-- Mobile dropdown -->
+      <div id="mobile-menu" class="mobile-menu" role="menu">
+        <a class="nav-link" href="#about">About Us</a>
+        <a class="nav-link" href="#contact">Contact Us</a>
+        <a class="nav-link" href="#features">Features</a>
+      </div>
     </div>
   </div>
 
-
-    <div class="r2">
-      <div class="c1-p">
-        <div class="c1">
-          <h4>MY BANK</h4>
-        </div>
-      </div>
-      <div class="c2">
-      </div>
+  <!-- Lower strip (desktop/tablet only) -->
+  <div class="r2">
+    <div class="c1-p">
+      <div class="c1"><h4>MY BANK</h4></div>
     </div>
-  </header>
+    <div class="c2"></div>
+  </div>
+</header>
+
 
   <!-- Hero / Welcome Section -->
   <section id="hero-sec" class="hero text-center my-5">
@@ -228,13 +240,13 @@
             <option value="bankOfficer">Bank Officer</option>
           </select>
         </div>
-        <div class="mb-3">
+        <!-- <div class="mb-3">
           <label>Status</label>
           <select formControlName="status" class="form-select">
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
-        </div>
+        </div> -->
         <button type="submit" class="btn btn-primary w-100" [disabled]="signupForm.invalid">Register</button>
       </form>
     </div>
