@@ -16,9 +16,8 @@ import {
   ReactiveFormsModule,
   FormsModule
 } from '@angular/forms';
-
-
-// import { ComplianceService } from '../../service/compliance.service';
+import {  RouterOutlet } from '@angular/router';
+import { Router} from '@angular/router';
 
 type Role = 'Officer' | 'Manager' | 'Admin';
 type Status = 'Active' | 'Inactive' | 'Pending';
@@ -32,15 +31,13 @@ interface User {
   status: Status;
 }
 
-
 interface ComplianceMetrics {
   totalTransactions: number;
   highValueCount: number;
-  accountGrowthRate: number; 
+  accountGrowthRate: number;
   monthlyTxnVolume: number[];
   monthlyLabels: string[];
   monthlySuspicious: number[];
-
   amountBuckets: { label: string; count: number }[];
   channelMix:   { label: string; count: number }[];
 }
@@ -56,6 +53,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ----- Page info -----
   currentYear = new Date().getFullYear();
+  
+activeView: 'admin' | 'compliance' = 'admin';
+
+// Methods:
+showCompliance(): void { this.activeView = 'compliance'; }
+showAdmin(): void { this.activeView = 'admin'; }
 
   // ----- Data -----
   users: User[] = [];
@@ -84,7 +87,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   // ----- UI state -----
   searchTerm = '';
   roleFilter: Role | 'All' = 'All';
-  // Theme is finalized; styles are applied globally within component via CSS variables
 
   pendingDisplayedColumns = ['userId', 'name', 'role', 'email', 'branch', 'actions'];
   usersDisplayedColumns   = ['userId', 'name', 'role', 'email', 'branch', 'status', 'actions'];
@@ -94,13 +96,17 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   chartWidth = 1200;        // will be updated to actual available width
   chartHeight = 220;        // SVG height (viewBox height)
   private resizeObs?: ResizeObserver;
-  // Plot margins for axes
   chartLeftMargin = 48;
   chartRightPadding = 8;
 
   plotWidth(): number {
     return Math.max(240, this.chartWidth - this.chartLeftMargin - this.chartRightPadding);
   }
+   router: Router = Router.prototype;
+goToCompliance(): void {
+  this.router.navigate(['/compliance']);
+}
+
 
   getYMax(): number {
     const vals = [ ...(this.compliance.monthlyTxnVolume || []), ...(this.compliance.monthlySuspicious || []) ];
@@ -122,8 +128,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return height - (val / max) * height;
   }
 
+  // ====== Current user for Profile UI ======
+  currentUser: User | null = null;
+
   constructor(private fb: FormBuilder, private auth: AuthService) {
     console.debug('[Admin] constructor');
+
     this.editUserForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -138,46 +148,32 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       role: ['Officer' as Role, Validators.required],
       branch: ['', Validators.required]
     });
-
   }
-  
 
   ngOnInit(): void {
     console.debug('[Admin] ngOnInit start');
     try {
-      // Try to load persisted users from AuthService (users created via sign-up)
-      const authUsers = this.auth.getAllUsers();
-    //   if (authUsers && authUsers.length) {
-    //   // Map AuthService users to the Admin view model
-    //   this.users = authUsers.map(u => ({
-    //     userId: u.userId ?? "no id",
-    //     name: u.name ?? "no name",
-    //     role: this.mapRole(u.role),
-    //     email: u.email ?? "",
-    //     branch: u.branch ?? "",
-    //     status: this.mapStatus(u.status) ?? "<no status>",
-    //   }));
-    // } else {
-      // Fallback demo data
-      if(true){
-      this.users = [
-        { userId: 'U1001', name: 'Anita Sharma', role: 'Officer', email: 'anita@bank.local', branch: 'Gurgaon', status: 'Active' },
-        { userId: 'U1002', name: 'Rahul Mehta', role: 'Manager', email: 'rahul@bank.local', branch: 'Delhi', status: 'Active' },
-        { userId: 'U1003', name: 'Priya Nair', role: 'Officer', email: 'priya@bank.local', branch: 'Mumbai', status: 'Inactive' }
-      ];
+      // Load users (from AuthService or fallback demo)
+      const authUsers = this.auth.getAllUsers?.() ?? [];
 
-      this.pendingUsers = [
-        { userId: 'U2001', name: 'Karan Singh', role: 'Officer', email: 'karan@bank.local', branch: 'Jaipur', status: 'Pending' },
-        { userId: 'U2002', name: 'Neha Gupta', role: 'Manager', email: 'neha@bank.local', branch: 'Noida', status: 'Pending' }
-      ];
-    }
+      // Fallback demo data (keep as-is for UX)
+      if (true) {
+        this.users = [
+          { userId: 'U1001', name: 'Anita Sharma', role: 'Officer', email: 'anita@bank.local', branch: 'Gurgaon', status: 'Active' },
+          { userId: 'U1002', name: 'Rahul Mehta', role: 'Manager', email: 'rahul@bank.local', branch: 'Delhi', status: 'Active' },
+          { userId: 'U1003', name: 'Priya Nair', role: 'Officer', email: 'priya@bank.local', branch: 'Mumbai', status: 'Inactive' }
+        ];
 
-    }
-    catch (e) {
+        this.pendingUsers = [
+          { userId: 'U2001', name: 'Karan Singh', role: 'Officer', email: 'karan@bank.local', branch: 'Jaipur', status: 'Pending' },
+          { userId: 'U2002', name: 'Neha Gupta', role: 'Manager', email: 'neha@bank.local', branch: 'Noida', status: 'Pending' }
+        ];
+      }
+    } catch (e) {
       console.error('[Admin] ngOnInit error', e);
     }
 
-    // Extended compliance demo values (keep same length for labels/series)
+    // Compliance demo values
     this.compliance = {
       totalTransactions: 12845,
       highValueCount: 312,
@@ -200,17 +196,61 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       ]
     };
 
-    // Start with no selection; selection happens only when the admin starts a search
+    // Start with no selection
     this.selectedUser = undefined;
 
-    // Ensure we always have pending approvals for the admin UX
+    // Ensure pending approvals
     if (!this.pendingUsers || this.pendingUsers.length === 0) {
       this.pendingUsers = [
         { userId: 'U2001', name: 'Karan Singh', role: 'Officer', email: 'karan@bank.local', branch: 'Jaipur', status: 'Pending' },
         { userId: 'U2002', name: 'Neha Gupta', role: 'Manager', email: 'neha@bank.local', branch: 'Noida', status: 'Pending' }
       ];
     }
-    console.debug('[Admin] ngOnInit end', { usersCount: this.users.length, pendingCount: this.pendingUsers.length });
+
+    // Populate currentUser for Profile UI
+    this.currentUser = this.tryGetCurrentUserFromAuth() ?? this.deriveCurrentUser();
+
+    console.debug('[Admin] ngOnInit end', {
+      usersCount: this.users.length,
+      pendingCount: this.pendingUsers.length,
+      currentUser: this.currentUser
+    });
+  }
+
+  /** Attempt to read current/logged-in user from AuthService (if the method exists). */
+  private tryGetCurrentUserFromAuth(): User | null {
+    try {
+      const authUser = (this.auth as any).getCurrentUser?.();
+      if (!authUser) return null;
+      // Map to our UI model safely
+      return {
+        userId: authUser.userId ?? 'unknown',
+        name: authUser.name ?? 'Unknown User',
+        email: authUser.email ?? '',
+        role: this.mapRole(authUser.role ?? 'Officer'),
+        branch: authUser.branch ?? '',
+        status: this.mapStatus(authUser.status ?? 'active'),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /** Fallback current user: prefer first active user, or provide a sensible default. */
+  private deriveCurrentUser(): User | null {
+    if (this.users?.length) {
+      const u = this.users.find(x => x.status === 'Active') ?? this.users[0];
+      return u ? { ...u } : null;
+    }
+    // Default (can adjust to your environment)
+    return {
+      userId: 'U-1029',
+      name: 'Thangaraj, Surya',
+      email: 'surya.thangaraj@cognizant.com',
+      role: 'Officer',
+      branch: 'Pune',
+      status: 'Active'
+    };
   }
 
   /** Map the auth service role strings to admin UI-friendly roles */
@@ -230,7 +270,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Map auth status values to admin UI-friendly statuses */
   private mapStatus(s: string): Status {
-    switch (s.toLowerCase()) {
+    switch ((s ?? '').toLowerCase()) {
       case 'active': return 'Active';
       case 'inactive': return 'Inactive';
       case 'pending': return 'Pending';
@@ -247,14 +287,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.resizeObs = new ResizeObserver(entries => {
         for (const entry of entries) {
-          // Compute horizontal paddings from computed styles so the SVG width
-          // matches the visible content area precisely (handles different breakpoints)
+          // Account for element padding so the SVG width matches the visible content area
           const style = getComputedStyle(el);
           const padLeft = parseFloat(style.paddingLeft) || 0;
           const padRight = parseFloat(style.paddingRight) || 0;
           const pad = padLeft + padRight;
           const w = entry.contentRect.width;
-          // Subtract only the element padding (not an arbitrary constant)
           this.chartWidth = Math.max(360, Math.round(w - pad));
         }
       });
@@ -280,7 +318,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Re-select first item from filtered list (or clear if none) */
   private reselectFirstFiltered(): void {
     const list = this.filteredUsers();
-    // Prefer first Active if available; otherwise first
     const first = list.find(u => u.status === 'Active') ?? list[0];
     this.selectedUser = first ? { ...first } : undefined;
   }
@@ -304,7 +341,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.searchTerm) this.reselectFirstFiltered();
   }
 
-  // ----- Existing helpers -----
+  // ----- Chart helpers -----
 
   // Single-line path (legacy)
   trendPath(width: number, height: number): string {
@@ -350,7 +387,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.reselectFirstFiltered();
     // Persist approval to AuthService (store as lowercase auth model)
     try {
-      this.auth.signup({
+      this.auth.signup?.({
         name: approved.name,
         userId: approved.userId,
         email: approved.email,
@@ -440,5 +477,73 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         u.branch.toLowerCase().includes(term) ||
         u.userId.toLowerCase().includes(term)
       );
+  }
+
+  // ====== Profile helpers & actions ======
+
+  /** Create avatar initials from full name (handles spaces/commas/hyphens). */
+  initials(fullName: string): string {
+    if (!fullName) return 'U';
+    const cleaned = fullName.replace(/[,]+/g, ' ').trim();
+    if (!cleaned) return 'U';
+    const parts = cleaned.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) {
+      return parts[0].slice(0, 2).toUpperCase();
+    }
+    const first = parts[0]?.charAt(0) ?? '';
+    const last = parts[parts.length - 1]?.charAt(0) ?? '';
+    const initials = (first + last).toUpperCase();
+    return initials || 'U';
+  }
+
+  /** Show my profile (offcanvas if available) and populate the details card. */
+  viewMyProfile(): void {
+    // Populate the details card
+    if (this.currentUser) {
+      this.selectUser(this.currentUser);
+    }
+
+    // Open offcanvas (Bootstrap 5 JS must be included globally or via CDN)
+    const el = document.getElementById('offcanvasProfile');
+    const bs = (window as any).bootstrap;
+    try {
+      if (el && bs?.Offcanvas) {
+        const offcanvas = new bs.Offcanvas(el);
+        offcanvas.show();
+      }
+    } catch {
+      // If bootstrap JS not available, it's okay—the details card already shows info
+      console.debug('Bootstrap Offcanvas not available; showing details card only.');
+    }
+  }
+
+  /** Sign-out handler (safe if your AuthService doesn’t implement signOut). */
+  // signOut(): void {
+  //   try {
+  //     (this.auth as any).signOut?.();
+  //     console.log('Signed out');
+  //   } catch (e) {
+  //     console.warn('signOut not implemented in AuthService', e);
+  //   }
+  // }
+  
+signOut(): void {
+  try {
+    this.auth.logout(); // Call your AuthService logout method
+    // After sign out, redirect to login page or home
+    window.location.href = '/landing'; // Or use Angular Router
+    // Example with Router:
+    // this.router.navigate(['/login']);
+  } catch (e) {
+    console.error('Sign out failed', e);
+  }
+}
+
+
+  /** Navigate to settings (replace with Router navigation if you want). */
+  goToSettings(): void {
+    console.log('Go to settings...');
+    // e.g., inject Router and navigate:
+    // this.router.navigate(['/settings']);
   }
 }
