@@ -6,8 +6,8 @@
 
 /* Theme variables (cool / neon theme) */
 :host {
-  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #0b3d91 40%, #3a4ea8 100%);
-  /* --bg-gradient: linear-gradient(135deg, #0f172a 0%, #460c78 40%, #6b1685 100%); */
+  /* --bg-gradient: linear-gradient(135deg, #0f172a 0%, #0b3d91 40%, #3a4ea8 100%); */
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #49548f 40%, #8836a1 100%);
   --card-bg: rgba(255,255,255,0.04);
   --card-border: rgba(255,255,255,0.06);
   --glass: rgba(255,255,255,0.03);
@@ -16,11 +16,22 @@
   --muted: rgba(255,255,255,0.75);
   --glass-blur: 8px;
 }
-
+.header{
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(var(--glass-blur));
+  background: linear-gradient(90deg,rgb(10, 9, 55) ,#49548f 40%, #8836a1 100%);
+  width: 100%;
+  padding: 4px;
+  border-radius: 5px;
+}
 .admin-page { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
 
 .card-header h1, .card-header h2, .h4 { color: #fff; }
-
+body{
+ 
+}
 /* Apply background to the admin page container */
 .admin-page {
   background: var(--bg-gradient);

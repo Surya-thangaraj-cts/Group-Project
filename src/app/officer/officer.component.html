@@ -1,4 +1,3 @@
-
 <!-- <Top Navigation Bar> -->
 <nav class="top-nav">
   <div class="brand">
@@ -25,84 +24,103 @@
     </li>
   </ul>
  
-  <!-- Profile Section -->
-  <div class="profile">
-  <!-- User SVG icon -->
-  <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
-       fill="currentColor" class="bi bi-person-circle profile-icon" viewBox="0 0 16 16">
-    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468
-    11.37C3.242 11.226 4.805 10 8 10s4.757 1.226 5.468
-    2.37A7 7 0 0 0 8 1z"/>
-  </svg>
- 
+  
+<!-- Profile Section -->
+<div class="glass-profile-card" *ngIf="currentUser">
+  <div class="avatar-circle">
+    <span class="avatar-letter">
+      {{ (currentUser.name || 'U') | slice:0:1 | uppercase }}
+    </span>
+  </div>
+
   <!-- User details -->
-  <div class="profile-details">
-    <span class="profile-name">John Doe</span>
+  <div class="user-info">
+    <p class="user-name">{{ currentUser.name }}</p>
+    <span class="user-role">{{ currentUser.role }}</span>
+    <!-- <small>Last Login: {{ currentUser.lastLogin || 'N/A' }}</small> -->
   </div>
 </div>
  
 </nav>
- <br>
+ 
 
 <section class="container">
   <!-- Alerts -->
-  <div *ngIf="alert.message" class="alert" [class.error]="alert.type==='error'" [class.success]="alert.type==='success'">
-    {{ alert.message }}
-    <button class="close" (click)="clearAlert()">×</button>
+
+  <div *ngIf="alert.message" class="console-alert" [class.error]="alert.type==='error'" [class.success]="alert.type==='success'">
+    <span class="msg">{{ alert.message }}</span>
+    <button class="close" (click)="clearAlert()" style="color: aliceblue;">X</button>
+  </div>
+ 
+  <!-- CREATE ACCOUNT -->
+    <div *ngIf="activeTab==='create'" class="card">
+    <header class="card-header"><h2>Create Bank Account</h2></header>
+    
+    <!-- account creation form -->
+    <form [formGroup]="createForm" (ngSubmit)="createAccount()">
+     <div class="grid">
+      <label>
+      Account ID
+      <input type="text" formControlName="accountId" placeholder="Enter Account ID" />
+      <div class="error"
+           *ngIf="createForm.get('accountId')?.invalid && (createForm.get('accountId')?.touched || submitted)">
+        <small *ngIf="createForm.get('accountId')?.errors?.['required']" style="color: red;">Account ID is required!</small>
+        <small *ngIf="createForm.get('accountId')?.errors?.['minlength']">Account ID must be at least 3 characters!</small>
+      </div>
+    </label>
+
+    <label>
+      Customer Name
+      <input type="text" formControlName="customerName" placeholder="Enter Customer Name" />
+      <div class="error"
+           *ngIf="createForm.get('customerName')?.invalid && (createForm.get('customerName')?.touched || submitted)">
+        <small *ngIf="createForm.get('customerName')?.errors?.['required']" style="color: red;">Customer Name is required!</small>
+      </div>
+    </label>
+
+    <label>
+      Customer ID
+      <input type="text" formControlName="customerId" placeholder="Enter Customer ID" />
+      <div class="error"
+           *ngIf="createForm.get('customerId')?.invalid && (createForm.get('customerId')?.touched || submitted)">
+        <small *ngIf="createForm.get('customerId')?.errors?.['required']" style="color: red;">Customer ID is required!</small>
+      </div>
+    </label>
+
+    <label>
+      Account Type
+      <select formControlName="accountType">
+        <option value="SAVINGS">Savings</option>
+        <option value="CURRENT">Current</option>
+      </select>
+      <div class="error"
+           *ngIf="createForm.get('accountType')?.invalid && (createForm.get('accountType')?.touched || submitted)">
+        <small *ngIf="createForm.get('accountType')?.errors?.['required']" style="color: red;">Account Type is required!</small>
+      </div>
+    </label>
+
+
+    
+  </div><br>
+  <div class="actions">
+    <!-- Remove [disabled]; let submit trigger validation -->
+    <button class="primary" type="submit">Create Account</button>
+    <button type="button" class="secondary" (click)="createForm.reset(defaultCreateForm()); submitted=false">
+      Reset
+    </button>
   </div>
 
-  <!-- CREATE ACCOUNT -->
-  <div *ngIf="activeTab==='create'" class="card">
-    <h2>Create Bank Account</h2>
-    <form [formGroup]="createForm" (ngSubmit)="createAccount()">
-      <div class="grid">
-        <label>
-          Account ID
-          <input type="text" formControlName="accountId" placeholder="Enter Account ID" />
-        </label>
-        <label>
-          Customer Name
-          <input type="text" formControlName="customerName" placeholder="Enter Customer Name" />
-        </label>
-        <label>
-          Customer ID
-          <input type="text" formControlName="customerId" placeholder="Enter Customer ID" />
-        </label>
-        <label>
-          Account Type
-          <select formControlName="accountType">
-            <option value="SAVINGS">Savings</option>
-            <option value="CURRENT">Current</option>
-          </select>
-        </label>
-        <label>
-          Balance
-          <input type="number" formControlName="balance" min="0" step="0.01" />
-        </label>
-        <label>
-          Status
-          <select formControlName="status">
-            <option value="ACTIVE">Active</option>
-            <option value="CLOSED">Closed</option>
-          </select>
-        </label>
-      </div>
+  <!-- Optional overall helper shown after submit if invalid -->
+  <div class="helper" *ngIf="submitted && createForm.invalid">
+    <small>There are errors above. Please fix them to continue.</small>
+  </div>
+</form>
 
-      <div class="actions">
-        <button class="primary" type="submit" [disabled]="createForm.invalid">Create Account</button>
-        <button type="button" class="secondary" (click)="createForm.reset(defaultCreateForm())">Reset</button>
-      </div>
-
-      <div class="helper" *ngIf="createForm.invalid">
-        <small>All fields are required. Balance must be ≥ 0.</small>
-      </div>
-    </form>
-
+ 
     <hr />
-    <h3>Existing Accounts ({{ accounts.length }})</h3>
+    <h3>Existing Accounts ({{ accounts.length }})</h3><br>
     <div class="table-wrap" *ngIf="accounts.length; else noAccountsCreate">
-      <table>
+      <table class="scroll-table">
         <thead>
           <tr>
             <th>Account ID</th>
@@ -110,7 +128,7 @@
             <th>Customer ID</th>
             <th>Type</th>
             <th>Status</th>
-            <th>Balance</th>
+            <!-- <th>Balance</th> -->
             <th>Opened</th>
             <th></th>
           </tr>
@@ -126,11 +144,11 @@
                 {{ a.status }}
               </span>
             </td>
-            <td>{{ a.balance | number:'1.2-2' }}</td>
+            <!-- <td>{{ a.balance | number:'1.2-2' }}</td> -->
             <td>{{ a.openedAt | date:'medium' }}</td>
             <td>
               <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
-              <button class="link" (click)="goToHistory(a.accountId)">Txns</button>
+              <!-- <button class="link" (click)="goToHistory(a.accountId)">Txns</button> -->
             </td>
           </tr>
         </tbody>
@@ -140,17 +158,17 @@
       <p class="muted">No accounts yet. Create one using the form above.</p>
     </ng-template>
   </div>
-
+ 
   <!-- UPDATE ACCOUNT -->
   <div *ngIf="activeTab==='update'" class="card">
     <h2>Update Bank Account</h2>
-
+ 
     <div class="inline">
       <input class="inline-input" [(ngModel)]="lookupAccountId" placeholder="Enter Account ID" />
       <button class="secondary" (click)="prefillUpdate(lookupAccountId)">Load</button>
     </div>
-
-    <form [formGroup]="updateForm" (ngSubmit)="updateAccount()" *ngIf="updateFormLoaded; else noLoad">
+ 
+    <form [formGroup]="updateForm" (ngSubmit)="updateAccount()" *ngIf="updateFormLoaded">
       <div class="grid">
         <label>
           Account ID
@@ -182,64 +200,58 @@
             <option value="CLOSED">Closed</option>
           </select>
         </label>
-      </div>
-
+      </div><br>
+ 
       <div class="actions">
-        <button class="primary" type="submit" [disabled]="updateForm.invalid">Update Account</button>
+        <button class="primary" type="submit" [disabled]="updateForm.invalid">Submit Update Request</button>
         <button type="button" class="secondary" (click)="updateForm.reset(); updateFormLoaded=false">Cancel</button>
       </div>
-    </form>
+    </form><hr />
 
-    <ng-template #noLoad>
-      <p class="muted">Enter an Account ID and click <b>Load</b> to edit.</p>
-    </ng-template>
 
-    <hr />
-    <h3>Existing Accounts ({{ accounts.length }})</h3>
-    <div class="table-wrap" *ngIf="accounts.length; else noAccountsUpdate">
-      <table>
-        <thead>
-          <tr>
-            <th>Account ID</th>
-            <th>Customer Name</th>
-            <th>Customer ID</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Balance</th>
-            <th>Opened</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let a of accounts">
-            <td>{{ a.accountId }}</td>
-            <td>{{ a.customerName }}</td>
-            <td>{{ a.customerId }}</td>
-            <td>{{ a.accountType }}</td>
-            <td>
-              <span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">
-                {{ a.status }}
-              </span>
-            </td>
-            <td>{{ a.balance | number:'1.2-2' }}</td>
-            <td>{{ a.openedAt | date:'medium' }}</td>
-            <td>
-              <!-- Only Edit button in Update tab -->
-              <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <ng-template #noAccountsUpdate>
-      <p class="muted">No accounts yet. Create one using the form above.</p>
-    </ng-template>
+   <!-- 🔹 UPDATION STATUS TABLE -->
+  <h3>Updation Status</h3><br>
+
+  <div class="table-wrap" *ngIf="updateRequests.length; else noUpdates">
+    <table class="scroll-table">
+      <thead>
+        <tr>
+          <th>Update ID</th>
+          <th>Account ID</th>
+          <th>Customer Name</th>
+          <th>Customer ID</th>
+          <th>Type</th>
+          <th>Changes Summary</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let u of updateRequests">
+          <td>{{ u.updateId }}</td>
+          <td>{{ u.accountId }}</td>
+          <td>{{ u.customerName }}</td>
+          <td>{{ u.customerId }}</td>
+          <td>{{ u.accountType }}</td>
+          <td>{{ u.changeSummary }}</td>
+          <td>
+            <span class="pill bad">{{ u.status }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
+  <ng-template #noUpdates>
+    <p class="muted">No update requests submitted yet.</p>
+  </ng-template>
+
+</div>
+ 
   <!-- TRANSACTION HISTORY & RECORD -->
   <div *ngIf="activeTab==='history'" class="card">
     <h2>Transaction History</h2>
-
+ 
     <div class="grid narrow">
       <label>
         Select Account
@@ -250,20 +262,20 @@
           </option>
         </select>
       </label>
-
+ 
       <label>
         High-Value Threshold
         <input type="number" [(ngModel)]="highValueThreshold" min="0" step="1" />
       </label>
-
-      <div class="inline">
+ 
+      <!-- <div class="inline">
         <button class="secondary" (click)="goToCreate()">New Account</button>
         <button class="secondary" (click)="prefillUpdate(selectedHistoryAccountId!)" [disabled]="!selectedHistoryAccountId">
           Edit Account
         </button>
-      </div>
-    </div>
-
+      </div> -->
+    </div><br><br>
+ 
     <!-- Record Transaction -->
     <div class="card subtle" *ngIf="selectedHistoryAccountId as accId">
       <h3>Record Transaction ({{ accId }})</h3>
@@ -277,12 +289,12 @@
               <option value="TRANSFER">Transfer</option>
             </select>
           </label>
-
+ 
           <label>
             Amount
             <input type="number" formControlName="amount" min="0.01" step="0.01" />
           </label>
-
+ 
           <label *ngIf="txnForm.value.type==='TRANSFER'">
             To Account ID
             <select formControlName="toAccountId">
@@ -292,62 +304,99 @@
               </option>
             </select>
           </label>
-
+ 
           <label>
             Narrative (optional)
             <input type="text" formControlName="narrative" maxlength="140" placeholder="e.g., Salary credit / ATM withdrawal" />
           </label>
-        </div>
-
+        </div><br>
+ 
         <div class="actions">
           <button class="primary" type="submit" [disabled]="txnForm.invalid || !selectedHistoryAccountId">Record</button>
           <button class="secondary" type="button" (click)="resetTxnForm()">Reset</button>
         </div>
         <small class="muted">Closed accounts cannot receive transactions. Withdrawals/transfers require sufficient balance.</small>
       </form>
-    </div>
+    </div><br>
+ 
+    <!-- 🔹 Transaction History Table -->
 
-    <!-- History Table -->
-    <div class="table-wrap" *ngIf="selectedHistoryAccountId && transactionsFor(selectedHistoryAccountId).length; else noTxns">
-      <table>
+    <h3>Transaction History</h3><br>
+
+    <div class="table-wrap"
+     *ngIf="selectedHistoryAccountId && transactionsFor(selectedHistoryAccountId).length; else noTxns">
+
+      <table class="scroll-table">  
         <thead>
           <tr>
-            <th>Time</th>
+            <th>Transaction ID</th>
+            <th>Account ID</th>
             <th>Type</th>
             <th>Amount</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Flagged</th>
-            <th>Narrative</th>
-            <th></th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Flag Status</th>
+            <th>Action</th>
           </tr>
         </thead>
-        <tbody>
-          <tr *ngFor="let t of transactionsFor(selectedHistoryAccountId)">
-            <td>{{ t.time | date:'medium' }}</td>
-            <td>{{ t.type }}</td>
-            <td [class.red]="t.type==='WITHDRAWAL' || (t.type==='TRANSFER' && t.accountId===selectedHistoryAccountId)">
-              {{ t.amount | number:'1.2-2' }}
-            </td>
-            <td>{{ t.accountId }}</td>
-            <td>{{ t.toAccountId || '—' }}</td>
-            <td>
-              <span class="pill" [class.ok]="t.flagged" [class.bad]="!t.flagged">
-                {{ t.flagged ? 'HIGH' : 'Normal' }}
-              </span>
-            </td>
-            <td>{{ t.narrative || '—' }}</td>
-            <td>
-              <button class="link" (click)="flagTransaction(t)" [disabled]="t.flagged">Flag</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
 
-    <ng-template #noTxns>
-      <p class="muted" *ngIf="selectedHistoryAccountId">No transactions yet for {{ selectedHistoryAccountId }}.</p>
-      <p class="muted" *ngIf="!selectedHistoryAccountId">Select an account to view history.</p>
-    </ng-template>
+    <tbody>
+      <tr *ngFor="let t of transactionsFor(selectedHistoryAccountId)">
+
+        <td>{{ t.id }}</td>
+
+        <td>{{ t.accountId }}</td>
+
+        <td>{{ t.type }}</td>
+
+        <td [class.red]="t.type !== 'DEPOSIT'">
+          ₹{{ t.amount | number:'1.2-2' }}
+        </td>
+
+        <td>{{ t.time | date:'medium' }}</td>
+
+        <!-- ✅ Status based on threshold -->
+        <td>
+          <span class="pill"
+                [class.ok]="t.amount < highValueThreshold"
+                [class.bad]="t.amount >= highValueThreshold">
+            {{ t.amount < highValueThreshold ? 'Completed' : 'Pending' }}
+          </span>
+        </td>
+
+        <!-- ✅ Flag status -->
+        <td>
+          <span class="pill"
+                [class.ok]="!t.flagged"
+                [class.bad]="t.flagged">
+            {{ t.flagged ? 'High' : 'Normal' }}
+          </span>
+        </td>
+
+        <!-- ✅ Toggle Flag -->
+        <td>
+          <button class="link"
+                  (click)="toggleFlag(t)">
+            {{ t.flagged ? 'Unflag' : 'Flag' }}
+          </button>
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #noTxns>
+  <p class="muted" *ngIf="selectedHistoryAccountId">
+    No transactions found for {{ selectedHistoryAccountId }}.
+  </p>
+  <p class="muted" *ngIf="!selectedHistoryAccountId">
+    Select an account to view transaction history.
+  </p>
+</ng-template>
+
   </div>
 </section>
+<!-- </body> -->
+ 
+ 

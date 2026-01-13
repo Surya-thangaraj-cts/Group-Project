@@ -2,11 +2,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { AuthService, User } from "../../app/auth/auth.service";
 
 type AccountType = 'SAVINGS' | 'CURRENT';
 type AccountStatus = 'ACTIVE' | 'CLOSED';
 type TxnType = 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER';
 
+// interfaces
 interface Account {
   accountId: string;
   customerName: string;
@@ -28,6 +30,18 @@ interface Transaction {
   narrative?: string;
 }
 
+interface UpdateRequest {
+  updateId: string;
+  accountId: string;
+  customerName: string;
+  customerId: string;
+  accountType: AccountType;
+  changeSummary: string;
+  status: 'PENDING';
+  // status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  time: string;
+}
+
 @Component({
   selector: 'officer',
   standalone: true,
@@ -35,16 +49,18 @@ interface Transaction {
   templateUrl: './officer.component.html',
   styleUrls: ['./officer.component.css']
 })
-export class OfficerComponent implements OnInit {
+export class OfficerComponent implements OnInit 
+{
+  currentUser: User | null = null;
+  submitted = false;
   activeTab: 'create' | 'update' | 'history' = 'create';
 
   // Forms
   createForm: FormGroup;
   updateForm: FormGroup;
+
   updateFormLoaded = false;
-
   lookupAccountId = '';
-
   txnForm: FormGroup;
   selectedHistoryAccountId?: string;
 
@@ -55,10 +71,13 @@ export class OfficerComponent implements OnInit {
   // High-value threshold (₹)
   highValueThreshold = 100000;
 
+  //Update Request Array
+  updateRequests: UpdateRequest[] = [];
+
   // Alerts
   alert: { type: 'success' | 'error'; message: string } = { type: 'success', message: '' };
 
-  constructor(private fb: FormBuilder) {
+  constructor(private fb: FormBuilder, private authService: AuthService) {
     this.createForm = this.fb.group({
       accountId: ['', [Validators.required, Validators.minLength(3)]],
       customerName: ['', [Validators.required]],
@@ -87,8 +106,20 @@ export class OfficerComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadState();
+    this.currentUser = this.authService.currentUser;
+    this.updateFormLoaded = true;
   }
 
+  // setting the current user
+ private setCurrentUser(): void {
+  // Now this only needs name, role, and anything else you want to show
+  this.currentUser = {
+    name: 'Officer Aditi Sharma',
+    role: 'Senior Bank Manager',
+    lastLogin: new Date().toLocaleString(),
+    avatarUrl: 'https://ui-avatars.com/api/?name=Aditi+Sharma'
+  };
+}
   // ---------- Persistence ----------
   private saveState(): void {
     localStorage.setItem('accounts', JSON.stringify(this.accounts));
@@ -120,7 +151,11 @@ export class OfficerComponent implements OnInit {
   }
 
   createAccount(): void {
-    if (this.createForm.invalid) return;
+    this.submitted = true;
+    if (this.createForm.invalid){
+      this.createForm.markAllAsTouched();
+      return;
+    }
 
     const value = this.createForm.getRawValue() as Omit<Account, 'openedAt'>;
     const exists = this.accounts.some(a => a.accountId === value.accountId);
@@ -136,7 +171,10 @@ export class OfficerComponent implements OnInit {
     this.accounts.unshift(newAcc);
     this.saveState();
     this.setSuccess(`Account ${newAcc.accountId} created successfully.`);
+    this.submitted = false;
     this.createForm.reset(this.defaultCreateForm());
+    this.createForm.markAsPristine();
+    this.createForm.markAsUntouched();
   }
 
   // ---------- Update ----------
@@ -160,20 +198,20 @@ export class OfficerComponent implements OnInit {
     this.activeTab = 'update';
   }
 
-  updateAccount(): void {
-    if (this.updateForm.invalid) return;
-    const value = this.updateForm.getRawValue() as Account;
-    const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
-    if (idx === -1) return this.setError('Account not found.');
+  // ``updateAccount(): void {
+  //   if (this.updateForm.invalid) return;
+  //   const value = this.updateForm.getRawValue() as Account;
+  //   const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
+  //   if (idx === -1) return this.setError('Account not found.');
 
-    // Preserve openedAt
-    const openedAt = this.accounts[idx].openedAt;
-    this.accounts[idx] = { ...value, openedAt };
-    this.saveState();
-    this.setSuccess(`Account ${value.accountId} updated.`);
-    this.updateFormLoaded = false;
-    this.lookupAccountId = '';
-  }
+  //   // Preserve openedAt
+  //   const openedAt = this.accounts[idx].openedAt;
+  //   this.accounts[idx] = { ...value, openedAt };
+  //   this.saveState();
+  //   this.setSuccess(`Account ${value.accountId} updated.`);
+  //   this.updateFormLoaded = false;
+  //   this.lookupAccountId = '';
+  // }``
 
   // ---------- Transactions ----------
   onTxnTypeChange() {
@@ -274,12 +312,67 @@ export class OfficerComponent implements OnInit {
 
   private setSuccess(message: string): void {
     this.alert = { type: 'success', message };
-    setTimeout(() => this.clearAlert(), 3000);
+    setTimeout(() => this.clearAlert(), 10000);
   }
 
   private setError(message: string): void {
     this.alert = { type: 'error', message };
   }
+  updateAccount(): void {
+  if (this.updateForm.invalid) return;
+
+  const value = this.updateForm.getRawValue() as Account;
+  const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
+  if (idx === -1) return this.setError('Account not found.');
+
+  const oldAcc = this.accounts[idx];
+
+  // 🔹 Generate change summary
+  const changes: string[] = [];
+
+  if (oldAcc.customerName !== value.customerName)
+    changes.push(`Customer Name: "${oldAcc.customerName}" → "${value.customerName}"`);
+
+  if (oldAcc.customerId !== value.customerId)
+    changes.push(`Customer ID: "${oldAcc.customerId}" → "${value.customerId}"`);
+
+  if (oldAcc.accountType !== value.accountType)
+    changes.push(`Account Type: ${oldAcc.accountType} → ${value.accountType}`);
+
+  if (oldAcc.balance !== value.balance)
+    changes.push(`Balance: ₹${oldAcc.balance} → ₹${value.balance}`);
+
+  if (oldAcc.status !== value.status)
+    changes.push(`Status: ${oldAcc.status} → ${value.status}`);
+
+  // 🔹 Create update request (instead of directly applying changes)
+  const updateRequest: UpdateRequest = {
+    updateId: cryptoRandomId(),
+    accountId: value.accountId,
+    customerName: value.customerName,
+    customerId: value.customerId,
+    accountType: value.accountType,
+    changeSummary: changes.length ? changes.join(' | ') : 'No changes detected',
+    status: 'PENDING',
+    time: new Date().toISOString()
+  };
+
+  this.updateRequests.unshift(updateRequest);
+
+  this.setSuccess(`Update request created for Account ${value.accountId}.`);
+  this.updateFormLoaded = false;
+  this.lookupAccountId = '';
+}
+toggleFlag(t: Transaction): void {
+  t.flagged = !t.flagged;
+
+  this.setSuccess(
+    `Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`
+  );
+
+  this.saveState();
+}
+
 }
 
 // Utility functions
@@ -297,3 +390,7 @@ function cryptoRandomId(): string {
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+
+
+
