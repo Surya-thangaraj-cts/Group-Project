@@ -1,8 +1,9 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AuthService, User } from "../../app/auth/auth.service";
+import { Router } from '@angular/router';
 
 type AccountType = 'SAVINGS' | 'CURRENT';
 type AccountStatus = 'ACTIVE' | 'CLOSED';
@@ -37,8 +38,7 @@ interface UpdateRequest {
   customerId: string;
   accountType: AccountType;
   changeSummary: string;
-  status: 'PENDING';
-  // status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  status: 'PENDING'; // future: 'PENDING' | 'APPROVED' | 'REJECTED'
   time: string;
 }
 
@@ -49,8 +49,7 @@ interface UpdateRequest {
   templateUrl: './officer.component.html',
   styleUrls: ['./officer.component.css']
 })
-export class OfficerComponent implements OnInit 
-{
+export class OfficerComponent implements OnInit {
   currentUser: User | null = null;
   submitted = false;
   activeTab: 'create' | 'update' | 'history' = 'create';
@@ -60,6 +59,7 @@ export class OfficerComponent implements OnInit
   updateForm: FormGroup;
 
   updateFormLoaded = false;
+  showProfileModal = false;
   lookupAccountId = '';
   txnForm: FormGroup;
   selectedHistoryAccountId?: string;
@@ -70,14 +70,24 @@ export class OfficerComponent implements OnInit
 
   // High-value threshold (₹)
   highValueThreshold = 100000;
+  showNotifications = false;
 
-  //Update Request Array
+  // Update Request Array
   updateRequests: UpdateRequest[] = [];
+  isProfileMenuOpen = false;
+
+  // Mobile nav
+  isMobileNavOpen = false;
 
   // Alerts
   alert: { type: 'success' | 'error'; message: string } = { type: 'success', message: '' };
 
-  constructor(private fb: FormBuilder, private authService: AuthService) {
+  // Filters
+  historyFilterAccountId?: string;
+  fromDate?: string;
+  toDate?: string;
+
+  constructor(private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.createForm = this.fb.group({
       accountId: ['', [Validators.required, Validators.minLength(3)]],
       customerName: ['', [Validators.required]],
@@ -110,32 +120,33 @@ export class OfficerComponent implements OnInit
     this.updateFormLoaded = true;
   }
 
-  // setting the current user
- private setCurrentUser(): void {
-  // Now this only needs name, role, and anything else you want to show
-  this.currentUser = {
-    name: 'Officer Aditi Sharma',
-    role: 'Senior Bank Manager',
-    lastLogin: new Date().toLocaleString(),
-    avatarUrl: 'https://ui-avatars.com/api/?name=Aditi+Sharma'
-  };
-}
   // ---------- Persistence ----------
   private saveState(): void {
     localStorage.setItem('accounts', JSON.stringify(this.accounts));
     localStorage.setItem('transactions', JSON.stringify(this.transactions));
+    localStorage.setItem('updateRequests', JSON.stringify(this.updateRequests));
   }
 
   private loadState(): void {
     try {
       const a = localStorage.getItem('accounts');
       const t = localStorage.getItem('transactions');
+      const u = localStorage.getItem('updateRequests');
+
       this.accounts = a ? JSON.parse(a) : [];
       this.transactions = t ? JSON.parse(t) : [];
+      this.updateRequests = u ? JSON.parse(u) : [];
     } catch {
       this.accounts = [];
       this.transactions = [];
+      this.updateRequests = [];
     }
+  }
+
+  initials(name: string): string {
+    return name
+      ? name.split(' ').map(n => n[0]).join('').toUpperCase()
+      : 'U';
   }
 
   // ---------- Create ----------
@@ -144,9 +155,9 @@ export class OfficerComponent implements OnInit
       accountId: '',
       customerName: '',
       customerId: '',
-      accountType: 'SAVINGS',
+      accountType: 'SAVINGS' as AccountType,
       balance: 0,
-      status: 'ACTIVE',
+      status: 'ACTIVE' as AccountStatus,
     };
   }
 
@@ -196,28 +207,20 @@ export class OfficerComponent implements OnInit
     });
     this.updateFormLoaded = true;
     this.activeTab = 'update';
+    this.closeMobileNav();
   }
-
-  // ``updateAccount(): void {
-  //   if (this.updateForm.invalid) return;
-  //   const value = this.updateForm.getRawValue() as Account;
-  //   const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
-  //   if (idx === -1) return this.setError('Account not found.');
-
-  //   // Preserve openedAt
-  //   const openedAt = this.accounts[idx].openedAt;
-  //   this.accounts[idx] = { ...value, openedAt };
-  //   this.saveState();
-  //   this.setSuccess(`Account ${value.accountId} updated.`);
-  //   this.updateFormLoaded = false;
-  //   this.lookupAccountId = '';
-  // }``
 
   // ---------- Transactions ----------
   onTxnTypeChange() {
     // clear toAccountId if not transfer
     if (this.txnForm.value.type !== 'TRANSFER') {
       this.txnForm.patchValue({ toAccountId: undefined });
+    }
+  }
+
+  onAccountSelect(accountId: string | undefined) {
+    if (!accountId) {
+      this.resetTxnForm();
     }
   }
 
@@ -300,10 +303,12 @@ export class OfficerComponent implements OnInit
   goToHistory(accountId: string): void {
     this.selectedHistoryAccountId = accountId;
     this.activeTab = 'history';
+    this.closeMobileNav();
   }
 
   goToCreate(): void {
     this.activeTab = 'create';
+    this.closeMobileNav();
   }
 
   clearAlert(): void {
@@ -312,72 +317,144 @@ export class OfficerComponent implements OnInit
 
   private setSuccess(message: string): void {
     this.alert = { type: 'success', message };
+    // allow SR users to hear it before auto-dismiss
     setTimeout(() => this.clearAlert(), 10000);
   }
 
   private setError(message: string): void {
     this.alert = { type: 'error', message };
   }
+
   updateAccount(): void {
-  if (this.updateForm.invalid) return;
+    if (this.updateForm.invalid) return;
 
-  const value = this.updateForm.getRawValue() as Account;
-  const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
-  if (idx === -1) return this.setError('Account not found.');
+    const value = this.updateForm.getRawValue() as Account;
+    const idx = this.accounts.findIndex(a => a.accountId === value.accountId);
+    if (idx === -1) return this.setError('Account not found.');
 
-  const oldAcc = this.accounts[idx];
+    const oldAcc = this.accounts[idx];
 
-  // 🔹 Generate change summary
-  const changes: string[] = [];
+    // 🔹 Generate change summary
+    const changes: string[] = [];
 
-  if (oldAcc.customerName !== value.customerName)
-    changes.push(`Customer Name: "${oldAcc.customerName}" → "${value.customerName}"`);
+    if (oldAcc.customerName !== value.customerName)
+      changes.push(`Customer Name: "${oldAcc.customerName}" → "${value.customerName}"`);
 
-  if (oldAcc.customerId !== value.customerId)
-    changes.push(`Customer ID: "${oldAcc.customerId}" → "${value.customerId}"`);
+    if (oldAcc.customerId !== value.customerId)
+      changes.push(`Customer ID: "${oldAcc.customerId}" → "${value.customerId}"`);
 
-  if (oldAcc.accountType !== value.accountType)
-    changes.push(`Account Type: ${oldAcc.accountType} → ${value.accountType}`);
+    if (oldAcc.accountType !== value.accountType)
+      changes.push(`Account Type: ${oldAcc.accountType} → ${value.accountType}`);
 
-  if (oldAcc.balance !== value.balance)
-    changes.push(`Balance: ₹${oldAcc.balance} → ₹${value.balance}`);
+    if (oldAcc.balance !== value.balance)
+      changes.push(`Balance: ₹${oldAcc.balance} → ₹${value.balance}`);
 
-  if (oldAcc.status !== value.status)
-    changes.push(`Status: ${oldAcc.status} → ${value.status}`);
+    if (oldAcc.status !== value.status)
+      changes.push(`Status: ${oldAcc.status} → ${value.status}`);
 
-  // 🔹 Create update request (instead of directly applying changes)
-  const updateRequest: UpdateRequest = {
-    updateId: cryptoRandomId(),
-    accountId: value.accountId,
-    customerName: value.customerName,
-    customerId: value.customerId,
-    accountType: value.accountType,
-    changeSummary: changes.length ? changes.join(' | ') : 'No changes detected',
-    status: 'PENDING',
-    time: new Date().toISOString()
-  };
+    // 🔹 Create update request (instead of directly applying changes)
+    const updateRequest: UpdateRequest = {
+      updateId: cryptoRandomId(),
+      accountId: value.accountId,
+      customerName: value.customerName,
+      customerId: value.customerId,
+      accountType: value.accountType,
+      changeSummary: changes.length ? changes.join(' | ') : 'No changes detected',
+      status: 'PENDING',
+      time: new Date().toISOString()
+    };
 
-  this.updateRequests.unshift(updateRequest);
+    this.updateRequests.unshift(updateRequest);
+    this.saveState();
 
-  this.setSuccess(`Update request created for Account ${value.accountId}.`);
-  this.updateFormLoaded = false;
-  this.lookupAccountId = '';
-}
-toggleFlag(t: Transaction): void {
-  t.flagged = !t.flagged;
+    this.setSuccess(`Update request created for Account ${value.accountId}.`);
+    this.updateFormLoaded = false;
+    this.lookupAccountId = '';
+  }
 
-  this.setSuccess(
-    `Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`
-  );
+  toggleFlag(t: Transaction): void {
+    t.flagged = !t.flagged;
+    this.setSuccess(
+      `Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`
+    );
+    this.saveState();
+  }
 
-  this.saveState();
-}
+  toggleProfileMenu(): void {
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  }
 
+  openProfileModal(event: Event): void {
+    event.stopPropagation();
+    this.showProfileModal = true;
+    this.isProfileMenuOpen = false;
+  }
+
+  closeProfileModal(): void {
+    this.showProfileModal = false;
+  }
+
+  logout(event: Event): void {
+    event.stopPropagation();
+    this.authService.logout();
+    this.currentUser = null;
+    this.router.navigate(['/landing']);
+  }
+
+  /* Filtered Transactions */
+  filteredTransactions(): Transaction[] {
+    return this.transactions.filter(t => {
+      if (this.historyFilterAccountId &&
+          t.accountId !== this.historyFilterAccountId) {
+        return false;
+      }
+
+      const txDate = new Date(t.time).setHours(0,0,0,0);
+
+      if (this.fromDate) {
+        const from = new Date(this.fromDate).setHours(0,0,0,0);
+        if (txDate < from) return false;
+      }
+
+      if (this.toDate) {
+        const to = new Date(this.toDate).setHours(23,59,59,999);
+        if (txDate > to) return false;
+      }
+
+      return true;
+    });
+  }
+
+  // ---------- Mobile Nav ----------
+  toggleMobileNav(ev?: Event): void {
+    if (ev) ev.stopPropagation();
+    this.isMobileNavOpen = !this.isMobileNavOpen;
+  }
+
+  closeMobileNav(): void {
+    this.isMobileNavOpen = false;
+  }
+
+  // Close overlays on outside click
+  @HostListener('document:click')
+  closeOverlays() {
+    this.showNotifications = false;
+    this.isProfileMenuOpen = false;
+    this.isMobileNavOpen = false;
+  }
+
+  @HostListener('window:resize')
+  onResize() {
+    // Close mobile nav once viewport is larger than breakpoint
+    if (window.innerWidth > 900 && this.isMobileNavOpen) {
+      this.isMobileNavOpen = false;
+    }
+  }
 }
 
 // Utility functions
 function cryptoRandomId(): string {
-  // Generates a pseudo-random ID; for demo purposes (not cryptographically guaranteed in all browsers)
+  // Generates a pseudo-random ID; for demo purposes (not guaranteed in all browsers)
   try {
     const buf = new Uint8Array(8);
     (window.crypto || (window as any).msCrypto).getRandomValues(buf);
@@ -390,7 +467,3 @@ function cryptoRandomId(): string {
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
-
-
-
-
