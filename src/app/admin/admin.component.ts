@@ -7,6 +7,7 @@ import {
   ElementRef,
   ViewChild
 } from '@angular/core';
+import { ExistingUsersTableComponent, User as ExistingUser } from './existing-users-table/existing-users-table.component';
 import { AuthService } from '../auth/auth.service';
 import { CommonModule } from '@angular/common';
 import {
@@ -16,8 +17,8 @@ import {
   ReactiveFormsModule,
   FormsModule
 } from '@angular/forms';
-import {  RouterOutlet } from '@angular/router';
-import { Router} from '@angular/router';
+import { RouterOutlet } from '@angular/router';
+import { Router } from '@angular/router';
 
 type Role = 'Officer' | 'Manager' | 'Admin';
 type Status = 'Active' | 'Inactive' | 'Pending';
@@ -47,18 +48,18 @@ interface ComplianceMetrics {
   standalone: true,
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, FormsModule]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule,ExistingUsersTableComponent]
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ----- Page info -----
   currentYear = new Date().getFullYear();
-  
-activeView: 'admin' | 'compliance' = 'admin';
 
-// Methods:
-showCompliance(): void { this.activeView = 'compliance'; }
-showAdmin(): void { this.activeView = 'admin'; }
+  activeView: 'admin' | 'compliance' = 'admin';
+
+  // Methods:
+  showCompliance(): void { this.activeView = 'compliance'; }
+  showAdmin(): void { this.activeView = 'admin'; }
 
   // ----- Data -----
   users: User[] = [];
@@ -102,9 +103,7 @@ showAdmin(): void { this.activeView = 'admin'; }
   plotWidth(): number {
     return Math.max(240, this.chartWidth - this.chartLeftMargin - this.chartRightPadding);
   }
-   router: Router = Router.prototype;
-
-
+  router: Router = Router.prototype;
 
   getYMax(): number {
     const vals = [ ...(this.compliance.monthlyTxnVolume || []), ...(this.compliance.monthlySuspicious || []) ];
@@ -185,7 +184,6 @@ showAdmin(): void { this.activeView = 'admin'; }
         { label: '₹50k–₹1L',  count: 310 },
         { label: '> ₹1L',     count: 160 },
       ],
-      
     };
 
     // Start with no selection
@@ -471,6 +469,12 @@ showAdmin(): void { this.activeView = 'admin'; }
       );
   }
 
+  /** Existing users = everyone except Pending (Active + Inactive). */
+  
+  /** If you want strictly Active-only, replace the above with:
+   *  return this.filteredUsers().filter(u => u.status === 'Active');
+   */
+
   // ====== Profile helpers & actions ======
 
   /** Create avatar initials from full name (handles spaces/commas/hyphens). */
@@ -509,20 +513,17 @@ showAdmin(): void { this.activeView = 'admin'; }
     }
   }
 
- 
-  
-signOut(): void {
-  try {
-    this.auth.logout(); // Call your AuthService logout method
-    // After sign out, redirect to login page or home
-    window.location.href = '/landing'; // Or use Angular Router
-    // Example with Router:
-    // this.router.navigate(['/login']);
-  } catch (e) {
-    console.error('Sign out failed', e);
+  signOut(): void {
+    try {
+      this.auth.logout(); // Call your AuthService logout method
+      // After sign out, redirect to login page or home
+      window.location.href = '/landing'; // Or use Angular Router
+      // Example with Router:
+      // this.router.navigate(['/login']);
+    } catch (e) {
+      console.error('Sign out failed', e);
+    }
   }
-}
-
 
   /** Navigate to settings (replace with Router navigation if you want). */
   goToSettings(): void {
@@ -530,4 +531,46 @@ signOut(): void {
     // e.g., inject Router and navigate:
     // this.router.navigate(['/settings']);
   }
+
+    showExistingOnly = false;
+    
+ showOnlyExisting(): void {
+    this.showExistingOnly = true;
+    this.selectedUser = undefined; // optional
+  }
+
+showFullAdmin(): void {
+    this.showExistingOnly = false;
+  }
+
+  /** Existing users = everyone except Pending (Active + Inactive) */
+  existingUsers(): User[] {
+    return this.filteredUsers().filter(u => u.status !== 'Pending');
+    // If you want strictly Active-only:
+    // return this.filteredUsers().filter(u => u.status === 'Active');
+  }
+  
+onExistingUserUpdated(updated: ExistingUser): void {
+    const idx = this.users.findIndex(x => x.userId === updated.userId);
+    if (idx !== -1) {
+      this.users[idx] = { ...updated };
+    }
+    // Reselect a sensible user if needed
+    this.reselectFirstFiltered();
+  }
+  
+ onExistingUserSelected(u: ExistingUser): void {
+    this.selectUser(u as User);
+  }
+
+
+openExistingUsers(): void {
+  // Switch to Admin view (if currently on Compliance)
+  this.activeView = 'admin';
+  // Turn on existing-only mode
+  this.showOnlyExisting();
 }
+
+
+}
+

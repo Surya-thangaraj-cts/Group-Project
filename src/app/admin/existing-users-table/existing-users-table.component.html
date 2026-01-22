@@ -1,0 +1,106 @@
+
+<div class="card m-3">
+  <div class="card-header d-flex align-items-center justify-content-between">
+    <h2 class="h6 mb-0 text-white">Existing Users</h2>
+    <div class="small text-white">
+      Showing {{ rows.length | number }} {{ rows.length === 1 ? 'user' : 'users' }}
+    </div>
+  </div>
+
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>User ID</th>
+            <th>Name</th>
+            <th>Role</th>
+            <th>Email</th>
+            <th>Branch</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let u of rows">
+            <!-- Non-editing row -->
+            <ng-container *ngIf="editingUserId !== u.userId; else editRow">
+              <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.userId }}</td>
+              <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.name }}</td>
+              <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.role }}</td>
+              <td (click)="selectUser.emit(u)" class="text-truncate" style="max-width:280px; cursor:pointer;">
+                {{ u.email }}
+              </td>
+              <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.branch }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'bg-success-subtle text-success border border-success': u.status === 'Active',
+                    'bg-danger-subtle text-danger border border-danger': u.status === 'Inactive',
+                    'bg-warning-subtle text-warning border border-warning': u.status === 'Pending'
+                  }"
+                >
+                  {{ u.status }}
+                </span>
+              </td>
+              <td class="text-end">
+                <button type="button" class="btn btn-outline-dark btn-sm" (click)="startEdit(u)">Edit</button>
+              </td>
+            </ng-container>
+
+            <!-- Editing row -->
+            <ng-template #editRow>
+              <td>{{ u.userId }}</td>
+              <td colspan="5">
+                <form [formGroup]="editForm" (ngSubmit)="saveEdit(u)">
+                  <div class="row g-2">
+                    <div class="col-md-4">
+                      <label class="form-label">Name</label>
+                      <input type="text" class="form-control form-control-sm" formControlName="name" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Email</label>
+                      <input type="email" class="form-control form-control-sm" formControlName="email" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Role</label>
+                      <select class="form-select form-select-sm" formControlName="role">
+                        <option value="Officer">Officer</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Admin">Admin</option>
+                      </select>
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Branch</label>
+                      <input type="text" class="form-control form-control-sm" formControlName="branch" />
+                    </div>
+                    <div class="col-md-4">
+                      <label class="form-label">Status</label>
+                      <select class="form-select form-select-sm" formControlName="status">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Pending">Pending</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="mt-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm" [disabled]="editForm.invalid">Save</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+                  </div>
+                </form>
+              </td>
+              <td></td>
+            </ng-template>
+          </tr>
+
+          <tr *ngIf="rows.length === 0">
+            <td colspan="7" class="text-center text-muted py-3">No existing users</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

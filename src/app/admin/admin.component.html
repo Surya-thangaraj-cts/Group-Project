@@ -1,170 +1,196 @@
 
-<!-- Admin Console Page - Full Template (Angular, no external routing, inline toggle) -->
-<body>
-  <div class="container py-3 admin-page" oncontextmenu="return false">
-    <!-- ===== Header (Profile + toggle button) ===== -->
-    <div class="mb-3 header">
-      <div class="d-flex align-items-center justify-content-between gap-3">
-        <div>
-          <h1 class="h4 mb-1">
-            <!-- Title changes based on active view -->
-            <ng-container *ngIf="activeView === 'admin'; else complTitle">Admin Console</ng-container>
-            <ng-template #complTitle>Compliance Dashboard</ng-template>
-          </h1>
-          <p class="mb-0">
-            <ng-container *ngIf="activeView === 'admin'; else complSubtitle">
-              User management &amp; compliance metrics
-            </ng-container>
-            <ng-template #complSubtitle>
-              Transactions, flags, and distribution
-            </ng-template>
-          </p>
-        </div>
+<!-- Admin Console Page -->
+<div class=" py-3 admin-page" oncontextmenu="return false">
+  <!-- ===== Header (Profile + toggles) ===== -->
+  <div class="mb-3 header">
+    <div class="d-flex align-items-center justify-content-between gap-3">
+      <div>
+        <h1 class="h4 mb-1">
+          <!-- Title changes based on active view -->
+          <ng-container *ngIf="activeView === 'admin'; else complTitle">Admin Console</ng-container>
+          <ng-template #complTitle>Compliance Dashboard</ng-template>
+        </h1>
+        <p class="mb-0">
+          <ng-container *ngIf="activeView === 'admin'; else complSubtitle">
+            User management &amp; compliance metrics
+          </ng-container>
+          <ng-template #complSubtitle>
+            Transactions, flags, and distribution
+          </ng-template>
+        </p>
+      </div>
 
-        <div class="d-flex align-items-center gap-3">
-          <!-- Toggle button: switches between Admin and Compliance dashboards -->
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Toggle Admin/Compliance -->
+        <button
+          *ngIf="activeView === 'admin'; else backToAdminBtn"
+          class="btn btn-outline-light btn-sm"
+          type="button"
+          (click)="showCompliance()"
+          title="Open Compliance Dashboard"
+        >
+          View Compliance Metrics
+        </button>
+        <ng-template #backToAdminBtn>
           <button
-            *ngIf="activeView === 'admin'; else backToAdminBtn"
             class="btn btn-outline-light btn-sm"
             type="button"
-            (click)="showCompliance()"
-            title="Open Compliance Dashboard"
+            (click)="showAdmin()"
+            title="Back to Admin Console"
           >
-            View Compliance Metrics
+            Back to Admin Console
           </button>
-          <ng-template #backToAdminBtn>
-            <button
-              class="btn btn-outline-light btn-sm"
-              type="button"
-              (click)="showAdmin()"
-              title="Back to Admin Console"
-            >
-              Back to Admin Console
-            </button>
-          </ng-template>
+        </ng-template>
 
-          <!-- Profile dropdown -->
-          <div class="position-relative">
-            <button
-              class="btn btn-transparent d-flex align-items-center gap-2 p-0"
-              type="button"
-              id="headerProfileDropdown"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <span
-                class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-                style="width:36px;height:36px;font-size:0.9rem;"
-              >
-                {{ initials(currentUser?.name ?? '') }}
-              </span>
-              <span class="d-none d-md-inline text-white fw-semibold">{{ currentUser?.name || 'User' }}</span>
-            </button>
-
-            <ul class="dropdown-menu dropdown-menu-end text-sm" aria-labelledby="headerProfileDropdown">
-              <li class="px-3 py-2">
-                <div class="small text-muted mb-1">Signed in as</div>
-                <div class="fw-semibold">{{ currentUser?.name || 'Unknown User' }}</div>
-                <div class="text-muted text-truncate" style="max-width:220px;">
-                  {{ currentUser?.email || '' }}
-                </div>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li class="px-3 py-2">
-                <div class="small text-muted">Role</div>
-                <div class="fw-semibold">{{ currentUser?.role || '' }}</div>
-              </li>
-              <li class="px-3 py-2">
-                <div class="small text-muted">Branch</div>
-                <div class="fw-semibold">{{ currentUser?.branch || '' }}</div>
-              </li>
-              <li><hr class="dropdown-divider"></li>
-              <li>
-                <button
-                  class="dropdown-item"
-                  type="button"
-                  data-bs-toggle="offcanvas"
-                  data-bs-target="#offcanvasProfile"
-                  (click)="selectUser(currentUser!)"
-                >
-                  View full profile
-                </button>
-              </li>
-              <li>
-                <button class="dropdown-item" type="button" (click)="signOut()">Sign out</button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== Offcanvas: Full Profile ===== -->
-    <div
-      class="offcanvas offcanvas-end text-bg-dark"
-      tabindex="-1"
-      id="offcanvasProfile"
-      aria-labelledby="offcanvasProfileLabel"
-    >
-      <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasProfileLabel">My Profile</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-      </div>
-      <div class="offcanvas-body">
-        <div class="d-flex align-items-center gap-3 mb-3">
-          <div
-            class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-            style="width:48px;height:48px;font-size:1rem;"
+        <!-- Existing Users button visible on both Admin & Compliance -->
+        <button
+          *ngIf="!(activeView === 'admin' && showExistingOnly); else backToFull"
+          class="btn btn-warning btn-sm"
+          type="button"
+          (click)="openExistingUsers()"
+          title="Show only Existing Users"
+        >
+          Existing Users
+        </button>
+        <ng-template #backToFull>
+          <button
+            class="btn btn-outline-warning btn-sm"
+            type="button"
+            (click)="showFullAdmin()"
+            title="Back to full Admin"
           >
-            {{ initials(currentUser?.name ?? '') }}
-          </div>
-          <div>
-            <div class="fw-semibold fs-5">{{ currentUser?.name || 'Unknown User' }}</div>
-            <div class="text-muted">{{ currentUser?.email || '' }}</div>
-          </div>
-        </div>
+            Back to Admin
+          </button>
+        </ng-template>
 
-        <div class="row g-3">
-          <div class="col-12 col-md-6">
-            <div class="text-muted small">User ID</div>
-            <div class="fw-semibold">{{ currentUser?.userId || '' }}</div>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="text-muted small">Role</div>
-            <div class="fw-semibold">{{ currentUser?.role || '' }}</div>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="text-muted small">Branch</div>
-            <div class="fw-semibold">{{ currentUser?.branch || '' }}</div>
-          </div>
-          <div class="col-12 col-md-6">
-            <div class="text-muted small">Status</div>
+        <!-- <span *ngIf="activeView === 'admin' && showExistingOnly" class="badge bg-warning text-dark ms-1 align-self-center">
+          Existing-only
+        </span> -->
+
+        <!-- Profile dropdown -->
+        <div class="position-relative ms-1">
+          <button
+            class="btn btn-transparent d-flex align-items-center gap-2 p-0"
+            type="button"
+            id="headerProfileDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
             <span
-              class="badge"
-              [ngClass]="{
-                'bg-success-subtle text-success border border-success': currentUser?.status === 'Active',
-                'bg-danger-subtle text-danger border border-danger': currentUser?.status === 'Inactive',
-                'bg-warning-subtle text-warning border border-warning': currentUser?.status === 'Pending'
-              }"
+              class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+              style="width:36px;height:36px;font-size:0.9rem;"
             >
-              {{ currentUser?.status || '' }}
+              {{ initials(currentUser?.name ?? '') }}
             </span>
-          </div>
-        </div>
+            <span class="d-none d-md-inline text-white fw-semibold">{{ currentUser?.name || 'User' }}</span>
+          </button>
 
-        <div class="mt-4 d-flex gap-2">
-          <button class="btn btn-outline-light btn-sm" (click)="startEdit(currentUser!)" data-bs-dismiss="offcanvas">
-            Edit My Details
-          </button>
-          <button class="btn btn-primary btn-sm" (click)="goToSettings()" data-bs-dismiss="offcanvas">
-            Settings
-          </button>
+          <ul class="dropdown-menu dropdown-menu-end text-sm" aria-labelledby="headerProfileDropdown">
+            <li class="px-3 py-2">
+              <div class="small text-muted mb-1">Signed in as</div>
+              <div class="fw-semibold">{{ currentUser?.name || 'Unknown User' }}</div>
+              <div class="text-muted text-truncate" style="max-width:220px;">
+                {{ currentUser?.email || '' }}
+              </div>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li class="px-3 py-2">
+              <div class="small text-muted">Role</div>
+              <div class="fw-semibold">{{ currentUser?.role || '' }}</div>
+            </li>
+            <li class="px-3 py-2">
+              <div class="small text-muted">Branch</div>
+              <div class="fw-semibold">{{ currentUser?.branch || '' }}</div>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+              <button
+                class="dropdown-item"
+                type="button"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvasProfile"
+                (click)="selectUser(currentUser!)"
+              >
+                View full profile
+              </button>
+            </li>
+            <li>
+              <button class="dropdown-item" type="button" (click)="signOut()">Sign out</button>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- ===== ADMIN VIEW ===== -->
-    <div *ngIf="activeView === 'admin'">
+  <!-- ===== Offcanvas: Full Profile ===== -->
+  <div
+    class="offcanvas offcanvas-end text-bg-dark"
+    tabindex="-1"
+    id="offcanvasProfile"
+    aria-labelledby="offcanvasProfileLabel"
+  >
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasProfileLabel">My Profile</h5>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div
+          class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+          style="width:48px;height:48px;font-size:1rem;"
+        >
+          {{ initials(currentUser?.name ?? '') }}
+        </div>
+        <div>
+          <div class="fw-semibold fs-5">{{ currentUser?.name || 'Unknown User' }}</div>
+          <div class="text-muted">{{ currentUser?.email || '' }}</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <div class="text-muted small">User ID</div>
+          <div class="fw-semibold">{{ currentUser?.userId || '' }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted small">Role</div>
+          <div class="fw-semibold">{{ currentUser?.role || '' }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted small">Branch</div>
+          <div class="fw-semibold">{{ currentUser?.branch || '' }}</div>
+        </div>
+        <div class="col-12 col-md-6">
+          <div class="text-muted small">Status</div>
+          <span
+            class="badge"
+            [ngClass]="{
+              'bg-success-subtle text-success border border-success': currentUser?.status === 'Active',
+              'bg-danger-subtle text-danger border border-danger': currentUser?.status === 'Inactive',
+              'bg-warning-subtle text-warning border border-warning': currentUser?.status === 'Pending'
+            }"
+          >
+            {{ currentUser?.status || '' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-outline-light btn-sm" (click)="startEdit(currentUser!)" data-bs-dismiss="offcanvas">
+          Edit My Details
+        </button>
+        <button class="btn btn-primary btn-sm" (click)="goToSettings()" data-bs-dismiss="offcanvas">
+          Settings
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN VIEW ===== -->
+  <div *ngIf="activeView === 'admin'">
+    <!-- Normal Admin layout (hidden in Existing-only mode) -->
+    <ng-container *ngIf="!showExistingOnly; else existingOnlyBlock">
       <!-- Filters -->
       <div class="card mb-3">
         <div class="card-body">
@@ -183,8 +209,12 @@
                 placeholder="Search by name, email, branch, or ID"
               />
               <div class="mt-2 d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-primary" (click)="onSearchChange(searchInput.value)">Search</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearSearch(searchInput)">Clear</button>
+                <button type="button" class="btn btn-sm btn-primary" (click)="onSearchChange(searchInput.value)">
+                  Search
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearSearch(searchInput)">
+                  Clear
+                </button>
               </div>
             </div>
             <div class="col-md-3 filter-col role-filter-col d-flex flex-column justify-content-center">
@@ -205,7 +235,7 @@
         </div>
       </div>
 
-      <!-- User Details (always visible) -->
+      <!-- User Details -->
       <div class="card mb-3 text-white">
         <div class="card-header d-flex align-items-center justify-content-between">
           <h2 class="h6 mb-0">User Details</h2>
@@ -307,221 +337,143 @@
           </div>
         </div>
       </div>
+    </ng-container>
 
-      <!-- Users with inline edit -->
-      <div class="card mb-3">
-        <div class="card-header">
-          <h2 class="h6 mb-0">Users</h2>
-        </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-sm table-hover mb-0 align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th>User ID</th>
-                  <th>Name</th>
-                  <th>Role</th>
-                  <th>Email</th>
-                  <th>Branch</th>
-                  <th>Status</th>
-                  <th class="text-end">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let u of filteredUsers()">
-                  <!-- Non-editing row -->
-                  <ng-container *ngIf="editingUserId !== u.userId; else editRow">
-                    <td (click)="selectUser(u)" style="cursor: pointer;">{{ u.userId }}</td>
-                    <td (click)="selectUser(u)" style="cursor: pointer;">{{ u.name }}</td>
-                    <td (click)="selectUser(u)" style="cursor: pointer;">{{ u.role }}</td>
-                    <td (click)="selectUser(u)" class="text-truncate" style="max-width: 280px; cursor: pointer;">
-                      {{ u.email }}
-                    </td>
-                    <td (click)="selectUser(u)" style="cursor: pointer;">{{ u.branch }}</td>
-                    <td>
-                      <span
-                        class="badge"
-                        [ngClass]="{
-                          'bg-success-subtle text-success border border-success': u.status === 'Active',
-                          'bg-danger-subtle text-danger border border-danger': u.status === 'Inactive',
-                          'bg-warning-subtle text-warning border border-warning': u.status === 'Pending'
-                        }"
-                      >
-                        {{ u.status }}
-                      </span>
-                    </td>
-                    <td class="text-end">
-                      <button type="button" class="btn btn-outline-dark btn-sm" (click)="startEdit(u)">Edit</button>
-                    </td>
-                  </ng-container>
-
-                  <!-- Editing row -->
-                  <ng-template #editRow>
-                    <td>{{ u.userId }}</td>
-                    <td colspan="5">
-                      <form [formGroup]="editUserForm" (ngSubmit)="updateUser()">
-                        <div class="row g-2">
-                          <div class="col-md-4">
-                            <label class="form-label">Name</label>
-                            <input type="text" class="form-control form-control-sm" formControlName="name" />
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control form-control-sm" formControlName="email" />
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Role</label>
-                            <select class="form-select form-select-sm" formControlName="role">
-                              <option value="Officer">Officer</option>
-                              <option value="Manager">Manager</option>
-                              <option value="Admin">Admin</option>
-                            </select>
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Branch</label>
-                            <input type="text" class="form-control form-control-sm" formControlName="branch" />
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Status</label>
-                            <select class="form-select form-select-sm" formControlName="status">
-                              <option value="Active">Active</option>
-                              <option value="Inactive">Inactive</option>
-                              <option value="Pending">Pending</option>
-                            </select>
-                          </div>
-                        </div>
-                        <div class="mt-2 d-flex gap-2">
-                          <button type="submit" class="btn btn-primary btn-sm" [disabled]="editUserForm.invalid">Save</button>
-                          <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
-                        </div>
-                      </form>
-                    </td>
-                    <td></td>
-                  </ng-template>
-                </tr>
-
-                <tr *ngIf="filteredUsers().length === 0">
-                  <td colspan="7" class="text-center text-white py-3">No users found</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== COMPLIANCE VIEW ===== -->
-    <div *ngIf="activeView === 'compliance'">
-      <!-- Compliance KPIs -->
-      <div class="card mb-3">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h2 class="h6 mb-0">KPIs</h2>
-          <button class="btn btn-sm btn-outline-dark" type="button" (click)="showAdmin()">Back to Admin</button>
-        </div>
-        <div class="card-body">
-          <div class="row g-3 mb-3 kpis-row">
-            <div class="col-12 col-md-4">
-              <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
-                <div class="text-muted small">Total Transactions</div>
-                <div class="fs-5 fw-semibold text-dark">{{ compliance.totalTransactions | number }}</div>
-              </div>
-            </div>
-            <div class="col-12 col-md-4">
-              <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
-                <div class="text-muted small">High-Value Count</div>
-                <div class="fs-5 fw-semibold text-dark">{{ compliance.highValueCount | number }}</div>
-              </div>
-            </div>
-            <div class="col-12 col-md-4">
-              <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
-                <div class="text-muted small">Account Growth Rate</div>
-                <div class="fs-5 fw-semibold text-dark">{{ compliance.accountGrowthRate | number:'1.0-2' }}%</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dual line chart -->
-          <div class="chart-block mb-3">
-            <div class="container-fluid px-3 px-md-4">
-              <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap">
-                <h3 class="h6 mb-2 mb-md-0">Monthly Volume vs Suspicious Flags</h3>
-                <div class="legend small text-muted d-flex align-items-center gap-3">
-                  <span class="d-inline-flex align-items-center gap-1">
-                    <span class="swatch" style="background:#1976d2;"></span> Transactions
-                  </span>
-                  <span class="d-inline-flex align-items-center gap-1">
-                    <span class="swatch" style="background:#d32f2f;"></span> Suspicious
-                  </span>
-                </div>
-              </div>
-
-              <!-- Chart wrapper reference -->
-              <div class="svg-wrap" #chartWrap>
-                <svg
-                  class="svg-chart"
-                  role="img"
-                  aria-label="Monthly volume and suspicious"
-                  [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
-                  preserveAspectRatio="xMidYMid meet"
-                >
-                  <!-- Y axis ticks & grid -->
-                  <g class="y-axis" *ngIf="compliance.monthlyTxnVolume.length">
-                    <g *ngFor="let t of yTicks()">
-                      <line [attr.x1]="chartLeftMargin" [attr.y1]="yPosInPlot(t, chartHeight - 60)" [attr.x2]="chartLeftMargin + plotWidth()" [attr.y2]="yPosInPlot(t, chartHeight - 60)" stroke="rgba(0,0,0,0.06)" />
-                      <text [attr.x]="chartLeftMargin - 8" [attr.y]="yPosInPlot(t, chartHeight - 60) + 4" text-anchor="end" font-size="11">{{ t | number }}</text>
-                    </g>
-                  </g>
-
-                  <!-- Move plot area right to make room for Y axis labels -->
-                  <g [attr.transform]="'translate(' + chartLeftMargin + ',0)'">
-                    <!-- baseline -->
-                    <line [attr.x1]="0" [attr.y1]="chartHeight - 60" [attr.x2]="plotWidth()" [attr.y2]="chartHeight - 60" stroke="#cfd8dc" />
-
-                    <!-- series -->
-                    <path [attr.d]="linePath(compliance.monthlyTxnVolume, plotWidth(), chartHeight - 60)" fill="none" stroke="#1976d2" stroke-width="2"></path>
-
-                    <path [attr.d]="linePath(compliance.monthlySuspicious, plotWidth(), chartHeight - 60)" fill="none" stroke="#d32f2f" stroke-width="2" stroke-dasharray="4 3"></path>
-
-                    <!-- x-axis labels -->
-                    <g class="x-labels text-dark">
-                      <text
-                        *ngFor="let lbl of compliance.monthlyLabels; let i = index"
-                        [attr.x]="(plotWidth() / (compliance.monthlyLabels.length - 1)) * i"
-                        [attr.y]="chartHeight - 25"
-                        text-anchor="middle"
-                        font-size="12"
-                      >
-                        {{ lbl }}
-                      </text>
-                    </g>
-                  </g>
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <!-- Amount Buckets -->
-          <div class="chart-block mb-3">
-            <h3 class="h6 mb-2">Amount Buckets</h3>
-            <div class="bars">
-              <div class="bar-row" *ngFor="let b of compliance.amountBuckets">
-                <div class="bar-label">{{ b.label }}</div>
-                <div class="bar-track">
-                  <div class="bar-fill" [style.width.%]="(b.count / maxBucket) * 100"></div>
-                </div>
-                <div class="bar-value text-white">{{ b.count | number }}</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Channel Mix (placeholder for future) -->
-        </div>
-      </div>
-    </div>
-
-    <!-- Footer (optional) -->
+    <!-- Existing-only mode: ONLY show the child component -->
+    <ng-template #existingOnlyBlock>
+      <app-existing-users-table
+        [rows]="existingUsers()"
+        (selectUser)="onExistingUserSelected($event)"
+        (updateUser)="onExistingUserUpdated($event)"
+      ></app-existing-users-table>
+    </ng-template>
   </div>
-</body>
+
+  <!-- ===== COMPLIANCE VIEW ===== -->
+  <div *ngIf="activeView === 'compliance'">
+    <!-- Compliance KPIs -->
+    <div class="card mb-3">
+      <!-- <div class="card-header d-flex align-items-center justify-content-between">
+        <h2 class="h6 mb-0">KPIs</h2>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-dark" type="button" (click)="showAdmin()">Back to Admin</button>
+          <button class="btn btn-sm btn-warning" type="button" (click)="openExistingUsers()">Existing Users</button>
+        </div>
+      </div> -->
+      <div class="card-body">
+        <div class="row g-3 mb-3 kpis-row">
+          <div class="col-12 col-md-4">
+            <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
+              <div class="text-muted small">Total Transactions</div>
+              <div class="fs-5 fw-semibold text-white">{{ compliance.totalTransactions | number }}</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
+              <div class="text-muted small">High-Value Count</div>
+              <div class="fs-5 fw-semibold text-white">{{ compliance.highValueCount | number }}</div>
+            </div>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
+              <div class="text-muted small">Account Growth Rate</div>
+              <div class="fs-5 fw-semibold text-white">{{ compliance.accountGrowthRate | number:'1.0-2' }}%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dual line chart -->
+        <div class="chart-block mb-3">
+          <div class="container-fluid px-3 px-md-4">
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap">
+              <h3 class="h6 mb-2 mb-md-0">Monthly Volume vs Suspicious Flags</h3>
+              <div class="legend small text-muted d-flex align-items-center gap-3">
+                <span class="d-inline-flex align-items-center gap-1">
+                  <span class="swatch" style="background:#1976d2;"></span> Transactions
+                </span>
+                <span class="d-inline-flex align-items-center gap-1">
+                  <span class="swatch" style="background:#d32f2f;"></span> Suspicious
+                </span>
+              </div>
+            </div>
+
+            <!-- Chart wrapper reference -->
+            <div class="svg-wrap" #chartWrap>
+              <svg
+                class="svg-chart"
+                role="img"
+                aria-label="Monthly volume and suspicious"
+                [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <!-- Y axis ticks & grid -->
+                <g class="y-axis" *ngIf="compliance.monthlyTxnVolume.length">
+                  <g *ngFor="let t of yTicks()">
+                    <line
+                      [attr.x1]="chartLeftMargin"
+                      [attr.y1]="yPosInPlot(t, chartHeight - 60)"
+                      [attr.x2]="chartLeftMargin + plotWidth()"
+                      [attr.y2]="yPosInPlot(t, chartHeight - 60)"
+                      stroke="rgba(0,0,0,0.06)"
+                    />
+                    <text
+                      [attr.x]="chartLeftMargin - 8"
+                      [attr.y]="yPosInPlot(t, chartHeight - 60) + 4"
+                      text-anchor="end"
+                      font-size="11"
+                    >
+                      {{ t | number }}
+                    </text>
+                  </g>
+                </g>
+
+                <!-- Move plot area right to make room for Y axis labels -->
+                <g [attr.transform]="'translate(' + chartLeftMargin + ',0)'">
+                  <!-- baseline -->
+                  <line [attr.x1]="0" [attr.y1]="chartHeight - 60" [attr.x2]="plotWidth()" [attr.y2]="chartHeight - 60" stroke="#cfd8dc" />
+
+                  <!-- series -->
+                  <path [attr.d]="linePath(compliance.monthlyTxnVolume, plotWidth(), chartHeight - 60)" fill="none" stroke="#1976d2" stroke-width="2"></path>
+
+                  <path [attr.d]="linePath(compliance.monthlySuspicious, plotWidth(), chartHeight - 60)" fill="none" stroke="#d32f2f" stroke-width="2" stroke-dasharray="4 3"></path>
+
+                  <!-- x-axis labels -->
+                  <g class="x-labels text-dark">
+                    <text
+                      *ngFor="let lbl of compliance.monthlyLabels; let i = index"
+                      [attr.x]="(plotWidth() / (compliance.monthlyLabels.length - 1)) * i"
+                      [attr.y]="chartHeight - 25"
+                      text-anchor="middle"
+                      font-size="12"
+                    >
+                      {{ lbl }}
+                    </text>
+                  </g>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amount Buckets -->
+        <div class="chart-block mb-3">
+          <h3 class="h6 mb-2">Amount Buckets</h3>
+          <div class="bars">
+            <div class="bar-row" *ngFor="let b of compliance.amountBuckets">
+              <div class="bar-label">{{ b.label }}</div>
+              <div class="bar-track">
+                <div class="bar-fill" [style.width.%]="(b.count / maxBucket) * 100"></div>
+              </div>
+              <div class="bar-value text-white">{{ b.count | number }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer (optional) -->
+</div>
 
 <!-- Optional small styles -->
 <style>
@@ -530,7 +482,3 @@
   .swatch { display:inline-block; width:12px; height:12px; border-radius:2px; }
   .btn-transparent { background: transparent; border: 0; color: inherit; }
 </style>
-
-<!-- Bootstrap JS (required for dropdown & offcanvas). Remove if already included globally. -->
-<!-- <script/cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js</script> -->
-
