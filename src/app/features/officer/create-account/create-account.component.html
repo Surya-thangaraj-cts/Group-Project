@@ -1,0 +1,176 @@
+
+<div class="card">
+  <header class="card-header"><h2>Create Bank Account</h2></header>
+
+  <form [formGroup]="createForm" (ngSubmit)="createAccount()" class="responsive-form" novalidate>
+    <div class="grid">
+      <label>
+        Account ID
+        <input type="text" formControlName="accountId" placeholder="Enter Account ID" />
+        <div class="error" *ngIf="createForm.get('accountId')?.invalid && (createForm.get('accountId')?.touched || submitted)">
+          <small *ngIf="createForm.get('accountId')?.errors?.['required']" class="err-text">Account ID is required!</small>
+          <small *ngIf="createForm.get('accountId')?.errors?.['minlength']" class="err-text">Account ID must be at least 3 characters!</small>
+        </div>
+      </label>
+
+      <label>
+        Customer Name
+        <input type="text" formControlName="customerName" placeholder="Enter Customer Name" />
+        <div class="error" *ngIf="createForm.get('customerName')?.invalid && (createForm.get('customerName')?.touched || submitted)">
+          <small *ngIf="createForm.get('customerName')?.errors?.['required']" class="err-text">Customer Name is required!</small>
+        </div>
+      </label>
+
+      <label>
+        Customer ID
+        <input type="text" formControlName="customerId" placeholder="Enter Customer ID" />
+        <div class="error" *ngIf="createForm.get('customerId')?.invalid && (createForm.get('customerId')?.touched || submitted)">
+          <small *ngIf="createForm.get('customerId')?.errors?.['required']" class="err-text">Customer ID is required!</small>
+        </div>
+      </label>
+
+      <label>
+        Account Type
+        <select formControlName="accountType">
+          <option value="SAVINGS">Savings</option>
+          <option value="CURRENT">Current</option>
+        </select>
+        <div class="error" *ngIf="createForm.get('accountType')?.invalid && (createForm.get('accountType')?.touched || submitted)">
+          <small *ngIf="createForm.get('accountType')?.errors?.['required']" class="err-text">Account Type is required!</small>
+        </div>
+      </label>
+    </div>
+
+    <br />
+
+    <div class="actions">
+      <button class="primary" type="submit">Create Account</button>
+      <button type="button" class="secondary" (click)="createForm.reset(defaultCreateForm()); submitted=false">
+        Reset
+      </button>
+    </div>
+
+    <div class="helper" *ngIf="submitted && createForm.invalid">
+      <small>There are errors above. Please fix them to continue.</small>
+    </div>
+  </form>
+
+  <hr />
+
+  <!-- Use VM (view-model) observable to drive pagination -->
+  <ng-container *ngIf="vm$ | async as vm">
+    <h3>Existing Accounts ({{ vm.total }})</h3>
+    <br />
+
+    <div class="table-wrap" *ngIf="vm.total > 0; else noAccountsCreate">
+      <!-- Plain table (no scroll-table class) -->
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Account ID</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Customer ID</th>
+            <th scope="col">Type</th>
+            <th scope="col">Status</th>
+            <th scope="col">Opened</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let a of vm.pageData; trackBy: trackByAccountId">
+            <td [attr.data-label]="'Account ID'">{{ a.accountId }}</td>
+            <td [attr.data-label]="'Customer Name'">{{ a.customerName }}</td>
+            <td [attr.data-label]="'Customer ID'">{{ a.customerId }}</td>
+            <td [attr.data-label]="'Type'">{{ a.accountType }}</td>
+            <td [attr.data-label]="'Status'">
+              <span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">{{ a.status }}</span>
+            </td>
+            <td [attr.data-label]="'Opened'">{{ a.openedAt | date:'medium' }}</td>
+            <td [attr.data-label]="'Actions'">
+              <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination controls -->
+      <div class="actions" style="justify-content: space-between; align-items: center; gap: .5rem; padding-top: .5rem;">
+        <!-- Rows per page -->
+        <div class="inline" style="gap:.5rem;">
+          <span class="muted">Rows per page</span>
+          <select
+            [value]="vm.pageSize"
+            (change)="onPageSizeChange($event)"
+            aria-label="Rows per page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .5rem;"
+          >
+            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+
+        <!-- Range & total -->
+        <div class="muted">
+          {{ vm.from }}–{{ vm.to }} of {{ vm.total }}
+        </div>
+
+        <!-- Page buttons with INLINE WHITE STYLE -->
+        <div class="actions" style="gap:.35rem;">
+          <button
+            type="button"
+            (click)="setPage(1)"
+            [disabled]="vm.currentPage===1"
+            aria-label="First page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
+            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null"
+          >First</button>
+
+          <button
+            type="button"
+            (click)="prevPage()"
+            [disabled]="vm.currentPage===1"
+            aria-label="Previous page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
+            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null"
+          >Prev</button>
+
+          <ng-container *ngFor="let p of vm.pages">
+            <button
+              type="button"
+              (click)="setPage(p)"
+              [attr.aria-current]="p===vm.currentPage ? 'page' : null"
+              [attr.aria-label]="'Go to page ' + p"
+              [ngStyle]="p===vm.currentPage
+                ? {'background':'#0f172a','color':'#ffffff','border':'1px solid #0f172a','box-shadow':'0 2px 6px rgba(15,23,42,.15)'}
+                : null"
+              style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .6rem;min-width:2.25rem;text-align:center;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            >
+              {{ p }}
+            </button>
+          </ng-container>
+
+          <button
+            type="button"
+            (click)="nextPage()"
+            [disabled]="vm.currentPage===vm.totalPages"
+            aria-label="Next page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
+            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null"
+          >Next</button>
+
+          <button
+            type="button"
+            (click)="setPage(vm.totalPages)"
+            [disabled]="vm.currentPage===vm.totalPages"
+            aria-label="Last page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
+            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null"
+          >Last</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #noAccountsCreate>
+    <p class="muted">No accounts yet. Create one using the form above.</p>
+  </ng-template>
+</div>
