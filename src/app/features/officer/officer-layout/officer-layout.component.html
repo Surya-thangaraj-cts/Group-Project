@@ -15,6 +15,14 @@
   <ul class="nav-links">
     <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/create']">Create Bank Account</button></li>
     <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/update']">Update Bank Account</button></li>
+    <li routerLinkActive="active">
+      <button type="button" [routerLink]="['/officer/alerts']" style="display:flex;align-items:center;gap:.5rem;">
+        Alerts
+        <span *ngIf="(unreadCount$ | async) as u" class="pill bad" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;padding:.1rem .4rem;" [hidden]="!u || u===0">
+          {{ u }}
+        </span>
+      </button>
+    </li>
     <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/history']">Transaction History</button></li>
   </ul>
 
@@ -108,6 +116,10 @@
   <div class="mobile-nav-group">
     <button type="button" class="mobile-link" routerLink="/officer/create" (click)="closeMobileNav()">Create Bank Account</button>
     <button type="button" class="mobile-link" routerLink="/officer/update" (click)="closeMobileNav()">Update Bank Account</button>
+    <button type="button" class="mobile-link" routerLink="/officer/alerts" (click)="closeMobileNav()">
+      Alerts
+      <span *ngIf="(unreadCount$ | async) as u" class="pill bad" style="margin-left:.5rem;" [hidden]="!u || u===0">{{ u }}</span>
+    </button>
     <button type="button" class="mobile-link" routerLink="/officer/history" (click)="closeMobileNav()">Transaction History</button>
   </div>
 
@@ -171,7 +183,9 @@
     <h5 class="offcanvas-title" id="offcanvasProfileLabel">My Profile</h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
+
   <div class="offcanvas-body">
+    <!-- Header row -->
     <div class="d-flex align-items-center gap-3 mb-3">
       <div
         class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
@@ -179,23 +193,24 @@
         {{ initials(currentUser?.name ?? '') }}
       </div>
       <div>
-        <div class="fw-semibold fs-5">{{ currentUser?.name || 'Unknown User' }}</div>
-        <div class="text-muted text-truncate">{{ currentUser?.email || '' }}</div>
+        <div class="fw-semibold fs-5 profile-name">{{ currentUser?.name || 'Unknown User' }}</div>
+        <div class="profile-email">{{ currentUser?.email || '' }}</div>
       </div>
     </div>
 
+    <!-- Details grid -->
     <div class="row g-3">
       <div class="col-12 col-md-6">
         <div class="text-muted small">User ID</div>
-        <div class="fw-semibold text-truncate">{{ currentUser?.userId || '' }}</div>
+        <div class="fw-semibold profile-value">{{ currentUser?.userId || '' }}</div>
       </div>
       <div class="col-12 col-md-6">
         <div class="text-muted small">Role</div>
-        <div class="fw-semibold text-truncate">{{ currentUser?.role || '' }}</div>
+        <div class="fw-semibold profile-value">{{ currentUser?.role || '' }}</div>
       </div>
       <div class="col-12 col-md-6">
         <div class="text-muted small">Branch</div>
-        <div class="fw-semibold text-truncate">{{ currentUser?.branch || '' }}</div>
+        <div class="fw-semibold profile-value">{{ currentUser?.branch || '' }}</div>
       </div>
       <div class="col-12 col-md-6">
         <div class="text-muted small">Status</div>
@@ -209,13 +224,6 @@
           {{ currentUser?.status || '' }}
         </span>
       </div>
-    </div>
-
-    <!-- Removed Edit button; kept Settings only -->
-    <div class="mt-4 d-flex gap-2">
-      <button class="btn btn-primary btn-sm" (click)="goToSettings()" data-bs-dismiss="offcanvas">
-        Settings
-      </button>
     </div>
   </div>
 </div>

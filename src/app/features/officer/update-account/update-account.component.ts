@@ -10,6 +10,8 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { map, take } from 'rxjs/operators';
 
+type StatusFilter = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED';
+
 @Component({
   selector: 'update-account',
   standalone: true,
@@ -40,6 +42,16 @@ export class UpdateAccountComponent implements OnInit {
   accounts$ = this.officerSvc.accounts$;
   updateRequests$: Observable<UpdateRequest[]> = this.officerSvc.updateRequests$;
 
+  // ---------- Status filter for Updation Status ----------
+  statusFilter: StatusFilter = 'ALL';
+  private statusFilter$ = new BehaviorSubject<StatusFilter>('ALL');
+  onStatusFilterChange(val: StatusFilter | string) {
+    const v = (val as StatusFilter) ?? 'ALL';
+    this.statusFilter = v;
+    this.statusFilter$.next(v);
+    this.urPageIndex$.next(1);
+  }
+
   // ---------- Pagination (Updation Status) ----------
   urPageSizeOptions = [5, 10, 20];
   private urPageIndex$ = new BehaviorSubject<number>(1);  // 1-based
@@ -54,15 +66,27 @@ export class UpdateAccountComponent implements OnInit {
     from: number;
     to: number;
     pages: number[];
-  }> = combineLatest([this.updateRequests$, this.urPageIndex$, this.urPageSize$]).pipe(
-    map(([list, pageIndex, pageSize]) => {
-      const data = Array.isArray(list) ? list : [];
-      const total = data.length;
+  }> = combineLatest([this.updateRequests$, this.statusFilter$, this.urPageIndex$, this.urPageSize$]).pipe(
+    map(([list, sFilter, pageIndex, pageSize]) => {
+      const data = Array.isArray(list) ? [...list] : [];
+
+      // Filter by status first
+      const filtered = data.filter(u => {
+        if (sFilter === 'PENDING' && u.status !== 'PENDING') return false;
+        if (sFilter === 'APPROVED' && u.status !== 'APPROVED') return false;
+        if (sFilter === 'REJECTED' && u.status !== 'REJECTED') return false;
+        return true;
+      });
+
+      // latest first (by time)
+      filtered.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+
+      const total = filtered.length;
       const totalPages = Math.max(1, Math.ceil(total / pageSize));
       const currentPage = Math.min(Math.max(1, pageIndex), totalPages);
       const start = (currentPage - 1) * pageSize;
       const end = start + pageSize;
-      const pageData = data.slice(start, end);
+      const pageData = filtered.slice(start, end);
       const from = total ? start + 1 : 0;
       const to = Math.min(end, total);
       const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -71,7 +95,7 @@ export class UpdateAccountComponent implements OnInit {
   );
 
   ngOnInit(): void {
-    // Optional: auto-load if query param present (e.g., from Create page deep-link)
+    // Optional: auto-load if query param present
     const qpId = this.route.snapshot.queryParamMap.get('accountId');
     if (qpId && qpId.trim()) {
       this.lookupAccountId = qpId;
@@ -120,18 +144,11 @@ export class UpdateAccountComponent implements OnInit {
     }
     const payload = this.updateForm.getRawValue();
     try {
-      // Adjust to your service API
       this.officerSvc.submitUpdateRequest(payload);
-      // Optionally reset only pristine state (keep form loaded)
       this.updateForm.markAsPristine();
       this.updateForm.markAsUntouched();
-
-      // Optional: jump to the LAST page to show the newly added request
-      // We can't know total pages synchronously—if desired, do a one-time take(1) on updateRequests$.
-      // this.updateRequests$.pipe(take(1)).subscribe(list => {
-      //   const totalPages = Math.max(1, Math.ceil(list.length / this.urPageSize$.getValue()));
-      //   this.urPageIndex$.next(totalPages);
-      // });
+      // Optionally force the filter to Pending to surface the new record
+      // this.onStatusFilterChange('PENDING');
     } catch (e: any) {
       this.officerSvc.setError(e?.message || 'Failed to submit update request');
     }
@@ -150,15 +167,9 @@ export class UpdateAccountComponent implements OnInit {
   }
 
   // ---------- Pagination handlers (Updation Status) ----------
-  urSetPage(page: number): void {
-    this.urPageIndex$.next(page);
-  }
-  urPrevPage(): void {
-    this.urPageIndex$.next(Math.max(1, this.urPageIndex$.getValue() - 1));
-  }
-  urNextPage(): void {
-    this.urPageIndex$.next(this.urPageIndex$.getValue() + 1);
-  }
+  urSetPage(page: number): void { this.urPageIndex$.next(page); }
+  urPrevPage(): void { this.urPageIndex$.next(Math.max(1, this.urPageIndex$.getValue() - 1)); }
+  urNextPage(): void { this.urPageIndex$.next(this.urPageIndex$.getValue() + 1); }
   onUrPageSizeChange(ev: Event): void {
     const size = Number((ev.target as HTMLSelectElement).value) || 10;
     this.urPageSize$.next(size);

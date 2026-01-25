@@ -1,6 +1,6 @@
 
 // src/app/features/officer/create-account/create-account.component.ts
-import { Component, inject, ViewEncapsulation } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { OfficerService } from '../officer.service';
@@ -8,14 +8,20 @@ import { AccountType, AccountStatus } from '../model';
 import { Router } from '@angular/router';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { FormsModule } from '@angular/forms'; // <-- ADD THIS
+
+type StatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
 
 @Component({
   selector: 'create-account',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule, // <-- AND REGISTER IT HERE (enables ngModel / ngModelOptions)
+  ],
   templateUrl: './create-account.component.html',
   styleUrls: ['../officer-theme.css'],
-  // encapsulation: ViewEncapsulation.None
 })
 export class CreateAccountComponent {
   private officerSvc = inject(OfficerService);
@@ -33,15 +39,50 @@ export class CreateAccountComponent {
 
   submitted = false;
 
-  // original stream of accounts from service
+  // Source stream
   accounts$ = this.officerSvc.accounts$;
+
+  // -------- Filters (Existing Accounts) --------
+  statusFilter: StatusFilter = 'ALL';
+  private statusFilter$ = new BehaviorSubject<StatusFilter>('ALL');
+
+  searchTerm = '';
+  private searchTerm$ = new BehaviorSubject<string>('');
+
+  onStatusFilterChange(val: StatusFilter | string) {
+    const v = (val as StatusFilter) ?? 'ALL';
+    this.statusFilter = v;
+    this.statusFilter$.next(v);
+    this.pageIndex$.next(1);
+  }
+
+  onSearchChange(val: string) {
+    this.searchTerm = val ?? '';
+    if ((this.searchTerm || '').trim() === '') {
+      // auto reset when cleared
+      this.searchTerm$.next('');
+      this.pageIndex$.next(1);
+    }
+  }
+
+  onSearchSubmit() {
+    const val = (this.searchTerm || '').trim();
+    this.searchTerm$.next(val);
+    this.pageIndex$.next(1);
+  }
+
+  clearSearch() {
+    this.searchTerm = '';
+    this.searchTerm$.next('');
+    this.pageIndex$.next(1);
+  }
 
   // -------- Pagination state --------
   pageSizeOptions = [5, 10, 20];
   private pageIndex$ = new BehaviorSubject<number>(1);   // 1-based index
   private pageSize$ = new BehaviorSubject<number>(10);   // ideal default rows
 
-  // ViewModel stream with pagination-derived data
+  // ViewModel stream with filter + pagination
   vm$: Observable<{
     total: number;
     totalPages: number;
@@ -51,15 +92,36 @@ export class CreateAccountComponent {
     from: number;
     to: number;
     pages: number[];
-  }> = combineLatest([this.accounts$, this.pageIndex$, this.pageSize$]).pipe(
-    map(([accounts, pageIndex, pageSize]) => {
-      const list: any[] = Array.isArray(accounts) ? accounts : [];
-      const total = list.length;
+  }> = combineLatest([this.accounts$, this.statusFilter$, this.searchTerm$, this.pageIndex$, this.pageSize$]).pipe(
+    map(([accounts, sFilter, search, pageIndex, pageSize]) => {
+      const list: any[] = Array.isArray(accounts) ? [...accounts] : [];
+
+      // Normalize search (accountId, customerName, customerId)
+      const norm = (v: unknown) => String(v ?? '').toLowerCase().trim();
+      const q = norm(search);
+
+      const filtered = list.filter(a => {
+        if (sFilter === 'ACTIVE' && a.status !== 'ACTIVE') return false;
+        if (sFilter === 'INACTIVE' && a.status !== 'CLOSED') return false;
+
+        if (q) {
+          const id = norm(a.accountId);
+          const name = norm(a.customerName);
+          const cid = norm(a.customerId);
+          if (!(id.includes(q) || name.includes(q) || cid.includes(q))) return false;
+        }
+        return true;
+      });
+
+      // Sort: latest opened first
+      filtered.sort((a, b) => new Date(b.openedAt).getTime() - new Date(a.openedAt).getTime());
+
+      const total = filtered.length;
       const totalPages = Math.max(1, Math.ceil(total / pageSize));
       const currentPage = Math.min(Math.max(1, pageIndex), totalPages);
       const start = (currentPage - 1) * pageSize;
       const end = start + pageSize;
-      const pageData = list.slice(start, end);
+      const pageData = filtered.slice(start, end);
       const from = total ? start + 1 : 0;
       const to = Math.min(end, total);
       const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -93,11 +155,6 @@ export class CreateAccountComponent {
       this.createForm.reset(this.defaultCreateForm());
       this.createForm.markAsPristine();
       this.createForm.markAsUntouched();
-
-      // After adding a new item, jump to last page so the new row is visible
-      // We can't compute totalPages here without the array, but the Next click will clamp.
-      // Optionally, you can subscribe once to accounts$ to compute and set last page.
-      // For now, keep current page and let the user navigate.
     } catch (e: any) {
       this.officerSvc.setError(e?.message || 'Failed to create account');
     }
@@ -109,7 +166,6 @@ export class CreateAccountComponent {
 
   // -------- Pagination handlers --------
   setPage(page: number): void {
-    // Clamp is handled in VM mapping; this keeps intent simple.
     this.pageIndex$.next(page);
   }
 
@@ -118,7 +174,6 @@ export class CreateAccountComponent {
   }
 
   nextPage(): void {
-    // Will be clamped by VM if it exceeds totalPages; buttons are disabled at the end anyway.
     this.pageIndex$.next(this.pageIndex$.getValue() + 1);
   }
 
@@ -126,7 +181,7 @@ export class CreateAccountComponent {
     const target = ev.target as HTMLSelectElement;
     const size = Number(target.value) || 10;
     this.pageSize$.next(size);
-    this.pageIndex$.next(1); // reset to first page on page size change
+    this.pageIndex$.next(1);
   }
 
   // TrackBy for performance

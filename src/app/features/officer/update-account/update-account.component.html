@@ -1,4 +1,5 @@
 
+<!-- src/app/features/officer/update-account/update-account.component.html -->
 <div class="card">
   <h2>Update Bank Account</h2>
 
@@ -70,12 +71,29 @@
 
   <hr />
 
-  <!-- Updation Status (with pagination) -->
+  <!-- Updation Status (status filter + pagination) -->
   <ng-container *ngIf="urVm$ | async as vm">
-    <h3>Updation Status</h3>
+    <div class="inline" style="justify-content: space-between; align-items: center;">
+      <h3 style="margin:0;">Updation Status</h3>
+
+      <!-- Status Filter -->
+      <label style="margin:0;">
+        Filter Status
+        <select
+          [ngModel]="statusFilter"
+          (ngModelChange)="onStatusFilterChange($event)"
+          [ngModelOptions]="{standalone:true}">
+          <option value="ALL">All</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </label>
+    </div>
+
     <br />
+
     <div class="table-wrap" *ngIf="vm.total > 0; else noUpdates">
-      <!-- Use plain table (no scroll-table) so pagination controls the rows -->
       <table>
         <thead>
           <tr>
@@ -97,7 +115,7 @@
             <td [attr.data-label]="'Customer ID'">{{ u.customerId }}</td>
             <td [attr.data-label]="'Type'">{{ u.accountType }}</td>
 
-            <!-- Show full changes summary (override nowrap from global table CSS) -->
+            <!-- Show full changes summary -->
             <td
               [attr.data-label]="'Changes Summary'"
               style="white-space: normal; overflow: visible; text-overflow: clip;">
@@ -105,13 +123,18 @@
             </td>
 
             <td [attr.data-label]="'Status'">
-              <span class="pill bad">{{ u.status }}</span>
+              <span
+                class="pill"
+                [class.ok]="u.status === 'APPROVED'"
+                [class.bad]="u.status !== 'APPROVED'">
+                {{ u.status }}
+              </span>
             </td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Pagination controls (white inline style like your other page) -->
+      <!-- Pagination controls -->
       <div class="actions" style="justify-content: space-between; align-items: center; gap: .5rem; padding-top: .5rem;">
         <!-- Rows per page -->
         <div class="inline" style="gap:.5rem;">
@@ -137,18 +160,20 @@
             (click)="urSetPage(1)"
             [disabled]="vm.currentPage===1"
             aria-label="First page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
-            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null"
-          >First</button>
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null">
+            First
+          </button>
 
           <button
             type="button"
             (click)="urPrevPage()"
             [disabled]="vm.currentPage===1"
             aria-label="Previous page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
-            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null"
-          >Prev</button>
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null">
+            Prev
+          </button>
 
           <ng-container *ngFor="let p of vm.pages">
             <button
@@ -169,18 +194,20 @@
             (click)="urNextPage()"
             [disabled]="vm.currentPage===vm.totalPages"
             aria-label="Next page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
-            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null"
-          >Next</button>
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null">
+            Next
+          </button>
 
           <button
             type="button"
             (click)="urSetPage(vm.totalPages)"
             [disabled]="vm.currentPage===vm.totalPages"
             aria-label="Last page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
-            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null"
-          >Last</button>
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null">
+            Last
+          </button>
         </div>
       </div>
     </div>

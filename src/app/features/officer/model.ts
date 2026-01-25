@@ -32,11 +32,30 @@ export interface UpdateRequest {
   customerId: string;
   accountType: AccountType;
   changeSummary: string;
-  status: 'PENDING'; // future: 'APPROVED' | 'REJECTED'
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
   time: string;
 }
 
 export interface AlertMsg {
   type: 'success' | 'error';
   message: string;
+}
+
+// ===== NEW: Notifications for Alerts tab =====
+export type NotificationType = 'UPDATE_REQUEST' | 'HIGH_VALUE_TXN' | 'TXN_FLAGGED';
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  time: string; // ISO
+  read: boolean;
+  meta?: {
+    accountId?: string;
+    updateId?: string;
+    txnId?: string;
+    amount?: number;
+    toAccountId?: string;
+  };
 }

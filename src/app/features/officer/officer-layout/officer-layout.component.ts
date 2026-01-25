@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { OfficerService } from '../officer.service';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AlertMsg } from '../model';
 import { AuthService, User } from '../../../auth/auth.service';
 
@@ -27,6 +28,11 @@ export class OfficerLayoutComponent implements OnInit {
 
   // streams
   alert$: Observable<AlertMsg | null> = this.officerSvc.alert$;
+
+  // NEW: Notifications (unread count for badge)
+  unreadCount$: Observable<number> = this.officerSvc.notifications$.pipe(
+    map(list => (Array.isArray(list) ? list.filter(n => !n.read).length : 0))
+  );
 
   constructor(
     private auth: AuthService,
@@ -92,7 +98,6 @@ export class OfficerLayoutComponent implements OnInit {
 
   /**
    * Navigate to settings page. Adjust the path if your route differs.
-   * e.g., ['/officer/settings'] if you have a nested route.
    */
   goToSettings(): void {
     this.router.navigate(['/settings']);

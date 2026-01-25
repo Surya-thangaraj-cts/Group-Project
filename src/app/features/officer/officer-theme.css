@@ -614,29 +614,63 @@ tr:hover td { background: rgba(255, 255, 255, 0.03); }
   min-width: 240px;
 
   /* Theme */
-  background: rgba(18, 24, 31, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: var(--shadow);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55);
   padding: 6px 0;
 }
 
+/* Force visibility inside dropdown */
+.themed-dropdown,
+.themed-dropdown * {
+  color: #ffffff !important;
+}
+
+/* Labels (Signed in as, Role, Branch) */
+.themed-dropdown .small,
+.themed-dropdown .dropdown-label {
+  color: #cbd5f5 !important;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+}
+
+/* Main values */
+.themed-dropdown .fw-semibold {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+/* Email row */
+.themed-dropdown .text-muted {
+  color: #e2e8f0 !important;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+/* Divider visibility */
+.themed-dropdown .dropdown-divider {
+  border-top-color: rgba(255, 255, 255, 0.18);
+}
+
+/* Hover */
 .themed-dropdown .dropdown-item {
-  color: var(--text);
+  color: #ffffff !important;
 }
 .themed-dropdown .dropdown-item:hover,
 .themed-dropdown .dropdown-item:focus {
-  background: rgba(255,255,255,0.06);
-  color: #fff;
-}
-.themed-dropdown .dropdown-item.text-danger { color: #fca5a5 !important; }
-.themed-dropdown .dropdown-divider {
-  border-top-color: rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff !important;
 }
 
-/* Ensure long text truncates cleanly */
+/* Danger item */
+.themed-dropdown .dropdown-item.text-danger {
+  color: #fca5a5 !important;
+}
+
+/* Ensure long text truncates neatly (only in dropdown) */
 .themed-dropdown .text-truncate {
   display: block;
   max-width: 100%;
@@ -646,23 +680,100 @@ tr:hover td { background: rgba(255, 255, 255, 0.03); }
 }
 
 /* ---------------- Themed Bootstrap Offcanvas ---------------- */
-/* Never exceed viewport width; compact on desktop */
 .themed-offcanvas {
   --bs-offcanvas-width: clamp(320px, 92vw, 420px);
   max-width: 100vw;
-  background-color: rgba(18, 24, 31, 0.95) !important;
+  background-color: #0f172a !important;
   border-left: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: var(--shadow);
+  color: #e5e7eb !important; /* strong baseline text color */
 }
 
 .themed-offcanvas .offcanvas-header {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid #334155;
 }
 .themed-offcanvas .offcanvas-title {
-  color: var(--text);
+  color: #f8fafc !important;
+  font-weight: 700;
 }
 .themed-offcanvas .offcanvas-body {
-  color: var(--text);
+  color: #e5e7eb !important;
+  font-size: 14px;
+}
+
+/* ===================== PROFILE: HIGH CONTRAST & WRAP ===================== */
+.profile-name {
+  color: #ffffff !important;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.profile-email {
+  color: #cbd5f5 !important; /* soft blue for secondary text */
+  font-size: 13px;
+  word-break: break-word;
+  white-space: normal;
+}
+.profile-value {
+  color: #f1f5f9 !important;
+  font-size: 14px;
+  word-break: break-word;
+  white-space: normal;
+  line-height: 1.4;
+}
+.themed-offcanvas .row .text-muted.small {
+  color: #94a3b8 !important;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+}
+
+/* Status badge contrast */
+.themed-offcanvas .badge {
+  padding: 0.35rem 0.65rem;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+}
+.bg-success-subtle {
+  background-color: rgba(16,185,129,0.18) !important;
+  color: #4ade80 !important;
+  border-color: rgba(74,222,128,0.6) !important;
+}
+.bg-danger-subtle {
+  background-color: rgba(239,68,68,0.2) !important;
+  color: #f87171 !important;
+  border-color: rgba(248,113,113,0.6) !important;
+}
+.bg-warning-subtle {
+  background-color: rgba(245,158,11,0.2) !important;
+  color: #facc15 !important;
+  border-color: rgba(250,204,21,0.6) !important;
+}
+
+/* Primary button inside offcanvas */
+.themed-offcanvas .btn-primary {
+  background: linear-gradient(180deg, #8b5cf6, #6d28d9);
+  border: none;
+  box-shadow: 0 6px 18px rgba(139,92,246,0.45);
+}
+
+/* Avatar gradient for better contrast */
+.themed-offcanvas .avatar-initials {
+  background: linear-gradient(135deg, #8b5cf6, #22d3ee);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+/* Ensure nothing gets muted/hidden in offcanvas */
+.themed-offcanvas * {
+  text-shadow: none;
+}
+/* Remove truncation in profile modal */
+.themed-offcanvas .text-truncate {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  word-break: break-word;
 }
 
 /* iOS notch safe areas */
@@ -687,3 +798,501 @@ tr:hover td { background: rgba(255, 255, 255, 0.03); }
   .container { padding: 0 var(--space-2); }
   .brand { font-size: var(--fs-16); }
 }
+
+
+/* ================================================= */
+/* ============== ALERTS / NOTIFICATIONS =========== */
+/* ================================================= */
+
+.notif-list {
+  display: grid;
+  gap: var(--space-2);
+}
+
+/* Notification card */
+.notif-card {
+  position: relative;
+  border: var(--glass-border);
+  border-radius: 14px;
+  padding: var(--space-3);
+  background: rgba(24, 31, 39, 0.55);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+/* Hover lift */
+.notif-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  transform: translateY(-1px);
+}
+
+/* Unread visual indicator */
+.notif-card:has(.pill.ok)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 4px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--secondary), var(--primary));
+}
+
+/* Header row */
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.notif-header .left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Title */
+.notif-title {
+  font-size: var(--fs-18);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--text);
+}
+
+/* Message text */
+.notif-message {
+  font-size: var(--fs-14);
+  line-height: 1.5;
+  margin-bottom: 0.4rem;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* CTA text */
+.notif-cta {
+  font-size: var(--fs-14);
+  margin-bottom: 0.5rem;
+  color: var(--text);
+}
+
+/* Status badge */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  font-size: var(--fs-12);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(20, 26, 33, 0.7);
+}
+
+.status-pill.pending {
+  background: rgba(245, 158, 11, 0.18);
+  color: #facc15;
+  border-color: rgba(250, 204, 21, 0.45);
+}
+
+/* Metadata grid */
+.notif-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, auto));
+  gap: 0.5rem var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.notif-meta .kv {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notif-meta .label {
+  font-size: var(--fs-12);
+  color: #cbd5e1;
+}
+
+.notif-meta .value {
+  font-size: var(--fs-14);
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Actions row */
+.notif-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 0.25rem;
+}
+
+.notif-actions .spacer {
+  flex: 1;
+}
+
+/* Pagination spacing fix inside cards view */
+.notif-list + .actions {
+  margin-top: var(--space-3);
+}
+
+/* Mobile improvements */
+@media (max-width: 640px) {
+  .notif-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .notif-card {
+    padding: var(--space-2);
+  }
+
+  .notif-title {
+    font-size: var(--fs-16);
+  }
+}
+
+/* ================================================= */
+/* ============== ALERTS – COMPACT UI ============== */
+/* ================================================= */
+
+/* Search input + buttons */
+.search-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.search-group input {
+  flex: 1;
+  min-height: 36px;
+  padding: 0.45rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(13, 17, 23, 0.7);
+  color: var(--text);
+}
+.search-group input:focus {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 3px rgba(34,211,238,0.15);
+}
+
+/* Compact buttons */
+.btn-sm {
+  padding: 0.35rem 0.6rem !important;
+  font-size: var(--fs-12) !important;
+  border-radius: 8px !important;
+  line-height: 1.1 !important;
+}
+
+/* Danger button variant for destructive actions */
+.danger {
+  background: linear-gradient(180deg, #ef4444, #b91c1c) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.3);
+}
+
+/* Ghost button (neutral, subtle) */
+.ghost {
+  background: transparent !important;
+  color: var(--text-muted) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+}
+
+/* Make the toolbar buttons and card action buttons smaller by default */
+.actions .primary,
+.actions .secondary,
+.actions .danger {
+  padding: 0.45rem 0.7rem;
+  font-size: var(--fs-12);
+  border-radius: 8px;
+}
+
+/* Notification cards – compact */
+.notif-card {
+  padding: var(--space-2);
+}
+
+/* Unread indicator (no :has() reliance) */
+.notif-card.unread {
+  position: relative;
+}
+.notif-card.unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--secondary), var(--primary));
+}
+
+/* Smaller title/message to reduce overall card size */
+.notif-title {
+  font-size: var(--fs-16);
+  margin-bottom: 0.2rem;
+}
+.notif-message,
+.notif-cta {
+  font-size: var(--fs-14);
+  margin-bottom: 0.35rem;
+}
+
+/* Tighten meta spacing */
+.notif-meta {
+  gap: 0.35rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Actions spacing tweak */
+.notif-actions {
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+}
+
+/* Pagination spacing under list */
+.notif-list + .actions {
+  margin-top: 0.75rem;
+}
+
+
+/* Make the first search block span the full grid width */
+.grid-narrow .full {
+  grid-column: 1 / -1;
+}
+
+/* Search input + buttons aligned and same height */
+.search-group {
+  display: flex;
+  align-items: stretch;   /* <-- makes buttons match input height */
+  gap: 0.5rem;
+  width: 100%;
+}
+.search-group input {
+  flex: 1;
+  min-height: 40px;       /* match the default input height across the app */
+  padding: 0.55rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(13, 17, 23, 0.7);
+  color: var(--text);
+}
+.search-group .search-btn {
+  min-height: 40px;        /* same height as input */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.8rem;       /* compact horizontal padding */
+  border-radius: 10px;
+}
+
+/* Smaller buttons elsewhere still compact */
+.btn-sm {
+  padding: 0.35rem 0.6rem !important;
+  font-size: var(--fs-12) !important;
+  border-radius: 8px !important;
+  line-height: 1.1 !important;
+}
+
+.danger {
+  background: linear-gradient(180deg, #ef4444, #b91c1c) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.3);
+}
+
+/* Notification cards – compact size */
+.notif-card {
+  padding: var(--space-2);
+}
+
+/* Unread indicator without :has() */
+.notif-card.unread {
+  position: relative;
+}
+.notif-card.unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--secondary), var(--primary));
+}
+
+
+
+/* ================= Existing Accounts – Filter Bar Polish ================= */
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem; /* space between title and filter bar */
+}
+
+.section-header h3 {
+  margin: 0;
+  font-size: var(--fs-18);
+  font-weight: 600;
+}
+
+/* Filter bar container */
+.filters-bar {
+  display: flex;
+  align-items: stretch;     /* equal height children */
+  gap: 0.75rem;             /* horizontal spacing */
+  flex-wrap: wrap;          /* wrap on small screens */
+}
+
+/* Search group layout */
+.filters-bar .search-group {
+  display: flex;
+  align-items: stretch;     /* buttons = input height */
+  gap: 0.5rem;
+  flex: 1 1 360px;          /* grows nicely */
+  min-width: 280px;
+}
+
+/* Search input */
+.filters-bar .search-group input {
+  flex: 1;
+  min-height: 42px;         /* unified height */
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(13, 17, 23, 0.75);
+  color: var(--text);
+  font-size: var(--fs-14);
+}
+
+/* Search buttons */
+.filters-bar .search-btn {
+  min-height: 42px;
+  padding: 0 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: var(--fs-12);
+  white-space: nowrap;
+}
+
+/* Status filter */
+.filters-bar .status-filter select {
+  min-height: 42px;
+  padding: 0.6rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(13, 17, 23, 0.75);
+  color: var(--text);
+  font-size: var(--fs-14);
+  min-width: 140px;
+}
+
+/* Mobile tuning */
+@media (max-width: 640px) {
+  .filters-bar {
+    gap: 0.5rem;
+  }
+
+  .filters-bar .search-group {
+    min-width: 100%;
+  }
+
+  .filters-bar .status-filter select {
+    width: 100%;
+  }
+}
+
+
+/* ========================================================= */
+/* ===== Existing Accounts – Compact Search & Filter ======= */
+/* ========================================================= */
+
+.accounts-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1 1 300px;
+  min-width: 260px;
+}
+
+.accounts-search-input {
+  flex: 1;
+  min-height: 34px;              /* smaller than global inputs */
+  padding: 0.35rem 0.5rem;
+  font-size: var(--fs-13);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(13, 17, 23, 0.6);
+  color: var(--text);
+}
+
+.accounts-search-input::placeholder {
+  color: #94a3b8;
+}
+
+.accounts-search-input:focus {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 2px rgba(34,211,238,0.15);
+}
+
+/* Compact search buttons */
+.accounts-search-btn {
+  min-height: 34px;
+  padding: 0 0.55rem;
+  font-size: var(--fs-12);
+  border-radius: 8px;
+  background: rgba(34, 211, 238, 0.85);
+  color: #001b21;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.accounts-search-btn:hover {
+  filter: brightness(1.05);
+}
+
+.accounts-search-btn.ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+/* Status filter */
+.accounts-status {
+  display: flex;
+  align-items: center;
+}
+
+.accounts-status-select {
+  min-height: 34px;
+  padding: 0.35rem 0.55rem;
+  font-size: var(--fs-13);
+  border-radius: 8px;
+  background: rgba(13, 17, 23, 0.6);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.14);
+  min-width: 120px;
+}
+
+/* Mobile behavior */
+@media (max-width: 640px) {
+  .accounts-search {
+    flex: 1 1 100%;
+    min-width: 100%;
+  }
+
+  .accounts-status {
+    width: 100%;
+  }
+
+  .accounts-status-select {
+    width: 100%;
+  }
+}
+

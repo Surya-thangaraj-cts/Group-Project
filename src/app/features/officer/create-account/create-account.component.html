@@ -1,4 +1,5 @@
 
+<!-- src/app/features/officer/create-account/create-account.component.html -->
 <div class="card">
   <header class="card-header"><h2>Create Bank Account</h2></header>
 
@@ -55,122 +56,130 @@
     </div>
   </form>
 
-  <hr />
+  
+<hr />
 
-  <!-- Use VM (view-model) observable to drive pagination -->
-  <ng-container *ngIf="vm$ | async as vm">
+
+<!-- Existing Accounts section -->
+<ng-container *ngIf="vm$ | async as vm">
+  <div class="section-header">
     <h3>Existing Accounts ({{ vm.total }})</h3>
-    <br />
 
-    <div class="table-wrap" *ngIf="vm.total > 0; else noAccountsCreate">
-      <!-- Plain table (no scroll-table class) -->
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Account ID</th>
-            <th scope="col">Customer Name</th>
-            <th scope="col">Customer ID</th>
-            <th scope="col">Type</th>
-            <th scope="col">Status</th>
-            <th scope="col">Opened</th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let a of vm.pageData; trackBy: trackByAccountId">
-            <td [attr.data-label]="'Account ID'">{{ a.accountId }}</td>
-            <td [attr.data-label]="'Customer Name'">{{ a.customerName }}</td>
-            <td [attr.data-label]="'Customer ID'">{{ a.customerId }}</td>
-            <td [attr.data-label]="'Type'">{{ a.accountType }}</td>
-            <td [attr.data-label]="'Status'">
-              <span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">{{ a.status }}</span>
-            </td>
-            <td [attr.data-label]="'Opened'">{{ a.openedAt | date:'medium' }}</td>
-            <td [attr.data-label]="'Actions'">
-              <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Filters bar: sits directly below the title -->
+    
+<div class="filters-bar">
+  <!-- Compact search -->
+  <div class="accounts-search">
+    <input
+      type="text"
+      class="accounts-search-input"
+      [ngModel]="searchTerm"
+      (ngModelChange)="onSearchChange($event)"
+      (keyup.enter)="onSearchSubmit()"
+      [ngModelOptions]="{standalone:true}"
+      placeholder="Search account or customer"
+      aria-label="Search accounts" />
 
-      <!-- Pagination controls -->
-      <div class="actions" style="justify-content: space-between; align-items: center; gap: .5rem; padding-top: .5rem;">
-        <!-- Rows per page -->
-        <div class="inline" style="gap:.5rem;">
-          <span class="muted">Rows per page</span>
-          <select
-            [value]="vm.pageSize"
-            (change)="onPageSizeChange($event)"
-            aria-label="Rows per page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .5rem;"
-          >
-            <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</option>
-          </select>
-        </div>
+    <button
+      type="button"
+      class="accounts-search-btn"
+      (click)="onSearchSubmit()">
+      Search
+    </button>
 
-        <!-- Range & total -->
-        <div class="muted">
-          {{ vm.from }}–{{ vm.to }} of {{ vm.total }}
-        </div>
+    <button
+      type="button"
+      class="accounts-search-btn ghost"
+      *ngIf="searchTerm"
+      (click)="clearSearch()">
+      Clear
+    </button>
+  </div>
 
-        <!-- Page buttons with INLINE WHITE STYLE -->
-        <div class="actions" style="gap:.35rem;">
-          <button
-            type="button"
-            (click)="setPage(1)"
-            [disabled]="vm.currentPage===1"
-            aria-label="First page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
-            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null"
-          >First</button>
+  <!-- Status filter -->
+  <div class="accounts-status">
+    <select
+      class="accounts-status-select"
+      [ngModel]="statusFilter"
+      (ngModelChange)="onStatusFilterChange($event)"
+      [ngModelOptions]="{standalone:true}">
+      <option value="ALL">All</option>
+      <option value="ACTIVE">Active</option>
+      <option value="INACTIVE">Inactive</option>
+    </select>
+  </div>
+</div>
 
-          <button
-            type="button"
-            (click)="prevPage()"
-            [disabled]="vm.currentPage===1"
-            aria-label="Previous page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
-            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null"
-          >Prev</button>
+  </div>
 
-          <ng-container *ngFor="let p of vm.pages">
-            <button
-              type="button"
-              (click)="setPage(p)"
-              [attr.aria-current]="p===vm.currentPage ? 'page' : null"
-              [attr.aria-label]="'Go to page ' + p"
-              [ngStyle]="p===vm.currentPage
-                ? {'background':'#0f172a','color':'#ffffff','border':'1px solid #0f172a','box-shadow':'0 2px 6px rgba(15,23,42,.15)'}
-                : null"
-              style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .6rem;min-width:2.25rem;text-align:center;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-            >
-              {{ p }}
-            </button>
-          </ng-container>
+  <div class="table-wrap" *ngIf="vm.total > 0; else noAccountsCreate" style="margin-top:.75rem;">
+    <table>
+      <thead>
+        <tr>
+          <th>Account ID</th>
+          <th>Customer Name</th>
+          <th>Customer ID</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Opened</th>
+          <th></th>
+        </tr>
+      </thead>
 
-          <button
-            type="button"
-            (click)="nextPage()"
-            [disabled]="vm.currentPage===vm.totalPages"
-            aria-label="Next page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
-            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null"
-          >Next</button>
+      <tbody>
+        <tr *ngFor="let a of vm.pageData; trackBy: trackByAccountId">
+          <td>{{ a.accountId }}</td>
+          <td>{{ a.customerName }}</td>
+          <td>{{ a.customerId }}</td>
+          <td>{{ a.accountType }}</td>
+          <td>
+            <span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">
+              {{ a.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE' }}
+            </span>
+          </td>
+          <td>{{ a.openedAt | date:'medium' }}</td>
+          <td>
+            <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
-          <button
-            type="button"
-            (click)="setPage(vm.totalPages)"
-            [disabled]="vm.currentPage===vm.totalPages"
-            aria-label="Last page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
-            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null"
-          >Last</button>
-        </div>
+    <!-- Pagination -->
+    <div class="actions" style="justify-content: space-between; align-items: center; gap:.5rem; padding-top:.5rem;">
+      <div class="inline" style="gap:.5rem;">
+        <span class="muted">Rows per page</span>
+        <select [value]="vm.pageSize" (change)="onPageSizeChange($event)">
+          <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
+        </select>
+      </div>
+
+      <div class="muted">
+        {{ vm.from }}–{{ vm.to }} of {{ vm.total }}
+      </div>
+
+      <div class="actions" style="gap:.35rem;">
+        <button (click)="setPage(1)" [disabled]="vm.currentPage===1">First</button>
+        <button (click)="prevPage()" [disabled]="vm.currentPage===1">Prev</button>
+
+        <button *ngFor="let p of vm.pages"
+                (click)="setPage(p)"
+                [ngStyle]="p===vm.currentPage ? {'background':'#0f172a','color':'#fff'} : null">
+          {{ p }}
+        </button>
+
+        <button (click)="nextPage()" [disabled]="vm.currentPage===vm.totalPages">Next</button>
+        <button (click)="setPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages">Last</button>
       </div>
     </div>
-  </ng-container>
+  </div>
+</ng-container>
 
-  <ng-template #noAccountsCreate>
-    <p class="muted">No accounts yet. Create one using the form above.</p>
-  </ng-template>
-</div>
+<ng-template #noAccountsCreate>
+  <p class="muted">No accounts yet. Create one using the form above.</p>
+</ng-template>
+
+
+<ng-template #noAccountsCreate>
+  <p class="muted">No accounts yet. Create one using the form above.</p>
+</ng-template>
