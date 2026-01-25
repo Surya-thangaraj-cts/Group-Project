@@ -571,6 +571,19 @@ openExistingUsers(): void {
   this.showOnlyExisting();
 }
 
+pendingSelectedUser?: User | null = null;
+openProceed(u: User): void {
+  this.pendingSelectedUser = { ...u };
+  try {
+    const el = document.getElementById('proceedModal');
+    const bs = (window as any).bootstrap;
+    if (el && bs?.Modal) {
+      const modal = bs.Modal.getOrCreateInstance(el);
+      modal.show();
+    }
+  } catch {}
+}
+
 
 }
 

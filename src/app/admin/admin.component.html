@@ -1,6 +1,6 @@
 
 <!-- Admin Console Page -->
-<div class=" py-3 admin-page" oncontextmenu="return false">
+<div class="py-3 admin-page" oncontextmenu="return false">
   <!-- ===== Header (Profile + toggles) ===== -->
   <div class="mb-3 header">
     <div class="d-flex align-items-center justify-content-between gap-3">
@@ -62,10 +62,6 @@
             Back to Admin
           </button>
         </ng-template>
-
-        <!-- <span *ngIf="activeView === 'admin' && showExistingOnly" class="badge bg-warning text-dark ms-1 align-self-center">
-          Existing-only
-        </span> -->
 
         <!-- Profile dropdown -->
         <div class="position-relative ms-1">
@@ -217,13 +213,14 @@
                 </button>
               </div>
             </div>
-            <div class="col-md-3 filter-col role-filter-col d-flex flex-column justify-content-center">
+            <div class="col-md-3 mb-4 filter-col role-filter-col d-flex flex-column justify-content-center">
               <label for="roleFilter" class="form-label">Role</label>
               <select
                 id="roleFilter"
                 class="form-select"
                 [(ngModel)]="roleFilter"
                 (ngModelChange)="onRoleChange($event)"
+                placeholder="select"
               >
                 <option value="All">All</option>
                 <option value="Officer">Officer</option>
@@ -323,10 +320,16 @@
                   <td class="text-truncate" style="max-width: 280px;">{{ u.email }}</td>
                   <td>{{ u.branch }}</td>
                   <td class="text-end">
-                    <div class="btn-group btn-group-sm">
-                      <button type="button" class="btn btn-outline-success" (click)="approveUser(u)">Approve</button>
-                      <button type="button" class="btn btn-outline-danger" (click)="rejectUser(u)">Reject</button>
-                    </div>
+                    <!-- Single Proceed button to open modal -->
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm"
+                      (click)="openProceed(u)"
+                      data-bs-toggle="modal"
+                      data-bs-target="#proceedModal"
+                    >
+                      Proceed
+                    </button>
                   </td>
                 </tr>
                 <tr *ngIf="pendingUsers.length === 0">
@@ -350,16 +353,19 @@
   </div>
 
   <!-- ===== COMPLIANCE VIEW ===== -->
-  <div *ngIf="activeView === 'compliance'">
+  <div *ngIf="activeView === 'compliance'" class="compliance-root">
     <!-- Compliance KPIs -->
     <div class="card mb-3">
-      <!-- <div class="card-header d-flex align-items-center justify-content-between">
+      <!-- Optional actions in header -->
+      <!--
+      <div class="card-header d-flex align-items-center justify-content-between">
         <h2 class="h6 mb-0">KPIs</h2>
-        <div class="d-flex gap-2">
+        <div class="compliance-actions">
           <button class="btn btn-sm btn-outline-dark" type="button" (click)="showAdmin()">Back to Admin</button>
           <button class="btn btn-sm btn-warning" type="button" (click)="openExistingUsers()">Existing Users</button>
         </div>
-      </div> -->
+      </div>
+      -->
       <div class="card-body">
         <div class="row g-3 mb-3 kpis-row">
           <div class="col-12 col-md-4">
@@ -472,10 +478,93 @@
     </div>
   </div>
 
+  <!-- ===== Proceed Modal (for Pending Approvals) ===== -->
+  <div
+    class="modal fade glass-modal"
+    id="proceedModal"
+    tabindex="-1"
+    aria-labelledby="proceedModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content text-white">
+        <div class="modal-header">
+          <h5 class="modal-title" id="proceedModalLabel">
+            Proceed: {{ pendingSelectedUser?.name || 'User' }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <ng-container *ngIf="pendingSelectedUser; else noPendingUser">
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <div class="text-muted small">User ID</div>
+                <div class="fw-semibold text-dark">{{ pendingSelectedUser.userId }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="text-muted small">Name</div>
+                <div class="fw-semibold text-dark">{{ pendingSelectedUser.name }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="text-muted small">Email</div>
+                <div class="fw-semibold text-dark">{{ pendingSelectedUser.email }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="text-muted small">Branch</div>
+                <div class="fw-semibold text-dark">{{ pendingSelectedUser.branch }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="text-muted small">Role</div>
+                <div class="fw-semibold text-dark">{{ pendingSelectedUser.role }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <div class="text-muted small">Status</div>
+                <span
+                  class="badge"
+                  [ngClass]="{
+                    'bg-success-subtle text-success border border-success': pendingSelectedUser.status === 'Active',
+                    'bg-danger-subtle text-danger border border-danger': pendingSelectedUser.status === 'Inactive',
+                    'bg-warning-subtle text-warning border border-warning': pendingSelectedUser.status === 'Pending'
+                  }"
+                >
+                  {{ pendingSelectedUser.status }}
+                </span>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #noPendingUser>
+            <div class="text-muted">No user selected.</div>
+          </ng-template>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Close</button>
+          <button
+            type="button"
+            class="btn btn-outline-danger"
+            (click)="rejectUser(pendingSelectedUser!)"
+            data-bs-dismiss="modal"
+          >
+            Reject
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="approveUser(pendingSelectedUser!)"
+            data-bs-dismiss="modal"
+          >
+            Approve
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer (optional) -->
 </div>
 
-<!-- Optional small styles -->
+<!-- Optional small styles (component-scoped if using Angular's styles) -->
 <style>
   .dropdown-menu.text-sm { font-size: 0.9rem; }
   .avatar-initials { font-weight: 600; letter-spacing: 0.5px; }
