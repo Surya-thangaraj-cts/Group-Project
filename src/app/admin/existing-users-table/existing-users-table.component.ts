@@ -1,4 +1,5 @@
 
+// existing-users-table.component.ts
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -45,6 +46,14 @@ export class ExistingUsersTableComponent implements OnInit {
     });
   }
 
+  /** OPTIONAL: smoother DOM updates */
+  trackByUserId = (_: number, u: User) => u.userId;
+
+  /** Row click/select button can call this */
+  onSelect(u: User): void {
+    this.selectUser.emit(u);
+  }
+
   startEdit(u: User): void {
     this.editingUserId = u.userId;
     this.editForm.setValue({
@@ -63,8 +72,21 @@ export class ExistingUsersTableComponent implements OnInit {
 
   saveEdit(original: User): void {
     if (this.editForm.invalid) return;
-    const updated: User = { ...original, ...this.editForm.value };
+
+    // Optional: trim strings to keep data clean
+    const v = this.editForm.value;
+    const updated: User = {
+      ...original,
+      name: (v.name ?? '').trim(),
+      email: (v.email ?? '').trim(),
+      role: v.role as Role,
+      branch: (v.branch ?? '').trim(),
+      status: v.status as Status
+    };
+
+    // Emit to parent; parent will move to pending list if status === 'Pending'
     this.updateUser.emit(updated);
+
     this.cancelEdit();
   }
 }

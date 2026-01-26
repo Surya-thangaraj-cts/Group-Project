@@ -46,7 +46,7 @@ export class AuthService {
     const found = this.users.find(u => u.userId === userId && u.email === email);
     if (found && found.status === 'active') {
       this.currentUser = found;
-      localStorage.setItem('currentUser', JSON.stringify(found)); // ✅ persist
+      localStorage.setItem('currentUser', JSON.stringify(found));
       return true;
     }
     return false;

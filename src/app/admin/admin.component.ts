@@ -17,7 +17,6 @@ import {
   ReactiveFormsModule,
   FormsModule
 } from '@angular/forms';
-import { RouterOutlet } from '@angular/router';
 import { Router } from '@angular/router';
 
 type Role = 'Officer' | 'Manager' | 'Admin';
@@ -40,7 +39,6 @@ interface ComplianceMetrics {
   monthlyLabels: string[];
   monthlySuspicious: number[];
   amountBuckets: { label: string; count: number }[];
-  // channelMix:   { label: string; count: number }[];
 }
 
 @Component({
@@ -48,7 +46,7 @@ interface ComplianceMetrics {
   standalone: true,
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, FormsModule,ExistingUsersTableComponent]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ExistingUsersTableComponent]
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
@@ -56,10 +54,15 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   currentYear = new Date().getFullYear();
 
   activeView: 'admin' | 'compliance' = 'admin';
-
-  // Methods:
   showCompliance(): void { this.activeView = 'compliance'; }
-  showAdmin(): void { this.activeView = 'admin'; }
+  showAdmin(): void {
+    this.activeView = 'admin';
+    this.showFullAdmin();          // reset existing-only mode
+    this.editingUserId = undefined;
+    // (Optional) also reset selection/search if you prefer:
+    // this.selectedUser = undefined;
+    // this.clearSearch();
+  }
 
   // ----- Data -----
   users: User[] = [];
@@ -82,7 +85,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     monthlyLabels: [],
     monthlySuspicious: [],
     amountBuckets: [],
-    // channelMix: []
   };
 
   // ----- UI state -----
@@ -94,8 +96,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ----- FULL-WIDTH CHART: DOM refs & sizing -----
   @ViewChild('chartWrap') chartWrap?: ElementRef<HTMLElement>;
-  chartWidth = 1200;        // will be updated to actual available width
-  chartHeight = 220;        // SVG height (viewBox height)
+  chartWidth = 1200;   // will be updated to actual available width
+  chartHeight = 220;   // SVG height (viewBox height)
   private resizeObs?: ResizeObserver;
   chartLeftMargin = 48;
   chartRightPadding = 8;
@@ -103,10 +105,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   plotWidth(): number {
     return Math.max(240, this.chartWidth - this.chartLeftMargin - this.chartRightPadding);
   }
-  router: Router = Router.prototype;
 
   getYMax(): number {
-    const vals = [ ...(this.compliance.monthlyTxnVolume || []), ...(this.compliance.monthlySuspicious || []) ];
+    const vals = [
+      ...(this.compliance.monthlyTxnVolume || []),
+      ...(this.compliance.monthlySuspicious || [])
+    ];
     return Math.max(...vals, 1);
   }
 
@@ -114,9 +118,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     const max = this.getYMax();
     const step = max / (count - 1);
     const ticks: number[] = [];
-    for (let i = 0; i < count; i++) {
-      ticks.push(Math.round(i * step));
-    }
+    for (let i = 0; i < count; i++) ticks.push(Math.round(i * step));
     return ticks.reverse(); // largest first for drawing top-to-bottom
   }
 
@@ -128,9 +130,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   // ====== Current user for Profile UI ======
   currentUser: User | null = null;
 
-  constructor(private fb: FormBuilder, private auth: AuthService) {
-    console.debug('[Admin] constructor');
-
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router      // proper Router injection
+  ) {
+    // Reactive forms
     this.editUserForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -148,24 +153,21 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.debug('[Admin] ngOnInit start');
     try {
       // Load users (from AuthService or fallback demo)
       const authUsers = this.auth.getAllUsers?.() ?? [];
+      // TODO: If you want to use authUsers, map them to this.users here.
 
-      // Fallback demo data (keep as-is for UX)
-      if (true) {
-        this.users = [
-          { userId: 'U1001', name: 'Anita Sharma', role: 'Officer', email: 'anita@bank.local', branch: 'Gurgaon', status: 'Active' },
-          { userId: 'U1002', name: 'Rahul Mehta', role: 'Manager', email: 'rahul@bank.local', branch: 'Delhi', status: 'Active' },
-          { userId: 'U1003', name: 'Priya Nair', role: 'Officer', email: 'priya@bank.local', branch: 'Mumbai', status: 'Inactive' }
-        ];
-
-        this.pendingUsers = [
-          { userId: 'U2001', name: 'Karan Singh', role: 'Officer', email: 'karan@bank.local', branch: 'Jaipur', status: 'Pending' },
-          { userId: 'U2002', name: 'Neha Gupta', role: 'Manager', email: 'neha@bank.local', branch: 'Noida', status: 'Pending' }
-        ];
-      }
+      // Fallback demo data
+      this.users = [
+        { userId: 'U1001', name: 'Anita Sharma', role: 'Officer', email: 'anita@bank.local', branch: 'Gurgaon', status: 'Active' },
+        { userId: 'U1002', name: 'Rahul Mehta', role: 'Manager', email: 'rahul@bank.local', branch: 'Delhi', status: 'Active' },
+        { userId: 'U1003', name: 'Priya Nair', role: 'Officer', email: 'priya@bank.local', branch: 'Mumbai', status: 'Inactive' }
+      ];
+      this.pendingUsers = [
+        { userId: 'U2001', name: 'Karan Singh', role: 'Officer', email: 'karan@bank.local', branch: 'Jaipur', status: 'Pending' },
+        { userId: 'U2002', name: 'Neha Gupta', role: 'Manager', email: 'neha@bank.local', branch: 'Noida', status: 'Pending' }
+      ];
     } catch (e) {
       console.error('[Admin] ngOnInit error', e);
     }
@@ -186,25 +188,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       ],
     };
 
-    // Start with no selection
-    this.selectedUser = undefined;
-
-    // Ensure pending approvals
-    if (!this.pendingUsers || this.pendingUsers.length === 0) {
-      this.pendingUsers = [
-        { userId: 'U2001', name: 'Karan Singh', role: 'Officer', email: 'karan@bank.local', branch: 'Jaipur', status: 'Pending' },
-        { userId: 'U2002', name: 'Neha Gupta', role: 'Manager', email: 'neha@bank.local', branch: 'Noida', status: 'Pending' }
-      ];
-    }
-
     // Populate currentUser for Profile UI
     this.currentUser = this.tryGetCurrentUserFromAuth() ?? this.deriveCurrentUser();
-
-    console.debug('[Admin] ngOnInit end', {
-      usersCount: this.users.length,
-      pendingCount: this.pendingUsers.length,
-      currentUser: this.currentUser
-    });
   }
 
   /** Attempt to read current/logged-in user from AuthService (if the method exists). */
@@ -232,7 +217,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       const u = this.users.find(x => x.status === 'Active') ?? this.users[0];
       return u ? { ...u } : null;
     }
-    // Default (can adjust to your environment)
+    // Default
     return {
       userId: 'U-1029',
       name: 'Thangaraj, Surya',
@@ -269,7 +254,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    console.debug('[Admin] ngAfterViewInit');
     // Use ResizeObserver for accurate sizing across layout changes
     setTimeout(() => {
       const el = this.chartWrap?.nativeElement;
@@ -291,7 +275,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    console.debug('[Admin] ngOnDestroy');
     this.resizeObs?.disconnect();
   }
 
@@ -315,7 +298,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Keep selection in sync with search changes */
   onSearchChange(val: string): void {
     this.searchTerm = (val ?? '').trim();
-    console.debug('[Admin] onSearchChange:', { val: this.searchTerm });
     if (this.searchTerm) {
       const list = this.filteredUsers();
       const first = list.find(u => u.status === 'Active') ?? list[0];
@@ -333,7 +315,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ----- Chart helpers -----
 
-  // Single-line path (legacy)
+  // Legacy single-line path
   trendPath(width: number, height: number): string {
     const values = this.compliance.monthlyTxnVolume;
     if (!values.length) return '';
@@ -347,7 +329,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'M ' + points.map(p => p.replace(',', ' ')).join(' L ');
   }
 
-  // Generic line path for any series (used by dual line chart)
+  // Generic line path for any series
   linePath(values: number[], width = 600, height = 120): string {
     if (!values?.length) return '';
     const max = Math.max(...values) || 1;
@@ -364,17 +346,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   get maxBucket(): number {
     return Math.max(...(this.compliance.amountBuckets.map(b => b.count)), 1);
   }
-  // get maxChannel(): number {
-  //   return Math.max(...(this.compliance.channelMix.map(c => c.count)), 1);
-  // }
 
   // ----- Pending approvals -----
   approveUser(u: User): void {
     const approved: User = { ...u, status: 'Active' };
     this.users.push(approved);
     this.pendingUsers = this.pendingUsers.filter(x => x.userId !== u.userId);
-    // Keep selection sensible after list changes
-    this.reselectFirstFiltered();
+
     // Persist approval to AuthService (store as lowercase auth model)
     try {
       this.auth.signup?.({
@@ -388,13 +366,15 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (e) {
       console.warn('Failed to persist approved user to AuthService', e);
     }
+
+    this.reselectFirstFiltered();
   }
 
   rejectUser(u: User): void {
     this.pendingUsers = this.pendingUsers.filter(x => x.userId !== u.userId);
   }
 
-  // ----- Inline edit -----
+  // ----- Inline edit (parent panel) -----
   startEdit(u: User): void {
     this.editingUserId = u.userId;
     this.selectedUser = { ...u };
@@ -406,37 +386,85 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       status: u.status
     });
   }
+
   cancelEdit(): void {
     this.editingUserId = undefined;
     this.editUserForm.reset();
   }
+
+  /** Move a user to pending and remove from existing users list */
+  private moveToPending(updated: User): void {
+    // Remove from existing users
+    this.users = this.users.filter(u => u.userId !== updated.userId);
+
+    // Upsert into pending (avoid duplicates)
+    const idx = this.pendingUsers.findIndex(p => p.userId === updated.userId);
+    const pendingVersion: User = { ...updated, status: 'Pending' };
+    if (idx === -1) {
+      this.pendingUsers.unshift(pendingVersion);
+    } else {
+      this.pendingUsers[idx] = pendingVersion;
+    }
+
+    // Optional: clear selection if same user
+    if (this.selectedUser?.userId === updated.userId) {
+      this.selectedUser = undefined;
+    }
+  }
+  
+/** Create avatar initials from full name (handles spaces/commas/hyphens). */
+initials(fullName: string): string {
+  if (!fullName) return 'U';
+  const cleaned = fullName.replace(/[,]+/g, ' ').trim();
+  if (!cleaned) return 'U';
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  const first = parts[0]?.charAt(0) ?? '';
+  const last = parts[parts.length - 1]?.charAt(0) ?? '';
+  const initials = (first + last).toUpperCase();
+  return initials || 'U';
+}
+
+
   updateUser(): void {
     if (!this.selectedUser || this.editUserForm.invalid) return;
+
     const idx = this.users.findIndex(x => x.userId === this.selectedUser!.userId);
     if (idx !== -1) {
-      const updated = { ...this.selectedUser, ...this.editUserForm.value };
-      this.users[idx] = updated;
+      const updated: User = { ...this.selectedUser, ...this.editUserForm.value };
+
+      if (updated.status === 'Pending') {
+        // Move to Pending Approvals
+        this.moveToPending(updated);
+      } else {
+        // Keep in existing users
+        this.users[idx] = updated;
+        // Ensure it's not in pending (edge-case)
+        this.pendingUsers = this.pendingUsers.filter(p => p.userId !== updated.userId);
+      }
     }
+
     this.cancelEdit();
-    // Recompute selection because list changed
     this.reselectFirstFiltered();
   }
 
-  // ----- Invite -----
-  inviteUser(): void {
-    if (this.inviteUserForm.invalid) return;
-    const v = this.inviteUserForm.value;
-    const newUser: User = {
-      userId: 'U' + Math.floor(Math.random() * 100000),
-      name: v.name,
-      email: v.email,
-      role: v.role,
-      branch: v.branch,
-      status: 'Pending'
-    };
-    this.pendingUsers.unshift(newUser);
-    this.inviteUserForm.reset();
-  }
+  // ----- Invite (optional) -----
+  // inviteUser(): void {
+  //   if (this.inviteUserForm.invalid) return;
+  //   const v = this.inviteUserForm.value;
+  //   const newUser: User = {
+  //     userId: 'U' + Math.floor(Math.random() * 100000),
+  //     name: v.name,
+  //     email: v.email,
+  //     role: v.role,
+  //     branch: v.branch,
+  //     status: 'Pending'
+  //   };
+  //   this.pendingUsers.unshift(newUser);
+  //   this.inviteUserForm.reset();
+  // }
 
   /** Clear the search input and reset selection */
   clearSearch(ref?: HTMLInputElement): void {
@@ -469,37 +497,75 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       );
   }
 
-  /** Existing users = everyone except Pending (Active + Inactive). */
-  
-  /** If you want strictly Active-only, replace the above with:
-   *  return this.filteredUsers().filter(u => u.status === 'Active');
-   */
+  /** Existing users = everyone except Pending (Active + Inactive) */
+  existingUsers(): User[] {
+    return this.filteredUsers().filter(u => u.status !== 'Pending');
+  }
 
-  // ====== Profile helpers & actions ======
+  // ----- Child component events -----
+  onExistingUserUpdated(updated: ExistingUser): void {
+    const u = updated as User;
 
-  /** Create avatar initials from full name (handles spaces/commas/hyphens). */
-  initials(fullName: string): string {
-    if (!fullName) return 'U';
-    const cleaned = fullName.replace(/[,]+/g, ' ').trim();
-    if (!cleaned) return 'U';
-    const parts = cleaned.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) {
-      return parts[0].slice(0, 2).toUpperCase();
+    if (u.status === 'Pending') {
+      // Move to Pending Approvals
+      this.moveToPending(u);
+    } else {
+      // Keep/update in existing users
+      const idx = this.users.findIndex(x => x.userId === u.userId);
+      if (idx !== -1) {
+        this.users[idx] = { ...u };
+      } else {
+        this.users.push({ ...u });
+      }
+      // Ensure it's not still present in pending
+      this.pendingUsers = this.pendingUsers.filter(p => p.userId !== u.userId);
     }
-    const first = parts[0]?.charAt(0) ?? '';
-    const last = parts[parts.length - 1]?.charAt(0) ?? '';
-    const initials = (first + last).toUpperCase();
-    return initials || 'U';
+
+    this.reselectFirstFiltered();
+  }
+
+  onExistingUserSelected(u: ExistingUser): void {
+    this.selectUser(u as User);
+  }
+
+  // ----- View toggles -----
+  showExistingOnly = false;
+
+  showOnlyExisting(): void {
+    this.showExistingOnly = true;
+    this.selectedUser = undefined; // optional
+  }
+
+  showFullAdmin(): void {
+    this.showExistingOnly = false;
+  }
+
+  openExistingUsers(): void {
+    // Switch to Admin view (if currently on Compliance)
+    this.activeView = 'admin';
+    // Turn on existing-only mode
+    this.showOnlyExisting();
+  }
+
+  // ----- Modals / Profile -----
+  pendingSelectedUser?: User | null = null;
+  openProceed(u: User): void {
+    this.pendingSelectedUser = { ...u };
+    try {
+      const el = document.getElementById('proceedModal');
+      const bs = (window as any).bootstrap;
+      if (el && bs?.Modal) {
+        const modal = bs.Modal.getOrCreateInstance(el);
+        modal.show();
+      }
+    } catch {}
   }
 
   /** Show my profile (offcanvas if available) and populate the details card. */
   viewMyProfile(): void {
-    // Populate the details card
     if (this.currentUser) {
       this.selectUser(this.currentUser);
     }
-
-    // Open offcanvas (Bootstrap 5 JS must be included globally or via CDN)
     const el = document.getElementById('offcanvasProfile');
     const bs = (window as any).bootstrap;
     try {
@@ -507,19 +573,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         const offcanvas = new bs.Offcanvas(el);
         offcanvas.show();
       }
-    } catch {
-      // If bootstrap JS not available, it's okay—the details card already shows info
-      console.debug('Bootstrap Offcanvas not available; showing details card only.');
-    }
+    } catch { /* no-op */ }
   }
 
   signOut(): void {
     try {
-      this.auth.logout(); // Call your AuthService logout method
-      // After sign out, redirect to login page or home
-      window.location.href = '/landing'; // Or use Angular Router
-      // Example with Router:
-      // this.router.navigate(['/login']);
+      this.auth.logout();
+      this.router.navigate(['/landing']); // SPA-friendly navigation
     } catch (e) {
       console.error('Sign out failed', e);
     }
@@ -528,62 +588,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Navigate to settings (replace with Router navigation if you want). */
   goToSettings(): void {
     console.log('Go to settings...');
-    // e.g., inject Router and navigate:
     // this.router.navigate(['/settings']);
   }
-
-    showExistingOnly = false;
-    
- showOnlyExisting(): void {
-    this.showExistingOnly = true;
-    this.selectedUser = undefined; // optional
-  }
-
-showFullAdmin(): void {
-    this.showExistingOnly = false;
-  }
-
-  /** Existing users = everyone except Pending (Active + Inactive) */
-  existingUsers(): User[] {
-    return this.filteredUsers().filter(u => u.status !== 'Pending');
-    // If you want strictly Active-only:
-    // return this.filteredUsers().filter(u => u.status === 'Active');
-  }
-  
-onExistingUserUpdated(updated: ExistingUser): void {
-    const idx = this.users.findIndex(x => x.userId === updated.userId);
-    if (idx !== -1) {
-      this.users[idx] = { ...updated };
-    }
-    // Reselect a sensible user if needed
-    this.reselectFirstFiltered();
-  }
-  
- onExistingUserSelected(u: ExistingUser): void {
-    this.selectUser(u as User);
-  }
-
-
-openExistingUsers(): void {
-  // Switch to Admin view (if currently on Compliance)
-  this.activeView = 'admin';
-  // Turn on existing-only mode
-  this.showOnlyExisting();
 }
-
-pendingSelectedUser?: User | null = null;
-openProceed(u: User): void {
-  this.pendingSelectedUser = { ...u };
-  try {
-    const el = document.getElementById('proceedModal');
-    const bs = (window as any).bootstrap;
-    if (el && bs?.Modal) {
-      const modal = bs.Modal.getOrCreateInstance(el);
-      modal.show();
-    }
-  } catch {}
-}
-
-
-}
-
