@@ -8,6 +8,7 @@ export const roleGuard: CanActivateFn = (route, state) => {
   const user = auth.getCurrentUser();
 
   if (!user) return router.createUrlTree(['/landing']);
+  const name ="umar "
 
   const expectedRole = route.data['role'];
   return user.role === expectedRole ? true : router.createUrlTree(['/landing']);
