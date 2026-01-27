@@ -1,274 +1,412 @@
 
-/* Container pads are handled by Bootstrap; add only what's needed */
-
-/* Use a modern geometric font for the admin UI */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-
-/* Theme variables (cool / neon theme) */
+/* ====== Dark Neon Banking Theme (Admin) ====== */
 :host {
-  /* --bg-gradient: linear-gradient(135deg, #0f172a 0%, #0b3d91 40%, #3a4ea8 100%); */
-  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #49548f 40%, #8836a1 100%);
-  --card-bg: rgba(255,255,255,0.04);
-  --card-border: rgba(255,255,255,0.06);
-  --glass: rgba(255,255,255,0.03);
-  --accent: #7c3aed; /* violet */
-  --accent-2: #06b6d4; /* cyan */
-  --muted: rgba(255,255,255,0.75);
-  --glass-blur: 8px;
-}
-.header{
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  backdrop-filter: blur(var(--glass-blur));
-  background: linear-gradient(90deg,rgb(10, 9, 55) ,#49548f 40%, #8836a1 100%);
-  width: 100%;
-  padding: 4px;
-  border-radius: 5px;
-}
-.admin-page { font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+  --bg-1: #0b1220;           /* page background base */
+  --bg-2: #0f172a;           /* deep surface */
+  --panel: rgba(21, 28, 45, 0.65); /* glass panel */
+  --panel-strong: rgba(21, 28, 45, 0.9);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --text: #e5eefc;
+  --muted: #9fb2d9;
 
-.card-header h1, .card-header h2, .h4 { color: #fff; }
-body{
- 
+  --brand: #8ab4ff;          /* header brand */
+  --primary: #7c4dff;        /* purple button/accent */
+  --primary-2: #6a39ff;
+  --primary-glow: rgba(124, 77, 255, 0.45);
+  --cyan: #00d2ff;           /* secondary accent for reset */
+  --cyan-deep: #00b8e6;
+  --cyan-glow: rgba(0, 210, 255, 0.4);
+
+  --danger: #ef4444;
+  --danger-2: #dc2626;
+  --success: #10b981;
+  --success-2: #059669;
+  --warning: #f59e0b;
+  --warning-2: #d97706;
+
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+  --radius-md: 12px;
+  --shadow-1: 0 10px 24px rgba(0,0,0,0.35);
+  --shadow-2: 0 18px 48px rgba(0,0,0,0.45);
+  --glow-1: 0 8px 24px var(--primary-glow);
+  --glow-2: 0 8px 24px var(--cyan-glow);
 }
-/* Apply background to the admin page container */
+
 .admin-page {
-  background: var(--bg-gradient);
-  color: var(--muted);
+  color: var(--text);
+  background:
+    radial-gradient(1200px 600px at -5% 0%, rgba(124,77,255,0.20), transparent 45%),
+    radial-gradient(900px 600px at 110% 20%, rgba(0,210,255,0.16), transparent 48%),
+    linear-gradient(180deg, #0a0f1c 0%, #0a101e 35%, #0b1220 100%);
   min-height: 100vh;
-  padding-top: 24px;
-  padding-bottom: 48px;
 }
 
-/* Improve alignment of filter controls */
-.admin-page form.row.align-items-center .form-label {
-  margin-bottom: 0.25rem; /* slightly reduce label bottom spacing */
+/* Header bar */
+.header {
+  padding: 8px 0 2px 0;
+  border-bottom: 1px solid var(--border);
 }
-.admin-page .form-select, .admin-page .form-control {
-  min-height: 44px; /* unify control heights */
-}
+.header .h4,
+.header .h6 { color: #eaf2ff; }
 
-/* Filter column helper to vertically center label+control */
-.admin-page .filter-col {
-  padding-top: 0.25rem; /* small top pad so centering looks natural */
-}
-.admin-page .filter-col .form-label {
-  margin-bottom: 0.35rem;
-}
-
-/* Nudge the role filter slightly up to align with search input (desktop) */
-.admin-page .role-filter-col {
-  transform: translateY(-16px);
-}
-
-/* On small screens, reset the nudge so stacked layout looks natural */
-@media (max-width: 768px) {
-  .admin-page .role-filter-col { transform: none; }
-}
-
-/* Glassy cards */
+/* Glass cards */
 .card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border: 1px solid var(--card-border);
-  box-shadow: 0 8px 24px rgba(2,6,23,0.6);
-  backdrop-filter: blur(var(--glass-blur));
-  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
-
-/* Header */
 .card-header {
   background: transparent;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+}
+.card-body {
+  color: var(--text);
 }
 
-/* Theme toggle button */
-.theme-toggle {
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  border: none;
+/* Dark form controls (Bootstrap-compatible) */
+.form-control, .form-select {
+  background: rgba(14, 19, 33, 0.75);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+  box-shadow: inset 0 0 0 rgba(0,0,0,0);
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.form-control::placeholder, .form-select::placeholder {
+  color: rgba(200, 215, 245, 0.45);
+}
+.form-control:focus, .form-select:focus {
+  border-color: rgba(124, 77, 255, 0.45);
+  box-shadow: 0 0 0 3px rgba(124, 77, 255, 0.18);
+  background: rgba(16, 24, 42, 0.85);
+  color: var(--text);
+}
+
+/* Buttons */
+.btn {
+  border-radius: 12px;
+  border-width: 1px;
+}
+
+/* Primary (purple) */
+.btn-primary {
+  background: linear-gradient(180deg, var(--primary) 0%, var(--primary-2) 100%);
+  border-color: rgba(124,77,255,0.5);
   color: #fff;
-  box-shadow: 0 6px 18px rgba(124,58,237,0.18);
+  box-shadow: var(--glow-1);
 }
-.theme-toggle:hover { transform: translateY(-1px); }
-
-/* KPI styles - neon accent */
-.kpi {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-left: 4px solid var(--accent);
-}
-
-/* Table rows hover glow */
-.table-hover tbody tr:hover {
-  box-shadow: inset 0 -4px 30px rgba(124,58,237,0.06);
+.btn-primary:hover {
   transform: translateY(-1px);
+  filter: brightness(1.03);
 }
 
-/* Clickable cell hover with neon underline */
-.table td[style*="cursor: pointer;"] {
-  position: relative;
+/* Outline light (header nav) */
+.btn-outline-light {
+  border-color: rgba(255,255,255,0.28);
+  color: #eaf2ff;
+  background: rgba(255,255,255,0.02);
 }
-.table td[style*="cursor: pointer;"]:after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 2px;
-  width: 0;
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  transition: width 220ms ease;
-}
-.table td[style*="cursor: pointer;"]:hover:after { width: 100%; }
-
-/* Placeholder details */
-.card .empty-placeholder {
-  color: rgba(255,255,255,0.65);
+.btn-outline-light:hover {
+  background: rgba(255,255,255,0.06);
 }
 
-/* Accent buttons */
-.btn-outline-primary {
-  border-color: rgba(124,58,237,0.18);
-  color: #e9eaf6;
+/* Secondary (cyan) */
+.btn-outline-secondary {
+  border-color: rgba(255,255,255,0.2);
+  color: var(--text);
 }
-.btn-outline-primary:hover {
-  background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(6,182,212,0.06));
+.btn-outline-secondary:hover {
+  border-color: rgba(255,255,255,0.35);
 }
 
-/* Slight animation for selection */
-.selected-row {
-  animation: pop-in 320ms ease;
+/* Warning pill for Existing Users toggle */
+.btn-warning, .btn-outline-warning {
+  border-radius: 12px;
 }
-@keyframes pop-in { from { transform: translateY(6px); opacity:0 } to { transform:none; opacity:1 } }
+.btn-warning {
+  background: linear-gradient(180deg, #a855f7 0%, #7c3aed 100%);
+  border-color: rgba(168,85,247,0.5);
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(168, 85, 247, 0.35);
+}
+.btn-outline-warning {
+  color: #e9d5ff;
+  border-color: rgba(168,85,247,0.35);
+  background: rgba(124,77,255,0.06);
+}
+.btn-outline-warning:hover {
+  background: rgba(124,77,255,0.12);
+}
 
-/* KPIs */
+/* Transparent header button */
+.btn-transparent {
+  background: transparent;
+  border: 0;
+  color: #eaf2ff;
+}
+
+/* Avatar chip */
+.avatar-initials {
+  background: linear-gradient(180deg, #475569 0%, #334155 100%);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+/* Dropdown */
+.dropdown-menu {
+  background: var(--panel-strong);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-2);
+  color: var(--text);
+}
+.dropdown-item { color: var(--text); }
+.dropdown-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+/* Table styling */
+.table {
+  --tbl-border: rgba(255,255,255,0.06);
+  color: var(--text);
+}
+.table thead.table-light {
+  background: rgba(255,255,255,0.04);
+  color: #dbe7ff;
+  border-bottom: 1px solid var(--border);
+}
+.table tbody tr {
+  border-top-color: var(--tbl-border);
+  background: rgba(8,14,26,0.35);
+}
+.table-hover tbody tr:hover {
+  background: rgba(14,22,38,0.6);
+}
+.table td, .table th {
+  border-color: var(--tbl-border);
+}
+
+/* Badges (status chips) */
+.badge {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  border: 1px solid transparent;
+}
+.badge.bg-success-subtle {
+  background: rgba(16,185,129,0.12) !important;
+  color: #34d399 !important;
+  border-color: rgba(16,185,129,0.35) !important;
+}
+.badge.bg-danger-subtle {
+  background: rgba(239,68,68,0.12) !important;
+  color: #f87171 !important;
+  border-color: rgba(239,68,68,0.35) !important;
+}
+.badge.bg-warning-subtle {
+  background: rgba(245,158,11,0.12) !important;
+  color: #fbbf24 !important;
+  border-color: rgba(245,158,11,0.35) !important;
+}
+
+/* Headings inside cards */
+.card .h6, .card h2.h6, .card h3.h6 { color: #eaf2ff; }
+
+/* Helper: panel title */
+.panel-title-xl {
+  font-size: clamp(1.4rem, 1.1rem + 1vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: #ecf3ff;
+}
+
+/* Softer offcanvas */
+.offcanvas.text-bg-dark {
+  background: radial-gradient(1000px 600px at 0% 0%, rgba(124,77,255,0.15), transparent 35%), #0d1324 !important;
+  border-left: 1px solid var(--border);
+}
+.btn-close.btn-close-white {
+  filter: invert(1) brightness(1.2);
+}
+
+/* Small utilities */
+.text-muted { color: var(--muted) !important; }
+.table .text-truncate { max-width: 280px; }
+
+/* Swatches in chart legend */
+.swatch { display:inline-block; width:12px; height:12px; border-radius:3px; }
+
+/* Dark SVG chart caption text */
+.svg-chart text { fill: #bcd0ff; }
+
+
+/* =========================
+   COMPLIANCE VIEW THEME FIX
+   ========================= */
+
+/* Scope all fixes inside the compliance view root */
+:host ::ng-deep [ng-reflect-ng-if="compliance"], 
+:host ::ng-deep .compliance-root,
+:host .compliance-root {
+  /* nothing; just a scoping helper if you add .compliance-root to the block */
+}
+
+/* Card spacing in compliance view */
+.compliance-root .card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-1);
+}
+
+/* Header action buttons container in Compliance KPI card header */
+.compliance-actions {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+/* KPI grid */
+.kpis-row {
+  margin-top: .25rem;
+}
+
+/* KPI tiles */
 .kpi {
-  background: #f8f9fa;
+  background: linear-gradient(180deg, rgba(18, 24, 41, 0.8) 0%, rgba(14, 20, 36, 0.75) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+  padding: 18px;
+  min-height: 94px;
+}
+.kpi .text-muted.small {
+  color: #b8c7ee !important; /* brighter label */
+  opacity: 0.9;
+}
+.kpi .fs-5 {
+  color: #cddaff; /* number */
+  text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  letter-spacing: 0.2px;
 }
 
-/* Chart wrappers */
-.chart-block .legend .swatch {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  margin-right: 6px;
-  vertical-align: middle;
+/* Chart block */
+.chart-block {
+  background: transparent; /* keep glass below in container if needed */
 }
-
 .svg-wrap {
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  background: #fff;
-  padding: 8px;
-  overflow: hidden; /* prevent overflow on small screens */
-}
-.svg-chart {
-  display: block;
-  width: 100%;      /* responsive SVG across full width */
-  height: auto;
-}
-.x-labels text {
-  fill: #000; /* scale text in black */
+  background: rgba(7, 12, 24, 0.35);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 10px;
 }
 
-/* Y-axis labels inside SVG */
-.svg-chart .y-axis text { fill: #000; font-family: Inter, system-ui, sans-serif; }
+/* Chart text/axes on dark */
+.svg-chart text {
+  fill: #bfd0ff; /* brighter than default */
+}
+.svg-chart line {
+  /* grid lines set in template; keep soft */
+}
 
-/* Bars */
-.bars {
-  display: grid;
-  gap: 8px;
+/* Legend chips */
+.legend {
+  color: #bcd0ff;
+}
+.legend .swatch {
+  width: 12px; height: 12px; border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.15) inset;
+}
+
+/* Ensure the X-axis baseline is visible on dark */
+.svg-chart line[stroke="#cfd8dc"] {
+  stroke: rgba(207, 216, 220, 0.5) !important;
+}
+
+/* Amount Buckets  */
+.chart-block .bars {
+  background: rgba(7, 12, 24, 0.25);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
 }
 .bar-row {
   display: grid;
-  grid-template-columns: minmax(120px, 160px) 1fr 100px; /* label / track / value */
+  grid-template-columns: 140px 1fr auto;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.06);
 }
-.bar-label {
-  font-size: 0.95rem;
-}
+.bar-row:last-child { border-bottom: 0; }
+.bar-label { color: #eaf2ff; font-weight: 600; }
 .bar-track {
   position: relative;
-  height: 12px;
+  height: 10px;
+  background: rgba(255,255,255,0.06);
   border-radius: 999px;
-  background: #f1f3f5;
-  border: 1px solid #dee2e6;
   overflow: hidden;
 }
 .bar-fill {
   height: 100%;
-  border-radius: 999px;
-  background: #1976d2; /* transactions color */
-  transition: width 250ms ease; /* smooth growth */
-}
-.bar-fill.alt {
-  background: #5c6bc0; /* channel mix color */
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-2) 100%);
+  box-shadow: 0 0 16px rgba(124,77,255,0.25);
 }
 .bar-value {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: #6c757d;
+  color: #d5e3ff;
+  font-weight: 700;
 }
 
-/* Status badge tweaks (Bootstrap 5.3 friendly) */
-.bg-success-subtle {
-  background-color: #eaf7ea !important;
-}
-.bg-danger-subtle {
-  background-color: #fdeaea !important;
-}
-.bg-warning-subtle {
-  background-color: #fff4e5 !important;
+/* Compliance header tidy: prevent overlap */
+.header .d-flex.flex-wrap > .btn,
+.compliance-actions .btn {
+  margin-top: 2px;
+  margin-bottom: 2px;
 }
 
-/* ---- FULL-BLEED CHART ---- */
-/* Break the chart block out of the Bootstrap .container to span full viewport width */
-.chart-full {
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-}
-.chart-full .container-fluid {
-  /* Match Bootstrap's px-3 and px-md-4 (1rem / 1.5rem) so the chart aligns with page content */
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-@media (min-width: 768px) {
-  .chart-full .container-fluid {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
+/* Buttons inside compliance header */
+.compliance-actions .btn-warning {
+  background: linear-gradient(180deg, #a855f7 0%, #7c3aed 100%);
+  border-color: rgba(168,85,247,0.5);
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(168, 85, 247, 0.35);
 }
 
-/* Ensure the chart header and legend align vertically with other card headers */
-.chart-block .d-flex.align-items-center { align-items: center; }
-
-/* KPI/legend alignment helpers */
-.kpis-row .kpi { min-height: 96px; }
-.legend { gap: 12px; }
-.legend span { white-space: nowrap; }
-
-/* Responsive */
-@media (max-width: 992px) {
-  .bar-row {
-    grid-template-columns: minmax(100px, 140px) 1fr 80px;
-  }
-}
-@media (max-width: 768px) {
-  .bar-row {
-    grid-template-columns: 1fr; /* stack label/track/value vertically */
-  }
-  .bar-value {
-    text-align: left;
-  }
-  .legend {
-    gap: 10px;
-  }
+/* Tighten card header height in compliance to avoid double rows */
+.compliance-root .card-header {
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
-/* Optional: subtle hover on clickable cells */
-.table td[style*="cursor: pointer;"] {
-  transition: background-color 150ms ease;
+/* Optional: reduce default container padding around chart for better fit */
+.compliance-root .container-fluid.px-3,
+.compliance-root .container-fluid.px-md-4 {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
 }
-.table td[style*="cursor: pointer;"]:hover {
-  background-color: #f8f9fa;
+
+/* Optional: improve top spacing below the big page title */
+.compliance-title {
+  margin-bottom: .25rem;
+}
+.compliance-subtitle {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+/* Prevent header chips from overlapping content when window is narrow */
+.header .d-flex.align-items-center.justify-content-between {
+  align-items: flex-start;
 }

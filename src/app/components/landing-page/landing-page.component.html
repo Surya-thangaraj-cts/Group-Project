@@ -61,7 +61,26 @@
                 <label class="form-label">Email</label>
                 <input type="email" class="form-control form-control-lg" formControlName="email" placeholder="Enter your email" />
               </div>
-              <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signinForm.invalid">Login</button>
+
+
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="rememberMe">
+                  <label class="form-check-label" for="rememberMe">Remember me</label>
+                </div>
+                <!-- <a href="#" class="text-decoration-none">Forgot Password?</a> -->
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signinForm.invalid">
+                Login
+              </button>
+
+              <p class="mt-2 text-center text-danger" *ngIf="message">{{ message }}</p>
+
+              
+
+              <!-- <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signinForm.invalid">Login</button>
+>>>>>>> 74eeee3e9cfd53ebc9a0e55a6d4e012f5cae1c47 -->
             </form>
 
             <!-- Register Form -->

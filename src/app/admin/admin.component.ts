@@ -7,6 +7,7 @@ import {
   ElementRef,
   ViewChild
 } from '@angular/core';
+import { ExistingUsersTableComponent, User as ExistingUser } from './existing-users-table/existing-users-table.component';
 import { AuthService } from '../auth/auth.service';
 import { CommonModule } from '@angular/common';
 import {
@@ -16,9 +17,7 @@ import {
   ReactiveFormsModule,
   FormsModule
 } from '@angular/forms';
-
-
-// import { ComplianceService } from '../../service/compliance.service';
+import { Router } from '@angular/router';
 
 type Role = 'Officer' | 'Manager' | 'Admin';
 type Status = 'Active' | 'Inactive' | 'Pending';
@@ -32,17 +31,14 @@ interface User {
   status: Status;
 }
 
-
 interface ComplianceMetrics {
   totalTransactions: number;
   highValueCount: number;
-  accountGrowthRate: number; 
+  accountGrowthRate: number;
   monthlyTxnVolume: number[];
   monthlyLabels: string[];
   monthlySuspicious: number[];
-
   amountBuckets: { label: string; count: number }[];
-  channelMix:   { label: string; count: number }[];
 }
 
 @Component({
@@ -50,12 +46,23 @@ interface ComplianceMetrics {
   standalone: true,
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, FormsModule]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ExistingUsersTableComponent]
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // ----- Page info -----
   currentYear = new Date().getFullYear();
+
+  activeView: 'admin' | 'compliance' = 'admin';
+  showCompliance(): void { this.activeView = 'compliance'; }
+  showAdmin(): void {
+    this.activeView = 'admin';
+    this.showFullAdmin();          // reset existing-only mode
+    this.editingUserId = undefined;
+    // (Optional) also reset selection/search if you prefer:
+    // this.selectedUser = undefined;
+    // this.clearSearch();
+  }
 
   // ----- Data -----
   users: User[] = [];
@@ -78,23 +85,20 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     monthlyLabels: [],
     monthlySuspicious: [],
     amountBuckets: [],
-    channelMix: []
   };
 
   // ----- UI state -----
   searchTerm = '';
   roleFilter: Role | 'All' = 'All';
-  // Theme is finalized; styles are applied globally within component via CSS variables
 
   pendingDisplayedColumns = ['userId', 'name', 'role', 'email', 'branch', 'actions'];
   usersDisplayedColumns   = ['userId', 'name', 'role', 'email', 'branch', 'status', 'actions'];
 
   // ----- FULL-WIDTH CHART: DOM refs & sizing -----
   @ViewChild('chartWrap') chartWrap?: ElementRef<HTMLElement>;
-  chartWidth = 1200;        // will be updated to actual available width
-  chartHeight = 220;        // SVG height (viewBox height)
+  chartWidth = 1200;   // will be updated to actual available width
+  chartHeight = 220;   // SVG height (viewBox height)
   private resizeObs?: ResizeObserver;
-  // Plot margins for axes
   chartLeftMargin = 48;
   chartRightPadding = 8;
 
@@ -103,7 +107,10 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getYMax(): number {
-    const vals = [ ...(this.compliance.monthlyTxnVolume || []), ...(this.compliance.monthlySuspicious || []) ];
+    const vals = [
+      ...(this.compliance.monthlyTxnVolume || []),
+      ...(this.compliance.monthlySuspicious || [])
+    ];
     return Math.max(...vals, 1);
   }
 
@@ -111,9 +118,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     const max = this.getYMax();
     const step = max / (count - 1);
     const ticks: number[] = [];
-    for (let i = 0; i < count; i++) {
-      ticks.push(Math.round(i * step));
-    }
+    for (let i = 0; i < count; i++) ticks.push(Math.round(i * step));
     return ticks.reverse(); // largest first for drawing top-to-bottom
   }
 
@@ -122,8 +127,15 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return height - (val / max) * height;
   }
 
-  constructor(private fb: FormBuilder, private auth: AuthService) {
-    console.debug('[Admin] constructor');
+  // ====== Current user for Profile UI ======
+  currentUser: User | null = null;
+
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router      // proper Router injection
+  ) {
+    // Reactive forms
     this.editUserForm = this.fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -138,46 +150,29 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       role: ['Officer' as Role, Validators.required],
       branch: ['', Validators.required]
     });
-
   }
-  
 
   ngOnInit(): void {
-    console.debug('[Admin] ngOnInit start');
     try {
-      // Try to load persisted users from AuthService (users created via sign-up)
-      const authUsers = this.auth.getAllUsers();
-    //   if (authUsers && authUsers.length) {
-    //   // Map AuthService users to the Admin view model
-    //   this.users = authUsers.map(u => ({
-    //     userId: u.userId ?? "no id",
-    //     name: u.name ?? "no name",
-    //     role: this.mapRole(u.role),
-    //     email: u.email ?? "",
-    //     branch: u.branch ?? "",
-    //     status: this.mapStatus(u.status) ?? "<no status>",
-    //   }));
-    // } else {
+      // Load users (from AuthService or fallback demo)
+      const authUsers = this.auth.getAllUsers?.() ?? [];
+      // TODO: If you want to use authUsers, map them to this.users here.
+
       // Fallback demo data
-      if(true){
       this.users = [
         { userId: 'U1001', name: 'Anita Sharma', role: 'Officer', email: 'anita@bank.local', branch: 'Gurgaon', status: 'Active' },
         { userId: 'U1002', name: 'Rahul Mehta', role: 'Manager', email: 'rahul@bank.local', branch: 'Delhi', status: 'Active' },
         { userId: 'U1003', name: 'Priya Nair', role: 'Officer', email: 'priya@bank.local', branch: 'Mumbai', status: 'Inactive' }
       ];
-
       this.pendingUsers = [
         { userId: 'U2001', name: 'Karan Singh', role: 'Officer', email: 'karan@bank.local', branch: 'Jaipur', status: 'Pending' },
         { userId: 'U2002', name: 'Neha Gupta', role: 'Manager', email: 'neha@bank.local', branch: 'Noida', status: 'Pending' }
       ];
-    }
-
-    }
-    catch (e) {
+    } catch (e) {
       console.error('[Admin] ngOnInit error', e);
     }
 
-    // Extended compliance demo values (keep same length for labels/series)
+    // Compliance demo values
     this.compliance = {
       totalTransactions: 12845,
       highValueCount: 312,
@@ -191,26 +186,46 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         { label: '₹50k–₹1L',  count: 310 },
         { label: '> ₹1L',     count: 160 },
       ],
-      channelMix: [
-        { label: 'UPI',    count: 980 },
-        { label: 'NEFT',   count: 620 },
-        { label: 'RTGS',   count: 210 },
-        { label: 'Cash',   count: 150 },
-        { label: 'Cheque', count: 70 },
-      ]
     };
 
-    // Start with no selection; selection happens only when the admin starts a search
-    this.selectedUser = undefined;
+    // Populate currentUser for Profile UI
+    this.currentUser = this.tryGetCurrentUserFromAuth() ?? this.deriveCurrentUser();
+  }
 
-    // Ensure we always have pending approvals for the admin UX
-    if (!this.pendingUsers || this.pendingUsers.length === 0) {
-      this.pendingUsers = [
-        { userId: 'U2001', name: 'Karan Singh', role: 'Officer', email: 'karan@bank.local', branch: 'Jaipur', status: 'Pending' },
-        { userId: 'U2002', name: 'Neha Gupta', role: 'Manager', email: 'neha@bank.local', branch: 'Noida', status: 'Pending' }
-      ];
+  /** Attempt to read current/logged-in user from AuthService (if the method exists). */
+  private tryGetCurrentUserFromAuth(): User | null {
+    try {
+      const authUser = (this.auth as any).getCurrentUser?.();
+      if (!authUser) return null;
+      // Map to our UI model safely
+      return {
+        userId: authUser.userId ?? 'unknown',
+        name: authUser.name ?? 'Unknown User',
+        email: authUser.email ?? '',
+        role: this.mapRole(authUser.role ?? 'Officer'),
+        branch: authUser.branch ?? '',
+        status: this.mapStatus(authUser.status ?? 'active'),
+      };
+    } catch {
+      return null;
     }
-    console.debug('[Admin] ngOnInit end', { usersCount: this.users.length, pendingCount: this.pendingUsers.length });
+  }
+
+  /** Fallback current user: prefer first active user, or provide a sensible default. */
+  private deriveCurrentUser(): User | null {
+    if (this.users?.length) {
+      const u = this.users.find(x => x.status === 'Active') ?? this.users[0];
+      return u ? { ...u } : null;
+    }
+    // Default
+    return {
+      userId: 'U-1029',
+      name: 'Thangaraj, Surya',
+      email: 'surya.thangaraj@cognizant.com',
+      role: 'Officer',
+      branch: 'Pune',
+      status: 'Active'
+    };
   }
 
   /** Map the auth service role strings to admin UI-friendly roles */
@@ -230,7 +245,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Map auth status values to admin UI-friendly statuses */
   private mapStatus(s: string): Status {
-    switch (s.toLowerCase()) {
+    switch ((s ?? '').toLowerCase()) {
       case 'active': return 'Active';
       case 'inactive': return 'Inactive';
       case 'pending': return 'Pending';
@@ -239,7 +254,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    console.debug('[Admin] ngAfterViewInit');
     // Use ResizeObserver for accurate sizing across layout changes
     setTimeout(() => {
       const el = this.chartWrap?.nativeElement;
@@ -247,14 +261,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.resizeObs = new ResizeObserver(entries => {
         for (const entry of entries) {
-          // Compute horizontal paddings from computed styles so the SVG width
-          // matches the visible content area precisely (handles different breakpoints)
+          // Account for element padding so the SVG width matches the visible content area
           const style = getComputedStyle(el);
           const padLeft = parseFloat(style.paddingLeft) || 0;
           const padRight = parseFloat(style.paddingRight) || 0;
           const pad = padLeft + padRight;
           const w = entry.contentRect.width;
-          // Subtract only the element padding (not an arbitrary constant)
           this.chartWidth = Math.max(360, Math.round(w - pad));
         }
       });
@@ -263,7 +275,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    console.debug('[Admin] ngOnDestroy');
     this.resizeObs?.disconnect();
   }
 
@@ -280,7 +291,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Re-select first item from filtered list (or clear if none) */
   private reselectFirstFiltered(): void {
     const list = this.filteredUsers();
-    // Prefer first Active if available; otherwise first
     const first = list.find(u => u.status === 'Active') ?? list[0];
     this.selectedUser = first ? { ...first } : undefined;
   }
@@ -288,7 +298,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Keep selection in sync with search changes */
   onSearchChange(val: string): void {
     this.searchTerm = (val ?? '').trim();
-    console.debug('[Admin] onSearchChange:', { val: this.searchTerm });
     if (this.searchTerm) {
       const list = this.filteredUsers();
       const first = list.find(u => u.status === 'Active') ?? list[0];
@@ -304,9 +313,9 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.searchTerm) this.reselectFirstFiltered();
   }
 
-  // ----- Existing helpers -----
+  // ----- Chart helpers -----
 
-  // Single-line path (legacy)
+  // Legacy single-line path
   trendPath(width: number, height: number): string {
     const values = this.compliance.monthlyTxnVolume;
     if (!values.length) return '';
@@ -320,7 +329,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'M ' + points.map(p => p.replace(',', ' ')).join(' L ');
   }
 
-  // Generic line path for any series (used by dual line chart)
+  // Generic line path for any series
   linePath(values: number[], width = 600, height = 120): string {
     if (!values?.length) return '';
     const max = Math.max(...values) || 1;
@@ -337,20 +346,16 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   get maxBucket(): number {
     return Math.max(...(this.compliance.amountBuckets.map(b => b.count)), 1);
   }
-  get maxChannel(): number {
-    return Math.max(...(this.compliance.channelMix.map(c => c.count)), 1);
-  }
 
   // ----- Pending approvals -----
   approveUser(u: User): void {
     const approved: User = { ...u, status: 'Active' };
     this.users.push(approved);
     this.pendingUsers = this.pendingUsers.filter(x => x.userId !== u.userId);
-    // Keep selection sensible after list changes
-    this.reselectFirstFiltered();
+
     // Persist approval to AuthService (store as lowercase auth model)
     try {
-      this.auth.signup({
+      this.auth.signup?.({
         name: approved.name,
         userId: approved.userId,
         email: approved.email,
@@ -361,13 +366,15 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (e) {
       console.warn('Failed to persist approved user to AuthService', e);
     }
+
+    this.reselectFirstFiltered();
   }
 
   rejectUser(u: User): void {
     this.pendingUsers = this.pendingUsers.filter(x => x.userId !== u.userId);
   }
 
-  // ----- Inline edit -----
+  // ----- Inline edit (parent panel) -----
   startEdit(u: User): void {
     this.editingUserId = u.userId;
     this.selectedUser = { ...u };
@@ -379,37 +386,85 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       status: u.status
     });
   }
+
   cancelEdit(): void {
     this.editingUserId = undefined;
     this.editUserForm.reset();
   }
+
+  /** Move a user to pending and remove from existing users list */
+  private moveToPending(updated: User): void {
+    // Remove from existing users
+    this.users = this.users.filter(u => u.userId !== updated.userId);
+
+    // Upsert into pending (avoid duplicates)
+    const idx = this.pendingUsers.findIndex(p => p.userId === updated.userId);
+    const pendingVersion: User = { ...updated, status: 'Pending' };
+    if (idx === -1) {
+      this.pendingUsers.unshift(pendingVersion);
+    } else {
+      this.pendingUsers[idx] = pendingVersion;
+    }
+
+    // Optional: clear selection if same user
+    if (this.selectedUser?.userId === updated.userId) {
+      this.selectedUser = undefined;
+    }
+  }
+  
+/** Create avatar initials from full name (handles spaces/commas/hyphens). */
+initials(fullName: string): string {
+  if (!fullName) return 'U';
+  const cleaned = fullName.replace(/[,]+/g, ' ').trim();
+  if (!cleaned) return 'U';
+  const parts = cleaned.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+  const first = parts[0]?.charAt(0) ?? '';
+  const last = parts[parts.length - 1]?.charAt(0) ?? '';
+  const initials = (first + last).toUpperCase();
+  return initials || 'U';
+}
+
+
   updateUser(): void {
     if (!this.selectedUser || this.editUserForm.invalid) return;
+
     const idx = this.users.findIndex(x => x.userId === this.selectedUser!.userId);
     if (idx !== -1) {
-      const updated = { ...this.selectedUser, ...this.editUserForm.value };
-      this.users[idx] = updated;
+      const updated: User = { ...this.selectedUser, ...this.editUserForm.value };
+
+      if (updated.status === 'Pending') {
+        // Move to Pending Approvals
+        this.moveToPending(updated);
+      } else {
+        // Keep in existing users
+        this.users[idx] = updated;
+        // Ensure it's not in pending (edge-case)
+        this.pendingUsers = this.pendingUsers.filter(p => p.userId !== updated.userId);
+      }
     }
+
     this.cancelEdit();
-    // Recompute selection because list changed
     this.reselectFirstFiltered();
   }
 
-  // ----- Invite -----
-  inviteUser(): void {
-    if (this.inviteUserForm.invalid) return;
-    const v = this.inviteUserForm.value;
-    const newUser: User = {
-      userId: 'U' + Math.floor(Math.random() * 100000),
-      name: v.name,
-      email: v.email,
-      role: v.role,
-      branch: v.branch,
-      status: 'Pending'
-    };
-    this.pendingUsers.unshift(newUser);
-    this.inviteUserForm.reset();
-  }
+  // ----- Invite (optional) -----
+  // inviteUser(): void {
+  //   if (this.inviteUserForm.invalid) return;
+  //   const v = this.inviteUserForm.value;
+  //   const newUser: User = {
+  //     userId: 'U' + Math.floor(Math.random() * 100000),
+  //     name: v.name,
+  //     email: v.email,
+  //     role: v.role,
+  //     branch: v.branch,
+  //     status: 'Pending'
+  //   };
+  //   this.pendingUsers.unshift(newUser);
+  //   this.inviteUserForm.reset();
+  // }
 
   /** Clear the search input and reset selection */
   clearSearch(ref?: HTMLInputElement): void {
@@ -440,5 +495,99 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         u.branch.toLowerCase().includes(term) ||
         u.userId.toLowerCase().includes(term)
       );
+  }
+
+  /** Existing users = everyone except Pending (Active + Inactive) */
+  existingUsers(): User[] {
+    return this.filteredUsers().filter(u => u.status !== 'Pending');
+  }
+
+  // ----- Child component events -----
+  onExistingUserUpdated(updated: ExistingUser): void {
+    const u = updated as User;
+
+    if (u.status === 'Pending') {
+      // Move to Pending Approvals
+      this.moveToPending(u);
+    } else {
+      // Keep/update in existing users
+      const idx = this.users.findIndex(x => x.userId === u.userId);
+      if (idx !== -1) {
+        this.users[idx] = { ...u };
+      } else {
+        this.users.push({ ...u });
+      }
+      // Ensure it's not still present in pending
+      this.pendingUsers = this.pendingUsers.filter(p => p.userId !== u.userId);
+    }
+
+    this.reselectFirstFiltered();
+  }
+
+  onExistingUserSelected(u: ExistingUser): void {
+    this.selectUser(u as User);
+  }
+
+  // ----- View toggles -----
+  showExistingOnly = false;
+
+  showOnlyExisting(): void {
+    this.showExistingOnly = true;
+    this.selectedUser = undefined; // optional
+  }
+
+  showFullAdmin(): void {
+    this.showExistingOnly = false;
+  }
+
+  openExistingUsers(): void {
+    // Switch to Admin view (if currently on Compliance)
+    this.activeView = 'admin';
+    // Turn on existing-only mode
+    this.showOnlyExisting();
+  }
+
+  // ----- Modals / Profile -----
+  pendingSelectedUser?: User | null = null;
+  openProceed(u: User): void {
+    this.pendingSelectedUser = { ...u };
+    try {
+      const el = document.getElementById('proceedModal');
+      const bs = (window as any).bootstrap;
+      if (el && bs?.Modal) {
+        const modal = bs.Modal.getOrCreateInstance(el);
+        modal.show();
+      }
+    } catch {}
+  }
+
+  /** Show my profile (offcanvas if available) and populate the details card. */
+  viewMyProfile(): void {
+    if (this.currentUser) {
+      this.selectUser(this.currentUser);
+    }
+    const el = document.getElementById('offcanvasProfile');
+    const bs = (window as any).bootstrap;
+    try {
+      if (el && bs?.Offcanvas) {
+        const offcanvas = new bs.Offcanvas(el);
+        offcanvas.show();
+      }
+    } catch { /* no-op */ }
+  }
+
+  signOut(): void {
+    try {
+      this.auth.logout();
+      this.router.navigate(['/landing']); // SPA-friendly navigation
+    } catch (e) {
+      console.error('Sign out failed', e);
+    }
+  }
+
+  /** Navigate to settings (replace with Router navigation if you want). */
+  goToSettings(): void {
+    console.log('Go to settings...');
+    // this.router.navigate(['/settings']);
   }
 }
