@@ -84,22 +84,13 @@ export class OfficerLayoutComponent implements OnInit {
     if (window.innerWidth > 900 && this.isMobileNavOpen) this.isMobileNavOpen = false;
   }
 
-  // ---------- FIX: add missing methods used by template ----------
-
-  /**
-   * Called before opening the offcanvas from dropdown/mobile.
-   * We already bind the offcanvas to currentUser; set it defensively.
-   */
   selectUser(user: User): void {
     if (user) {
       this.currentUser = user;
     }
   }
 
-  /**
-   * Navigate to settings page. Adjust the path if your route differs.
-   */
-  goToSettings(): void {
-    this.router.navigate(['/settings']);
-  }
+  // goToSettings(): void {
+  //   this.router.navigate(['/settings']);
+  // }
 }

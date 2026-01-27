@@ -1,11 +1,10 @@
-
 <!-- src/app/features/officer/alerts/alerts.component.html -->
 <div class="card">
   <h2>Alerts</h2>
   <p class="helper">Notifications for account updates and high-value transactions.</p>
 
   <!-- Filters + Search -->
-  <div class="grid-narrow" style="margin-top:.5rem;">
+  <div class="grid-narrow mt-2">
     <label class="full">
       Search (Account #)
       <div class="search-group">
@@ -25,6 +24,7 @@
     <label>
       Read status
       <select
+        class="select-compact"
         [ngModel]="readFilter"
         (ngModelChange)="onReadFilterChange($event)"
         [ngModelOptions]="{standalone:true}">
@@ -37,13 +37,13 @@
     <label>
       Type
       <select
+        class="select-compact"
         [ngModel]="typeFilter"
         (ngModelChange)="onTypeFilterChange($event)"
         [ngModelOptions]="{standalone:true}">
         <option value="ALL">All</option>
         <option value="UPDATE_REQUEST">Update Request</option>
         <option value="HIGH_VALUE_TXN">High-value Transaction</option>
-        <!-- Manual Flag removed from the options -->
       </select>
     </label>
 
@@ -137,60 +137,36 @@
       </article>
 
       <!-- Pagination -->
-      <div class="actions" style="justify-content: space-between; align-items: center; gap: .5rem; padding-top: .5rem;">
-        <div class="inline" style="gap:.5rem;">
+      <div class="actions table-actions">
+        <div class="inline">
           <span class="muted">Rows per page</span>
           <select
+            class="select-compact"
             [value]="vm.pageSize"
             (change)="onPageSizeChange($event)"
-            aria-label="Rows per page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.3rem .5rem;">
+            aria-label="Rows per page">
             <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
           </select>
         </div>
 
-        <div class="muted">{{ vm.from }}–{{ vm.to }} of {{ vm.total }}</div>
+        <div class="muted range-text">{{ vm.from }}–{{ vm.to }} of {{ vm.total }}</div>
 
-        <div class="actions" style="gap:.35rem;">
-          <button type="button" (click)="setPage(1)" [disabled]="vm.currentPage===1"
-                  aria-label="First page"
-                  style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .6rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-                  [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null">
-            First
-          </button>
-
-          <button type="button" (click)="prevPage()" [disabled]="vm.currentPage===1"
-                  aria-label="Previous page"
-                  style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .6rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-                  [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null">
-            Prev
-          </button>
+        <div class="pager">
+          <button type="button" class="pager-btn" (click)="setPage(1)" [disabled]="vm.currentPage===1" aria-label="First page">First</button>
+          <button type="button" class="pager-btn" (click)="prevPage()" [disabled]="vm.currentPage===1" aria-label="Previous page">Prev</button>
 
           <ng-container *ngFor="let p of vm.pages">
-            <button type="button" (click)="setPage(p)"
+            <button type="button" class="pager-btn"
+                    (click)="setPage(p)"
+                    [class.active]="p===vm.currentPage"
                     [attr.aria-current]="p===vm.currentPage ? 'page' : null"
-                    [attr.aria-label]="'Go to page ' + p"
-                    [ngStyle]="p===vm.currentPage
-                      ? {'background':'#0f172a','color':'#ffffff','border':'1px solid #0f172a','box-shadow':'0 2px 6px rgba(15,23,42,.15)'}
-                      : null"
-                    style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.3rem .55rem;min-width:2rem;text-align:center;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;">
+                    [attr.aria-label]="'Go to page ' + p">
               {{ p }}
             </button>
           </ng-container>
 
-          <button type="button" (click)="nextPage()" [disabled]="vm.currentPage===vm.totalPages"
-                  aria-label="Next page"
-                  style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .6rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-                  [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null">
-            Next
-          </button>
-
-          <button type="button" (click)="setPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages"
-                  aria-label="Last page"
-                  style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .6rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-                  [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null">
-            Last
-          </button>
+          <button type="button" class="pager-btn" (click)="nextPage()" [disabled]="vm.currentPage===vm.totalPages" aria-label="Next page">Next</button>
+          <button type="button" class="pager-btn" (click)="setPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages" aria-label="Last page">Last</button>
         </div>
       </div>
     </div>
