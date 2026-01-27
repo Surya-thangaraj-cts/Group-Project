@@ -1,0 +1,229 @@
+
+<!-- Top Navigation Bar -->
+<nav class="top-nav" (click)="$event.stopPropagation()" role="navigation" aria-label="Primary">
+  <div class="brand">
+    <a class="navbar-brand d-flex align-items-center" href="" aria-label="MyBank Home">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
+           class="bi bi-bank me-2" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"></path>
+      </svg>
+      <span class="fw-bold" id="logo-text">MyBank</span>
+    </a>
+  </div>
+
+  <!-- Desktop nav links -->
+  <ul class="nav-links">
+    <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/create']">Create Bank Account</button></li>
+    <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/update']">Update Bank Account</button></li>
+    <li routerLinkActive="active">
+      <button type="button" [routerLink]="['/officer/alerts']" style="display:flex;align-items:center;gap:.5rem;">
+        Alerts
+        <span *ngIf="(unreadCount$ | async) as u" class="pill bad" style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;padding:.1rem .4rem;" [hidden]="!u || u===0">
+          {{ u }}
+        </span>
+      </button>
+    </li>
+    <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/history']">Transaction History</button></li>
+  </ul>
+
+  <!-- Hamburger (mobile) -->
+  <button
+    class="hamburger"
+    type="button"
+    aria-label="Toggle navigation"
+    [attr.aria-expanded]="isMobileNavOpen"
+    aria-controls="mobileMenu"
+    (click)="toggleMobileNav($event)">
+    <span></span><span></span><span></span>
+  </button>
+
+  <!-- Profile Dropdown (Desktop) - Bootstrap dropdown -->
+  <div class="position-relative profile-desktop" *ngIf="currentUser">
+    <div class="dropdown">
+      <button
+        class="btn btn-transparent d-flex align-items-center gap-2 p-0"
+        type="button"
+        id="headerProfileDropdown"
+        data-bs-toggle="dropdown"
+        aria-expanded="false">
+        <span
+          class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+          style="width:36px;height:36px;font-size:0.9rem;"
+          aria-hidden="true">
+          {{ initials(currentUser.name) }}
+        </span>
+        <span class="text-white fw-semibold d-none d-md-inline">
+          {{ currentUser.name }}
+        </span>
+      </button>
+
+      <ul
+        class="dropdown-menu dropdown-menu-end text-sm themed-dropdown"
+        aria-labelledby="headerProfileDropdown"
+        role="menu">
+        <li class="px-3 py-2">
+          <div class="small text-muted mb-1">Signed in as</div>
+          <div class="fw-semibold text-truncate">{{ currentUser.name }}</div>
+          <div class="text-muted text-truncate" style="max-width:220px;">
+            {{ currentUser.email }}
+          </div>
+        </li>
+
+        <li><hr class="dropdown-divider" /></li>
+
+        <li class="px-3 py-2">
+          <div class="small text-muted">Role</div>
+          <div class="fw-semibold">{{ currentUser.role }}</div>
+        </li>
+
+        <li class="px-3 py-2">
+          <div class="small text-muted">Branch</div>
+          <div class="fw-semibold">{{ currentUser.branch }}</div>
+        </li>
+
+        <li><hr class="dropdown-divider" /></li>
+
+        <li>
+          <button
+            class="dropdown-item"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#offcanvasProfile"
+            (click)="selectUser(currentUser!)">
+            View full profile
+          </button>
+        </li>
+
+        <li>
+          <button class="dropdown-item text-danger" type="button" (click)="logout($event)">
+            Sign out
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile Menu -->
+<div
+  id="mobileMenu"
+  class="mobile-nav"
+  *ngIf="isMobileNavOpen"
+  (click)="$event.stopPropagation()"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Mobile navigation">
+  <div class="mobile-nav-group">
+    <button type="button" class="mobile-link" routerLink="/officer/create" (click)="closeMobileNav()">Create Bank Account</button>
+    <button type="button" class="mobile-link" routerLink="/officer/update" (click)="closeMobileNav()">Update Bank Account</button>
+    <button type="button" class="mobile-link" routerLink="/officer/alerts" (click)="closeMobileNav()">
+      Alerts
+      <span *ngIf="(unreadCount$ | async) as u" class="pill bad" style="margin-left:.5rem;" [hidden]="!u || u===0">{{ u }}</span>
+    </button>
+    <button type="button" class="mobile-link" routerLink="/officer/history" (click)="closeMobileNav()">Transaction History</button>
+  </div>
+
+  <div class="mobile-divider"></div>
+
+  <div class="mobile-profile" *ngIf="currentUser">
+    <div class="row1">
+      <div
+        class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+        style="width:36px;height:36px;font-size:0.9rem;"
+        aria-hidden="true">
+        {{ initials(currentUser.name) }}
+      </div>
+      <div class="info">
+        <div class="name">{{ currentUser.name }}</div>
+        <div class="email text-truncate">{{ currentUser.email }}</div>
+      </div>
+    </div>
+    <div class="row2">
+      <button
+        class="mobile-link"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasProfile"
+        (click)="selectUser(currentUser!); closeMobileNav()">
+        View full profile
+      </button>
+      <button class="mobile-link danger" type="button" (click)="logout($event)">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<section class="container">
+  <!-- Global Alert -->
+  <div *ngIf="(alert$ | async) as alert"
+       class="console-alert"
+       [class.error]="alert.type==='error'"
+       [class.success]="alert.type==='success'"
+       role="alert"
+       aria-live="assertive">
+    <span class="msg">{{ alert.message }}</span>
+    <button class="close" (click)="clearAlert()" style="color: aliceblue;" aria-label="Close alert">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="12" fill="rgba(255, 255, 255, 0.7)"></circle>
+        <path d="M8 8 L16 16 M16 8 L8 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Tab content -->
+  <router-outlet></router-outlet>
+</section>
+
+<!-- ===== Offcanvas: Full Profile (NO EDIT BUTTON) ===== -->
+<div
+  class="offcanvas offcanvas-end text-bg-dark themed-offcanvas"
+  tabindex="-1"
+  id="offcanvasProfile"
+  aria-labelledby="offcanvasProfileLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="offcanvasProfileLabel">My Profile</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <!-- Header row -->
+    <div class="d-flex align-items-center gap-3 mb-3">
+      <div
+        class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
+        style="width:48px;height:48px;font-size:1rem;">
+        {{ initials(currentUser?.name ?? '') }}
+      </div>
+      <div>
+        <div class="fw-semibold fs-5 profile-name">{{ currentUser?.name || 'Unknown User' }}</div>
+        <div class="profile-email">{{ currentUser?.email || '' }}</div>
+      </div>
+    </div>
+
+    <!-- Details grid -->
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <div class="text-muted small">User ID</div>
+        <div class="fw-semibold profile-value">{{ currentUser?.userId || '' }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="text-muted small">Role</div>
+        <div class="fw-semibold profile-value">{{ currentUser?.role || '' }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="text-muted small">Branch</div>
+        <div class="fw-semibold profile-value">{{ currentUser?.branch || '' }}</div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="text-muted small">Status</div>
+        <span
+          class="badge"
+          [ngClass]="{
+            'bg-success-subtle text-success border border-success': currentUser?.status === 'Active',
+            'bg-danger-subtle text-danger border border-danger': currentUser?.status === 'Inactive',
+            'bg-warning-subtle text-warning border border-warning': currentUser?.status === 'Pending'
+          }">
+          {{ currentUser?.status || '' }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

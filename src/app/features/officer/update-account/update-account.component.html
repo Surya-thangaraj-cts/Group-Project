@@ -1,0 +1,219 @@
+
+<!-- src/app/features/officer/update-account/update-account.component.html -->
+<div class="card">
+  <h2>Update Bank Account</h2>
+
+  <div class="inline">
+    <input
+      class="inline-input"
+      [(ngModel)]="lookupAccountId"
+      placeholder="Enter Account ID"
+      [ngModelOptions]="{standalone:true}" />
+    <button
+      class="secondary"
+      (click)="prefillUpdate(lookupAccountId)"
+      [disabled]="!lookupAccountId || !lookupAccountId.trim()">
+      Load
+    </button>
+  </div>
+
+  <form
+    [formGroup]="updateForm"
+    (ngSubmit)="submitUpdateRequest()"
+    *ngIf="updateFormLoaded"
+    class="responsive-form"
+    novalidate>
+    <div class="grid">
+      <label>
+        Account ID
+        <input type="text" formControlName="accountId" readonly />
+      </label>
+
+      <label>
+        Customer Name
+        <input type="text" formControlName="customerName" />
+      </label>
+
+      <label>
+        Customer ID
+        <input type="text" formControlName="customerId" />
+      </label>
+
+      <label>
+        Account Type
+        <select formControlName="accountType">
+          <option value="SAVINGS">Savings</option>
+          <option value="CURRENT">Current</option>
+        </select>
+      </label>
+
+      <label>
+        Balance (admin adjustment)
+        <input type="number" formControlName="balance" min="0" step="0.01" />
+      </label>
+
+      <label>
+        Status
+        <select formControlName="status">
+          <option value="ACTIVE">Active</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+      </label>
+    </div>
+
+    <br />
+
+    <div class="actions">
+      <button class="primary" type="submit" [disabled]="updateForm.invalid">Submit Update Request</button>
+      <button type="button" class="secondary" (click)="cancel()">Cancel</button>
+    </div>
+  </form>
+
+  <hr />
+
+  <!-- Updation Status (status filter + pagination) -->
+  <ng-container *ngIf="urVm$ | async as vm">
+    <div class="inline" style="justify-content: space-between; align-items: center;">
+      <h3 style="margin:0;">Updation Status</h3>
+
+      <!-- Status Filter -->
+      <label style="margin:0;">
+        Filter Status
+        <select
+          [ngModel]="statusFilter"
+          (ngModelChange)="onStatusFilterChange($event)"
+          [ngModelOptions]="{standalone:true}">
+          <option value="ALL">All</option>
+          <option value="PENDING">Pending</option>
+          <option value="APPROVED">Approved</option>
+          <option value="REJECTED">Rejected</option>
+        </select>
+      </label>
+    </div>
+
+    <br />
+
+    <div class="table-wrap" *ngIf="vm.total > 0; else noUpdates">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Update ID</th>
+            <th scope="col">Account ID</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Customer ID</th>
+            <th scope="col">Type</th>
+            <th scope="col">Changes Summary</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let u of vm.pageData; trackBy: trackByUpdateId">
+            <td [attr.data-label]="'Update ID'">{{ u.updateId }}</td>
+            <td [attr.data-label]="'Account ID'">{{ u.accountId }}</td>
+            <td [attr.data-label]="'Customer Name'">{{ u.customerName }}</td>
+            <td [attr.data-label]="'Customer ID'">{{ u.customerId }}</td>
+            <td [attr.data-label]="'Type'">{{ u.accountType }}</td>
+
+            <!-- Show full changes summary -->
+            <td
+              [attr.data-label]="'Changes Summary'"
+              style="white-space: normal; overflow: visible; text-overflow: clip;">
+              {{ u.changeSummary }}
+            </td>
+
+            <td [attr.data-label]="'Status'">
+              <span
+                class="pill"
+                [class.ok]="u.status === 'APPROVED'"
+                [class.bad]="u.status !== 'APPROVED'">
+                {{ u.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination controls -->
+      <div class="actions" style="justify-content: space-between; align-items: center; gap: .5rem; padding-top: .5rem;">
+        <!-- Rows per page -->
+        <div class="inline" style="gap:.5rem;">
+          <span class="muted">Rows per page</span>
+          <select
+            [value]="vm.pageSize"
+            (change)="onUrPageSizeChange($event)"
+            aria-label="Rows per page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .5rem;">
+            <option *ngFor="let size of urPageSizeOptions" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+
+        <!-- Range & total -->
+        <div class="muted">
+          {{ vm.from }}–{{ vm.to }} of {{ vm.total }}
+        </div>
+
+        <!-- Pager -->
+        <div class="actions" style="gap:.35rem;">
+          <button
+            type="button"
+            (click)="urSetPage(1)"
+            [disabled]="vm.currentPage===1"
+            aria-label="First page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null">
+            First
+          </button>
+
+          <button
+            type="button"
+            (click)="urPrevPage()"
+            [disabled]="vm.currentPage===1"
+            aria-label="Previous page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null">
+            Prev
+          </button>
+
+          <ng-container *ngFor="let p of vm.pages">
+            <button
+              type="button"
+              (click)="urSetPage(p)"
+              [attr.aria-current]="p===vm.currentPage ? 'page' : null"
+              [attr.aria-label]="'Go to page ' + p"
+              [ngStyle]="p===vm.currentPage
+                ? {'background':'#0f172a','color':'#ffffff','border':'1px solid #0f172a','box-shadow':'0 2px 6px rgba(15,23,42,.15)'}
+                : null"
+              style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .6rem;min-width:2.25rem;text-align:center;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;">
+              {{ p }}
+            </button>
+          </ng-container>
+
+          <button
+            type="button"
+            (click)="urNextPage()"
+            [disabled]="vm.currentPage===vm.totalPages"
+            aria-label="Next page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null">
+            Next
+          </button>
+
+          <button
+            type="button"
+            (click)="urSetPage(vm.totalPages)"
+            [disabled]="vm.currentPage===vm.totalPages"
+            aria-label="Last page"
+            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
+            [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null">
+            Last
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <ng-template #noUpdates>
+    <p class="muted">No update requests submitted yet.</p>
+  </ng-template>
+</div>
