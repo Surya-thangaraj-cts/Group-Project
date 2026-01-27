@@ -25,7 +25,7 @@
         <tbody>
           <tr *ngFor="let u of rows">
             <!-- Non-editing row -->
-            <ng-container *ngIf="editingUserId !== u.userId; else editRow">
+            <ng-container *ngIf="editingUserId !== u.userId; else editRow ;trackBy: trackByUserId">
               <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.userId }}</td>
               <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.name }}</td>
               <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.role }}</td>
@@ -54,11 +54,11 @@
             <ng-template #editRow>
               <td>{{ u.userId }}</td>
               <td colspan="5">
-                <form [formGroup]="editForm" (ngSubmit)="saveEdit(u)">
+                <form [formGroup]="editForm" (ngSubmit)="saveEdit(u)" >
                   <div class="row g-2">
                     <div class="col-md-4">
                       <label class="form-label">Name</label>
-                      <input type="text" class="form-control form-control-sm" formControlName="name" />
+                      <input type="text" class="form-control form-control-sm" formControlName="name"/>
                     </div>
                     <div class="col-md-4">
                       <label class="form-label">Email</label>

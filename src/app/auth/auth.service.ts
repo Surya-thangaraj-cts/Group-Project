@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 
 export interface User {
   name: string;
-  userId?: string ;
+  userId?: string;
   email?: string;
   branch?: string;
-  role: string;
-  status?: string;
+  role: 'admin' | 'bankManager' | 'bankOfficer' | string;
+  status?: 'active' | 'inactive' | 'pending';
   lastLogin?: string;
   avatarUrl?: string;
-  
+  password?: string; // ✅ DEMO ONLY
 }
 
 @Injectable({ providedIn: 'root' })
@@ -23,34 +23,119 @@ export class AuthService {
     this.loadCurrentUser();
   }
 
+  /** Seed initial demo users */
   private addDummyUsers() {
     const dummyUsers: User[] = [
-      { name: 'Admin User', userId: 'admin123', email: 'admin@example.com', branch: 'HQ', role: 'admin', status: 'active' },
-      { name: 'Manager User', userId: 'manager123', email: 'manager@example.com', branch: 'Branch A', role: 'bankManager', status: 'active' },
-      { name: 'Officer User', userId: 'officer123', email: 'officer@example.com', branch: 'Branch B', role: 'bankOfficer', status: 'active' }
+      {
+        name: 'Admin User',
+        userId: 'admin123',
+        email: 'admin@example.com',
+        branch: 'HQ',
+        role: 'admin',
+        status: 'active',
+        password: 'Admin@123',
+      },
+      {
+        name: 'Manager User',
+        userId: 'manager123',
+        email: 'manager@example.com',
+        branch: 'Branch A',
+        role: 'bankManager',
+        status: 'active',
+        password: 'Manager@123',
+      },
+      {
+        name: 'Officer User',
+        userId: 'officer123',
+        email: 'officer@example.com',
+        branch: 'Branch B',
+        role: 'bankOfficer',
+        status: 'active',
+        password: 'Officer@123',
+      },
     ];
 
     dummyUsers.forEach(u => {
-      if (!this.users.find(x => x.userId === u.userId)) {
-        this.users.push(u);
-      }
+      const exists = this.users.find(x => x.userId === u.userId);
+      if (!exists) this.users.push(u);
+      else if (!exists.password) exists.password = u.password;
     });
+
     this.saveUsers();
   }
 
+  /** ✅ Register → always pending */
+  // signup(user: User) {
+  //   if (!user.userId || !user.password) {
+  //     throw new Error('userId and password required');
+  //   }
+
+  //   if (this.users.some(u => u.userId === user.userId)) {
+  //     throw new Error('User ID already exists');
+  //   }
+
+  //   if (user.email && this.users.some(u => u.email === user.email)) {
+  //     throw new Error('Email already in use');
+  //   }
+
+  //   user.status = 'pending'; // ✅ IMPORTANT
+
+  //   this.users.push(user);
+  //   this.saveUsers();
+  // }
   signup(user: User) {
-    this.users.push(user);
-    this.saveUsers();
+  if (!user.userId || !user.password) {
+    throw new Error('userId and password required');
   }
 
-  signin(userId: string, email: string): boolean {
-    const found = this.users.find(u => u.userId === userId && u.email === email);
-    if (found && found.status === 'active') {
-      this.currentUser = found;
-      localStorage.setItem('currentUser', JSON.stringify(found));
-      return true;
+  const userId = user.userId.trim();
+  const email  = (user.email ?? '').trim();
+
+  // CASE-INSENSITIVE duplicate checks
+  const idExists = this.users.some(
+    u => (u.userId ?? '').trim().toLowerCase() === userId.toLowerCase()
+  );
+  if (idExists) throw new Error('User ID already exists');
+
+  if (email) {
+    const emailExists = this.users.some(
+      u => (u.email ?? '').trim().toLowerCase() === email.toLowerCase()
+    );
+    if (emailExists) throw new Error('Email already in use');
+  }
+
+  // Force all new signups to pending
+  user.status = 'pending';
+
+  // Normalize before persisting
+  const normalized: User = { ...user, userId, email };
+  this.users.push(normalized);
+  this.saveUsers();
+}
+
+  /** ✅ Sign in with status check */
+  signin(
+    userId: string,
+    password: string
+  ): { ok: true; user: User } | { ok: false; reason: 'invalid' | 'pending' | 'inactive' } {
+
+    const found = this.users.find(u => u.userId === userId);
+    if (!found) return { ok: false, reason: 'invalid' };
+    if (found.status === 'pending') return { ok: false, reason: 'pending' };
+    if (found.status !== 'active') return { ok: false, reason: 'inactive' };
+    if (!found.password || found.password !== password) {
+      return { ok: false, reason: 'invalid' };
     }
-    return false;
+
+    found.lastLogin = new Date().toISOString();
+    this.currentUser = found;
+    localStorage.setItem('currentUser', JSON.stringify(found));
+    return { ok: true, user: found };
+  }
+
+  signout() {
+    this.currentUser = null;
+    localStorage.removeItem('currentUser');
   }
 
   getCurrentUser(): User | null {
@@ -59,26 +144,54 @@ export class AuthService {
     return stored ? JSON.parse(stored) : null;
   }
 
-  logout() {
-    this.currentUser = null;
-    localStorage.removeItem('currentUser');
+  getAllUsers(): User[] {
+    return [...this.users];
+  }
+
+  // ✅ Admin helpers
+  getPendingUsers(): User[] {
+    return this.users.filter(u => u.status === 'pending');
+  }
+
+  approveUser(userId: string) {
+    const user = this.users.find(u => u.userId === userId);
+    if (!user) return;
+    user.status = 'active';
+    this.saveUsers();
+  }
+
+  rejectUser(userId: string) {
+    const user = this.users.find(u => u.userId === userId);
+    if (!user) return;
+    user.status = 'inactive';
+    this.saveUsers();
   }
 
   private saveUsers() {
     localStorage.setItem('users', JSON.stringify(this.users));
   }
 
+  // private loadUsers() {
+  //   const stored = localStorage.getItem('users');
+  //   this.users = stored ? JSON.parse(stored) : [];
+  // }
   private loadUsers() {
-    const stored = localStorage.getItem('users');
-    this.users = stored ? JSON.parse(stored) : [];
+  const stored = localStorage.getItem('users');
+  const arr: User[] = stored ? JSON.parse(stored) : [];
+
+  // De‑duplicate by userId (trimmed, lowercased); newest wins
+  const map = new Map<string, User>();
+  for (const u of arr) {
+    const key = (u.userId ?? '').trim().toLowerCase();
+    if (!key) continue;
+    map.set(key, { ...map.get(key), ...u });
   }
+  this.users = Array.from(map.values());
+}
+
 
   private loadCurrentUser() {
     const stored = localStorage.getItem('currentUser');
     this.currentUser = stored ? JSON.parse(stored) : null;
-  }
-
-  getAllUsers(): User[] {
-    return this.users;
   }
 }

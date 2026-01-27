@@ -1,106 +1,120 @@
-
 <div class="auth-wrapper container-fluid min-vh-100 d-flex flex-column">
-
+ 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg rounded-4 shadow-sm my-3 px-3">
-    <span class="rounded-3 d-inline-block brand-dot"></span>
-    <strong>MY BANK</strong>
-    <div class="ms-auto d-flex gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
+         class="bi bi-bank me-2" viewBox="0 0 16 16" fill="white">
+      <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/>
+    </svg>
+    <span class="fw-bold" id="logo-text" style="color:white;">MyBank</span>
+ 
+    <div class="ms-auto d-flex gap-3">
       <button class="btn btn-primary" (click)="toggleForm('signin')">Sign In</button>
-      <button class="btn btn-outline-secondary" (click)="toggleForm('register')">Register</button>
+      <button class="secondary" (click)="toggleForm('register')">Register</button>
     </div>
   </nav>
-
+ 
   <!-- Main Split -->
   <div class="container my-3 my-md-4 flex-grow-1 d-flex align-items-center">
     <div class="rounded-4 shadow-lg overflow-hidden w-100">
       <div class="row g-0">
-
+ 
         <!-- LEFT: Image with overlay text -->
-        <div class="col-12 col-lg-6 position-relative">
+        <div class="col-12 col-lg-6 position-relative" id="left-part">
           <div class="hero-panel">
-            assets/bg2.jpg
+            <img src="../../assets/img4.jpg" alt="img" id="left-img">
             <div class="hero-overlay"></div>
             <div class="hero-content">
               <h1 class="display-5 fw-bold mb-2">Banking Made Easier</h1>
-              <p class="lead">
+              <p class="lead" id="para">
                 A secure and efficient internal customer account management system for branches,
                 managers, and officers—simplifying your banking operations.
               </p>
             </div>
           </div>
         </div>
-
+ 
         <!-- RIGHT: Auth Forms -->
         <div class="col-12 col-lg-6 d-flex">
           <div class="auth-panel mx-auto w-100">
-
-            <!-- Tabs -->
-            <div class="d-flex gap-3 mb-4" role="tablist">
-              <button type="button"
-                      class="btn flex-fill"
-                      [ngClass]="showForm === 'register' ? 'btn-light' : 'btn-primary'"
-                      (click)="toggleForm('signin')">
-                Sign In
-              </button>
-              <button type="button"
-                      class="btn flex-fill"
-                      [ngClass]="showForm === 'register' ? 'btn-primary' : 'btn-light'"
-                      (click)="toggleForm('register')">
-                Sign Up
-              </button>
+ 
+            <div class="title">
+              <h1>Welcome</h1>
             </div>
-
+ 
             <!-- Sign In Form -->
             <form *ngIf="showForm !== 'register'" [formGroup]="signinForm" (ngSubmit)="signin()" novalidate>
               <div class="mb-3">
                 <label class="form-label">User ID</label>
-                <input type="text" class="form-control form-control-lg" formControlName="userId" placeholder="Enter your user ID" />
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  formControlName="userId"
+                  placeholder="Enter your user ID"
+                  inputmode="text"
+                  autocomplete="username"
+                />
               </div>
+ 
+              <!-- CHANGED: Email -> Password -->
               <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control form-control-lg" formControlName="email" placeholder="Enter your email" />
+                <label class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control form-control-lg"
+                  formControlName="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                />
               </div>
-
-
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="rememberMe">
-                  <label class="form-check-label" for="rememberMe">Remember me</label>
-                </div>
-                <!-- <a href="#" class="text-decoration-none">Forgot Password?</a> -->
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signinForm.invalid">
-                Login
-              </button>
-
-              <p class="mt-2 text-center text-danger" *ngIf="message">{{ message }}</p>
-
-              
-
-              <!-- <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signinForm.invalid">Login</button>
->>>>>>> 74eeee3e9cfd53ebc9a0e55a6d4e012f5cae1c47 -->
+ 
+              <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signinForm.invalid">Login</button>
             </form>
-
+ 
             <!-- Register Form -->
             <form *ngIf="showForm === 'register'" [formGroup]="signupForm" (ngSubmit)="signup()" novalidate>
               <div class="mb-3">
                 <label class="form-label">Name</label>
-                <input type="text" class="form-control form-control-lg" formControlName="name" placeholder="Your name" />
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  formControlName="name"
+                  placeholder="Your name"
+                />
               </div>
+ 
               <div class="mb-3">
                 <label class="form-label">User ID</label>
-                <input type="text" class="form-control form-control-lg" formControlName="userId" placeholder="Choose a user ID" />
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  formControlName="userId"
+                  placeholder="Choose a user ID"
+                  autocomplete="username"
+                />
               </div>
+ 
               <div class="mb-3">
                 <label class="form-label">Email</label>
-                <input type="email" class="form-control form-control-lg" formControlName="email" placeholder="Your email" />
+                <input
+                  type="email"
+                  class="form-control form-control-lg"
+                  formControlName="email"
+                  placeholder="Your email"
+                  autocomplete="email"
+                />
               </div>
+ 
               <div class="mb-3">
                 <label class="form-label">Branch</label>
-                <input type="text" class="form-control form-control-lg" formControlName="branch" placeholder="Branch name or code" />
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  formControlName="branch"
+                  placeholder="Branch name or code"
+                />
               </div>
+ 
               <div class="mb-3">
                 <label class="form-label">Role</label>
                 <select class="form-select form-select-lg" formControlName="role">
@@ -110,19 +124,52 @@
                   <option value="bankOfficer">Bank Officer</option>
                 </select>
               </div>
-              <div class="mb-4">
-                <label class="form-label">Status</label>
-                <select class="form-select form-select-lg" formControlName="status">
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
+ 
+              <!-- NEW: Password fields -->
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control form-control-lg"
+                  formControlName="password"
+                  placeholder="Create a password"
+                  autocomplete="new-password"
+                />
+                <small class="text-muted">Min 8 chars, include letters &amp; numbers.</small>
+ 
+                <!-- Optional control errors -->
+                <div class="text-danger mt-1" *ngIf="signupForm.get('password')?.touched && signupForm.get('password')?.errors">
+                  <div *ngIf="signupForm.get('password')?.errors?.['required']">Password is required.</div>
+                  <div *ngIf="signupForm.get('password')?.errors?.['minlength']">Minimum 8 characters.</div>
+                  <div *ngIf="signupForm.get('password')?.errors?.['pattern']">Include letters and numbers.</div>
+                </div>
               </div>
+ 
+              <div class="mb-3">
+                <label class="form-label">Confirm Password</label>
+                <input
+                    type="password"
+                    class="form-control form-control-lg"
+                    formControlName="confirmPassword"
+                    placeholder="Confirm your password"
+                    autocomplete="new-password"
+                />
+                <!-- Strict-template safe mismatch error -->
+                <div class="text-danger mt-1"
+                     *ngIf="
+                       signupForm.hasError('passwordMismatch') &&
+                       (signupForm.get('confirmPassword')?.touched || signupForm.get('password')?.touched)
+                     ">
+                  Passwords do not match.
+                </div>
+              </div>
+ 
               <button type="submit" class="btn btn-primary btn-lg w-100" [disabled]="signupForm.invalid">Register</button>
             </form>
-
+ 
           </div>
         </div>
-
+ 
       </div>
     </div>
   </div>
