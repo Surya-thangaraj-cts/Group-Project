@@ -1,4 +1,4 @@
-<app-navbar (setActiveSection)="activeSection = $event"></app-navbar>
+<app-navbar (setActiveSection)="handleNavigation($event)"></app-navbar>
 <div class="main-content">
   <div *ngIf="activeSection === 'dashboard'" class="section">
     <app-dashboard-overview></app-dashboard-overview>
@@ -11,3 +11,6 @@
     <app-notifications></app-notifications>
   </div>
 </div>
+
+<!-- Profile Sidebar -->
+<app-profile (close)="showProfileSidebar = false" *ngIf="showProfileSidebar"></app-profile>
