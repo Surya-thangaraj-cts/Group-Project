@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DataService, Notification } from '../../services/data.service';
 
@@ -12,33 +13,66 @@ import { DataService, Notification } from '../../services/data.service';
 export class NotificationsComponent implements OnInit {
   notifications: Notification[] = [];
   unreadCount: number = 0;
+  private notificationsSub?: any;
+  private unreadCountSub?: any;
 
-  constructor(private dataService: DataService) {}
-
-  ngOnInit(): void {
-    this.loadNotifications();
+  constructor(private dataService: DataService, private router: Router) {}
+  handleNotificationClick(notification: Notification): void {
+    this.dataService.markNotificationAsRead(notification.notificationId);
+    // Extract transaction or change ID from the message
+    const txnMatch = notification.message.match(/TXN\d+/);
+    const changeMatch = notification.message.match(/DCH\d+/);
+    const accountMatch = notification.message.match(/ACC\d+/);
+    if (txnMatch) {
+      setTimeout(() => {
+        this.router.navigate(['/manager'], {
+          fragment: 'approvals',
+          queryParams: { transactionId: txnMatch[0] }
+        });
+      }, 100);
+    } else if (changeMatch) {
+      setTimeout(() => {
+        this.router.navigate(['/manager'], {
+          fragment: 'approvals',
+          queryParams: { changeId: changeMatch[0] }
+        });
+      }, 100);
+    } else if (accountMatch) {
+      setTimeout(() => {
+        this.router.navigate(['/manager'], {
+          fragment: 'approvals',
+          queryParams: { accountId: accountMatch[0] }
+        });
+      }, 100);
+    } else {
+      setTimeout(() => {
+        this.router.navigate(['/manager'], { fragment: 'approvals' });
+      }, 100);
+    }
   }
 
-  loadNotifications(): void {
-    this.dataService.getNotifications().subscribe((data: Notification[]) => {
+  ngOnInit(): void {
+    this.notificationsSub = this.dataService.getNotifications().subscribe(data => {
       this.notifications = data;
-      this.updateUnreadCount();
+    });
+    this.unreadCountSub = this.dataService.getUnreadNotificationsCount().subscribe(count => {
+      this.unreadCount = count;
     });
   }
 
-  updateUnreadCount(): void {
-    this.unreadCount = this.dataService.getUnreadNotificationsCount();
+  ngOnDestroy(): void {
+    if (this.notificationsSub) this.notificationsSub.unsubscribe();
+    if (this.unreadCountSub) this.unreadCountSub.unsubscribe();
   }
+
+  // loadNotifications and updateUnreadCount removed, now handled by subscriptions
 
   markAsRead(notificationId: string): void {
     this.dataService.markNotificationAsRead(notificationId);
-    this.updateUnreadCount();
-    this.loadNotifications();
   }
 
   deleteNotification(notificationId: string): void {
     this.dataService.deleteNotification(notificationId);
-    this.loadNotifications();
   }
 
   getNotificationIcon(type: 'ApprovalReminder' | 'SuspiciousActivity'): string {

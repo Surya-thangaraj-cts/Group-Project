@@ -127,6 +127,13 @@
   display: flex;
   align-items: center;
   position: relative;
+  margin-right: -220px;
+}
+
+.navbar-right-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .notification-bell {
@@ -214,7 +221,7 @@
 /* Profile Section Styles */
 .profile-section {
   position: relative;
-  margin-left: 20px;
+  margin-left: 0;
 }
 
 .profile-icon {

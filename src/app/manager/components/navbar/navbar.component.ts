@@ -4,11 +4,12 @@ import { RouterModule, Router } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { ProfileService } from '../../services/profile.service';
 import { AuthService } from '../../../auth/auth.service';
+import { NotificationsDropdownComponent } from '../notifications-dropdown/notifications-dropdown.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, NotificationsDropdownComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -23,6 +24,7 @@ export class NavbarComponent implements OnInit {
 
   activeNav = 'Dashboard';
   unreadNotificationsCount: number = 0;
+  private notificationsSub?: any;
   showNotificationDropdown: boolean = false;
   showProfileDropdown: boolean = false;
   
@@ -39,12 +41,16 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.updateNotificationCount();
+    this.notificationsSub = this.dataService.getUnreadNotificationsCount().subscribe(count => {
+      this.unreadNotificationsCount = count;
+    });
     this.loadProfileData();
   }
 
-  updateNotificationCount(): void {
-    this.unreadNotificationsCount = this.dataService.getUnreadNotificationsCount();
+  ngOnDestroy(): void {
+    if (this.notificationsSub) {
+      this.notificationsSub.unsubscribe();
+    }
   }
 
   loadProfileData(): void {

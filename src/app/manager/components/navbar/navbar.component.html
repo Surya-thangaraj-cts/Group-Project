@@ -20,6 +20,22 @@
       </button>
     </div>
 
+    <!-- Notifications Bell and Dropdown -->
+    <div class="navbar-notifications">
+      <button class="notification-bell" (click)="toggleNotificationDropdown()" title="Notifications">
+        <span>🔔</span>
+        <span *ngIf="unreadNotificationsCount > 0" class="bell-badge">
+          {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
+        </span>
+      </button>
+
+      <!-- Notifications Dropdown -->
+      <app-notifications-dropdown 
+        *ngIf="showNotificationDropdown" 
+        (close)="closeNotificationDropdown()">
+      </app-notifications-dropdown>
+    </div>
+
     <!-- Profile Icon and Dropdown -->
     <div class="profile-section">
       <button class="profile-icon" (click)="toggleProfileDropdown()" title="Profile">

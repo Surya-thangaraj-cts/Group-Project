@@ -220,6 +220,8 @@ export class DataService {
       createdDate: new Date('2025-12-28T09:30:00')
     }
   ];
+  private notificationsSubject = new BehaviorSubject<Notification[]>(this.notifications);
+  private unreadCountSubject = new BehaviorSubject<number>(this.getUnreadNotificationsCountInternal());
 
   private approvals: Approval[] = [
     { approvalId: 'APR001', transactionId: 'TXN002', reviewerId: 'REV001', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T10:00:00') },
@@ -277,11 +279,21 @@ export class DataService {
     return this.reports.find(r => r.reportId === reportId);
   }
 
+
   getNotifications(): Observable<Notification[]> {
-    return new BehaviorSubject(this.notifications).asObservable();
+    return this.notificationsSubject.asObservable();
   }
 
-  getUnreadNotificationsCount(): number {
+  getUnreadNotificationsCount(): Observable<number> {
+    return this.unreadCountSubject.asObservable();
+  }
+
+  /** For legacy direct count access (not reactive) */
+  getUnreadNotificationsCountValue(): number {
+    return this.getUnreadNotificationsCountInternal();
+  }
+
+  private getUnreadNotificationsCountInternal(): number {
     return this.notifications.filter(n => n.status === 'Unread').length;
   }
 
@@ -289,6 +301,7 @@ export class DataService {
     const notification = this.notifications.find(n => n.notificationId === notificationId);
     if (notification) {
       notification.status = 'Read';
+      this.emitNotifications();
     }
   }
 
@@ -296,7 +309,13 @@ export class DataService {
     const index = this.notifications.findIndex(n => n.notificationId === notificationId);
     if (index > -1) {
       this.notifications.splice(index, 1);
+      this.emitNotifications();
     }
+  }
+
+  private emitNotifications(): void {
+    this.notificationsSubject.next([...this.notifications]);
+    this.unreadCountSubject.next(this.getUnreadNotificationsCountInternal());
   }
 
   /**
@@ -312,6 +331,7 @@ export class DataService {
       status: 'Unread',
       createdDate: new Date()
     });
+    this.emitNotifications();
   }
 
   getApprovals(): Observable<Approval[]> {

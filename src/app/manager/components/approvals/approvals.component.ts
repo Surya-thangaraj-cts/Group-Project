@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { DataService, Approval, DataChangeApproval, Transaction } from '../../services/data.service';
 
 @Component({
@@ -34,10 +35,48 @@ export class ApprovalsComponent implements OnInit {
   selectedDecision = '';
 
 
-  constructor(public dataService: DataService) {}
+  constructor(
+    public dataService: DataService,
+    private route: ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.loadApprovals();
+    this.handleQueryParams();
+  }
+
+  handleQueryParams(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['transactionId']) {
+        // Find transaction and open its approval modal
+        const approval = this.approvals.find(a => a.transactionId === params['transactionId']);
+        if (approval) {
+          this.activeTab = 'pending';
+          this.approvalType = 'transaction';
+          this.filterApprovals();
+          setTimeout(() => {
+            this.selectedItemId = approval.approvalId;
+            this.showApprovalModal = true;
+          }, 100);
+        }
+      } else if (params['changeId']) {
+        // Find data change and open its approval modal
+        const changeApproval = this.dataChangeApprovals.find(d => d.changeId === params['changeId']);
+        if (changeApproval) {
+          this.activeTab = 'pending';
+          this.approvalType = 'datachange';
+          this.filterApprovals();
+          setTimeout(() => {
+            this.selectedItemId = changeApproval.changeId;
+            this.showApprovalModal = true;
+          }, 100);
+        }
+      } else if (params['accountId']) {
+        // Filter by account ID
+        this.searchQuery = params['accountId'];
+        this.filterApprovals();
+      }
+    });
   }
 
   loadApprovals(): void {
@@ -66,8 +105,12 @@ export class ApprovalsComponent implements OnInit {
     let filtered: any[] = [];
 
     if (this.activeTab === 'pending') {
-      this.approvalType = 'datachange';
-      filtered = this.dataChangeApprovals.filter(d => d.decision === 'Pending');
+      if (this.approvalType === 'transaction') {
+        filtered = this.approvals.filter(a => a.decision === 'Pending');
+      } else {
+        this.approvalType = 'datachange';
+        filtered = this.dataChangeApprovals.filter(d => d.decision === 'Pending');
+      }
     } else if (this.activeTab === 'approved') {
       this.approvalType = 'transaction';
       // Show both approved data changes and approved transactions
