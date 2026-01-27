@@ -9,6 +9,7 @@ export interface User {
   status?: string;
   lastLogin?: string;
   avatarUrl?: string;
+  
 }
 
 @Injectable({ providedIn: 'root' })

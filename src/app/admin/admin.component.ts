@@ -114,7 +114,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return Math.max(...vals, 1);
   }
 
-  yTicks(count = 5): number[] {
+  yTicks(count = 7): number[] {
     const max = this.getYMax();
     const step = max / (count - 1);
     const ticks: number[] = [];
@@ -451,20 +451,7 @@ initials(fullName: string): string {
   }
 
   // ----- Invite (optional) -----
-  // inviteUser(): void {
-  //   if (this.inviteUserForm.invalid) return;
-  //   const v = this.inviteUserForm.value;
-  //   const newUser: User = {
-  //     userId: 'U' + Math.floor(Math.random() * 100000),
-  //     name: v.name,
-  //     email: v.email,
-  //     role: v.role,
-  //     branch: v.branch,
-  //     status: 'Pending'
-  //   };
-  //   this.pendingUsers.unshift(newUser);
-  //   this.inviteUserForm.reset();
-  // }
+ 
 
   /** Clear the search input and reset selection */
   clearSearch(ref?: HTMLInputElement): void {
