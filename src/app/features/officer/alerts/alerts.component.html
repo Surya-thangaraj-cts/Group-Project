@@ -1,11 +1,9 @@
-
-<!-- src/app/features/officer/alerts/alerts.component.html -->
 <div class="card">
   <h2>Alerts</h2>
   <p class="helper">Notifications for account updates and high-value transactions.</p>
-
+ 
   <!-- Filters + Search -->
-  <div class="grid-narrow" style="margin-top:.5rem;">
+  <div class="grid-narrow mt-2">
     <label class="full">
       Search (Account #)
       <div class="search-group">
@@ -21,10 +19,11 @@
         <button type="button" class="ghost btn-sm search-btn" *ngIf="searchTerm" (click)="clearSearch()">Clear</button>
       </div>
     </label>
-
+ 
     <label>
       Read status
       <select
+        class="select-compact"
         [ngModel]="readFilter"
         (ngModelChange)="onReadFilterChange($event)"
         [ngModelOptions]="{standalone:true}">
@@ -33,28 +32,28 @@
         <option value="READ">Read</option>
       </select>
     </label>
-
+ 
     <label>
       Type
       <select
+        class="select-compact"
         [ngModel]="typeFilter"
         (ngModelChange)="onTypeFilterChange($event)"
         [ngModelOptions]="{standalone:true}">
         <option value="ALL">All</option>
         <option value="UPDATE_REQUEST">Update Request</option>
         <option value="HIGH_VALUE_TXN">High-value Transaction</option>
-        <!-- Manual Flag removed from the options -->
       </select>
     </label>
-
+ 
     <div class="actions">
       <button class="secondary btn-sm" type="button" (click)="markAllAsRead()">Mark all as read</button>
       <button class="danger btn-sm" type="button" (click)="clearAll()">Delete all</button>
     </div>
   </div>
-
+ 
   <br>
-
+ 
   <!-- Notification Cards + Pagination -->
   <ng-container *ngIf="vm$ | async as vm">
     <div class="notif-list" *ngIf="vm.total > 0; else noAlerts">
@@ -64,54 +63,54 @@
             <span class="pill" [class.ok]="!n.read" [class.bad]="n.read">
               {{ typeLabel(n.type) }}
             </span>
-
+ 
             <!-- Default status for Update Requests & High-value Txn -->
             <span class="status-pill pending" *ngIf="statusLabelFor(n) as s">
               {{ s }}
             </span>
           </div>
-
+ 
           <div class="right">
             <span class="muted">{{ n.time | date:'medium' }}</span>
           </div>
         </header>
-
+ 
         <h3 class="notif-title">{{ n.title }}</h3>
-
+ 
         <!-- Message -->
         <p class="notif-message">
           {{ n.message }}
         </p>
-
+ 
         <!-- "Update request sent for account number" style line -->
         <p class="notif-cta" *ngIf="n.type === 'UPDATE_REQUEST'">
           Update request sent for <strong>Account #</strong>
           <strong>{{ n.meta?.accountId || '—' }}</strong>
         </p>
-
+ 
         <!-- Meta grid -->
         <div class="notif-meta">
           <div class="kv">
             <span class="label">Account #</span>
             <span class="value">{{ n.meta?.accountId || '—' }}</span>
           </div>
-
+ 
           <div class="kv" *ngIf="n.meta?.amount">
             <span class="label">Amount</span>
             <span class="value">{{ n.meta?.amount | currency:'INR':'symbol-narrow' }}</span>
           </div>
-
+ 
           <div class="kv" *ngIf="n.meta?.txnId">
             <span class="label">Txn ID</span>
             <span class="value">{{ n.meta?.txnId }}</span>
           </div>
-
+ 
           <div class="kv" *ngIf="n.meta?.toAccountId">
             <span class="label">To Account</span>
             <span class="value">{{ n.meta?.toAccountId }}</span>
           </div>
         </div>
-
+ 
         <!-- Actions -->
         <div class="notif-actions actions">
           <ng-container [ngSwitch]="n.type">
@@ -127,76 +126,53 @@
               View History
             </a>
           </ng-container>
-
+ 
           <span class="spacer"></span>
-
+ 
           <button class="primary btn-sm" type="button" *ngIf="!n.read" (click)="markAsRead(n.id)">Mark read</button>
           <button class="secondary btn-sm" type="button" *ngIf="n.read" (click)="markAsUnread(n.id)">Mark unread</button>
           <button class="danger btn-sm" type="button" (click)="delete(n.id)">Delete</button>
         </div>
       </article>
-
+ 
       <!-- Pagination -->
-      <div class="actions" style="justify-content: space-between; align-items: center; gap: .5rem; padding-top: .5rem;">
-        <div class="inline" style="gap:.5rem;">
+      <div class="actions table-actions">
+        <div class="inline">
           <span class="muted">Rows per page</span>
           <select
+            class="select-compact"
             [value]="vm.pageSize"
             (change)="onPageSizeChange($event)"
-            aria-label="Rows per page"
-            style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.3rem .5rem;">
+            aria-label="Rows per page">
             <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
           </select>
         </div>
-
-        <div class="muted">{{ vm.from }}–{{ vm.to }} of {{ vm.total }}</div>
-
-        <div class="actions" style="gap:.35rem;">
-          <button type="button" (click)="setPage(1)" [disabled]="vm.currentPage===1"
-                  aria-label="First page"
-                  style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .6rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-                  [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null">
-            First
-          </button>
-
-          <button type="button" (click)="prevPage()" [disabled]="vm.currentPage===1"
-                  aria-label="Previous page"
-                  style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .6rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-                  [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null">
-            Prev
-          </button>
-
+ 
+        <div class="muted range-text">{{ vm.from }}–{{ vm.to }} of {{ vm.total }}</div>
+ 
+        <div class="pager">
+          <button type="button" class="pager-btn" (click)="setPage(1)" [disabled]="vm.currentPage===1" aria-label="First page">First</button>
+          <button type="button" class="pager-btn" (click)="prevPage()" [disabled]="vm.currentPage===1" aria-label="Previous page">Prev</button>
+ 
           <ng-container *ngFor="let p of vm.pages">
-            <button type="button" (click)="setPage(p)"
+            <button type="button" class="pager-btn"
+                    (click)="setPage(p)"
+                    [class.active]="p===vm.currentPage"
                     [attr.aria-current]="p===vm.currentPage ? 'page' : null"
-                    [attr.aria-label]="'Go to page ' + p"
-                    [ngStyle]="p===vm.currentPage
-                      ? {'background':'#0f172a','color':'#ffffff','border':'1px solid #0f172a','box-shadow':'0 2px 6px rgba(15,23,42,.15)'}
-                      : null"
-                    style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.3rem .55rem;min-width:2rem;text-align:center;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;">
+                    [attr.aria-label]="'Go to page ' + p">
               {{ p }}
             </button>
           </ng-container>
-
-          <button type="button" (click)="nextPage()" [disabled]="vm.currentPage===vm.totalPages"
-                  aria-label="Next page"
-                  style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .6rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-                  [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null">
-            Next
-          </button>
-
-          <button type="button" (click)="setPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages"
-                  aria-label="Last page"
-                  style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.35rem .6rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;"
-                  [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null">
-            Last
-          </button>
+ 
+          <button type="button" class="pager-btn" (click)="nextPage()" [disabled]="vm.currentPage===vm.totalPages" aria-label="Next page">Next</button>
+          <button type="button" class="pager-btn" (click)="setPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages" aria-label="Last page">Last</button>
         </div>
       </div>
     </div>
   </ng-container>
-
+ 
   <ng-template #noAlerts>
     <p class="muted">No alerts yet.</p>
   </ng-template>
 </div>
+ 
