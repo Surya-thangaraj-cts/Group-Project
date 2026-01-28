@@ -1,255 +1,131 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyBank Portal</title>
-</head>
-<body>
-  
-<header class="axis-navbar">
-  <div class="top-bar">
-    <!-- Logo -->
-    <svg id="logo-img" xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor"
-      class="bi bi-bank" viewBox="0 0 16 16" aria-label="Bank logo">
-      <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/>
-    </svg>
+<div class="auth-wrapper container-fluid min-vh-100 d-flex flex-column">
 
-    <!-- Center links (desktop/tablet only) -->
-    <nav class="center-links">
-      <a class="nav-link" href="#about">About Us</a>
-      <a class="nav-link" href="#contact">Contact Us</a>
-      <a class="nav-link" href="#features">Features</a>
-    </nav>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg glass-header px-3 py-2 my-3 rounded-4">
+    <div class="d-flex align-items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
+           class="bi bi-bank me-2 bank-icon" viewBox="0 0 16 16">
+        <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"/>
+      </svg>
+      <span class="fw-bold fs-4 app-title">MyBank</span>
+    </div>
 
-    <!-- Right side: brand text (inline on mobile), buttons, hamburger -->
-    <div class="right-buttons">
-      <span class="brand-text">MY BANK</span>
+    <div class="ms-auto d-flex gap-3">
+      <button class="btn btn-secondary-gradient" (click)="toggleForm('signin')">Sign In</button>
+      <button class="btn btn-secondary-gradient" (click)="toggleForm('register')">Register</button>
+    </div>
+  </nav>
 
-      <button class="btn btn-primary" (click)="showForm = 'signin'">Sign In</button>
-      <button class="btn btn-primary" (click)="showForm = 'register'">Register</button>
 
-      <!-- Hamburger toggle -->
-      <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
-      <label for="nav-toggle" class="hamburger" aria-label="Open menu">
-        <span></span><span></span><span></span>
-      </label>
+  <!-- Main Split -->
+  <div class="container my-3 my-md-4 flex-grow-1 d-flex align-items-center">
+    <div class="rounded-4 shadow-lg overflow-hidden w-100 auth-container">
 
-      <!-- Mobile dropdown -->
-      <div id="mobile-menu" class="mobile-menu" role="menu">
-        <a class="nav-link" href="#about">About Us</a>
-        <a class="nav-link" href="#contact">Contact Us</a>
-        <a class="nav-link" href="#features">Features</a>
+      <div class="row g-0">
+
+        <!-- LEFT PANEL (Hero) -->
+        <div class="col-12 col-lg-6 left-hero position-relative">
+          <img src="../../assets/bg.png" alt="img" class="hero-image">
+          <div class="hero-overlay"></div>
+
+          <div class="hero-content">
+            <h1 [class.fade]="fade">{{ currentMessage }}</h1>
+            <p>
+              A secure and efficient internal customer account management system for branches,
+              managers, and officers—simplifying your banking operations.
+            </p>
+          </div>
+        </div>
+
+
+        <!-- RIGHT PANEL (Forms) -->
+        <div class="col-12 col-lg-6 d-flex auth-right-bg">
+          <div class="auth-panel mx-auto w-100">
+
+            <div class="title text-center mb-4">
+              <h1 class="auth-heading">Welcome</h1>
+            </div>
+
+            <!-- SIGN IN -->
+            <form *ngIf="showForm !== 'register'" [formGroup]="signinForm" (ngSubmit)="signin()" novalidate>
+
+              <div class="mb-3">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-control form-control-lg"
+                       placeholder="Enter your user ID"
+                       formControlName="userId">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control form-control-lg"
+                       placeholder="Enter your password"
+                       formControlName="password">
+              </div>
+
+              <button type="submit" class="btn btn-primary-gradient btn-lg w-100"
+                      [disabled]="signinForm.invalid">
+                Login
+              </button>
+            </form>
+
+
+            <!-- REGISTER -->
+            <form *ngIf="showForm === 'register'" [formGroup]="signupForm" (ngSubmit)="signup()" novalidate>
+
+              <div class="mb-3">
+                <label class="form-label">Name</label>
+                <input type="text" class="form-control form-control-lg" formControlName="name">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">User ID</label>
+                <input type="text" class="form-control form-control-lg" formControlName="userId">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control form-control-lg" formControlName="email">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Branch</label>
+                <input type="text" class="form-control form-control-lg" formControlName="branch">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Role</label>
+                <select class="form-select form-select-lg" formControlName="role">
+                  <option value="" disabled>Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="bankManager">Bank Manager</option>
+                  <option value="bankOfficer">Bank Officer</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control form-control-lg"
+                       formControlName="password">
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">Confirm Password</label>
+                <input type="password" class="form-control form-control-lg"
+                       formControlName="confirmPassword">
+              </div>
+
+              <button type="submit" class="btn btn-primary-gradient btn-lg w-100"
+                      [disabled]="signupForm.invalid">
+                Register
+              </button>
+            </form>
+
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- Lower strip (desktop/tablet only) -->
-  <div class="r2">
-    <div class="c1-p">
-      <div class="c1"><h4>MY BANK</h4></div>
-    </div>
-    <div class="c2"></div>
-  </div>
-</header>
-
-
-  <!-- Hero / Welcome Section -->
-  <section id="hero-sec" class="hero text-center my-5">
-    <div class="hero-text">
-    <h1 [class.fade]="fade">{{ currentMessage }}</h1>
-    <p class="tagline">Secure Banking Portal for Admins, Managers, and Officers</p>
-    </div>
-    <div class="hero-img">
-      <img src="../../../assets/bgv1.png" alt="Banking Illustration" class="img-fluid">
-    </div>
-  </section>
-  
-
-  <!-- About Section -->
-<section id="about" class="container my-5">
-  <div class="about-container">
-    <!-- Left: Image -->
-    <div class="about-img">
-      <img src="../../../assets/about-img.jpg" alt="About Us Image" class="img-fluid">
-    </div>
-
-    <!-- Right: Text -->
-    <div class="about-text">
-      <h2>About Us</h2>
-      <p>
-        Our mission is to provide a secure, role-based banking portal that empowers administrators, 
-        managers, and officers to work efficiently.
-      </p>
-    </div>
-  </div>
-</section>
-
-  <!-- Features Section -->
-  <section id="features-sec" class="features container my-5">
-      <h1>Features</h1>
-    <div class="card-container">
-      <div class="card">
-      <div class="card-i">
-        <img src="../../../assets/secure-login.png" alt="Landing Image">
-      </div>
-        <div class="overlay">
-          <h2>🔒 Secure Login</h2>
-          <p>Role-based authentication ensures only authorized users access sensitive data.</p>
-        </div>
-    </div>
-
-    <div class="card">
-      <div class="card-i">
-        <img src="../../../assets/role.png" alt="Landing Image">
-      </div>
-        <div class="overlay">
-          <h2>👥 Role Management</h2>
-          <p>Admins, Managers, and Officers each have tailored dashboards.</p>
-        </div>
-    </div>
-
-    <div class="card">
-      <div class="card-i">
-        <img src="../../../assets/analytics.png" alt="Landing Image">
-      </div>
-        <div class="overlay">
-          <h2>📊 Analytics</h2>
-          <p>Track performance and branch activity with real-time insights.</p>
-        </div>
-    </div>
-    </div>
-    <!-- eg ends -->
-     
-  </section>
-
-  <!-- How It Works Section -->
-  <section id="hiw" class="how-it-works my-5">
-  <div class="container">
-    <h2 class="section-title text-center">How It Works</h2>
-    <div class="steps">
-      
-      <!-- Step 1 -->
-      <div class="step">
-        <div class="step-icon">1</div>
-        <div class="step-content">
-          <h4>Register</h4>
-          <p>Create your account with your role and branch details.</p>
-        </div>
-      </div>
-
-      <!-- Step 2 -->
-      <div class="step">
-        <div class="step-icon">2</div>
-        <div class="step-content">
-          <h4>Sign In</h4>
-          <p>Log in securely with your credentials.</p>
-        </div>
-      </div>
-
-      <!-- Step 3 -->
-      <div class="step">
-        <div class="step-icon">3</div>
-        <div class="step-content">
-          <h4>Dashboard</h4>
-          <p>Access your personalized dashboard based on your role.</p>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-  <!-- Testimonials Section -->
-  <!-- <section class="testimonials container my-5">
-    <h2>What People Say</h2>
-    <blockquote>
-      “This portal makes managing branches effortless.” – Bank Manager
-    </blockquote>
-    <blockquote>
-      “Secure and easy to use for officers.” – Bank Officer
-    </blockquote>
-  </section> -->
-
-  <!-- Contact Section -->
-  <section id="contact" class="container my-5">
-    <h2>Contact Us</h2>
-    <p>Email: support&#64;example.com | Phone: +91-1234567890</p>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer bg-light text-center py-3">
-    <p>&copy; 2025 MyBank. All rights reserved.</p>
-  </footer>
-
-  <!-- Overlay -->
-  <div class="modal-overlay" *ngIf="showForm" (click)="showForm = null"></div>
-
-  <!-- Sign In Modal -->
-  <div class="modal-box" *ngIf="showForm === 'signin'">
-    <div class="modal-header bg-primary text-white">
-      <h5>Sign In</h5>
-      <button class="btn-close" (click)="showForm = null"></button>
-    </div>
-    <div class="modal-body">
-      <form [formGroup]="signinForm" (ngSubmit)="signin()">
-        <div class="mb-3">
-          <label>User ID</label>
-          <input type="text" formControlName="userId" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label>Email</label>
-          <input type="email" formControlName="email" class="form-control">
-        </div>
-        <button type="submit" class="btn btn-success w-100" [disabled]="signinForm.invalid">Sign In</button>
-      </form>
-      <p class="mt-2 text-center text-danger">{{ message }}</p>
-    </div>
-  </div>
-
-  <!-- Register Modal -->
-  <div class="modal-box" *ngIf="showForm === 'register'">
-    <div class="modal-header bg-secondary text-white">
-      <h5>Register</h5>
-      <button class="btn-close" (click)="showForm = null"></button>
-    </div>
-    <div class="modal-body">
-      <form [formGroup]="signupForm" (ngSubmit)="signup()">
-        <div class="mb-3">
-          <label>Name</label>
-          <input type="text" formControlName="name" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label>User ID</label>
-          <input type="text" formControlName="userId" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label>Email</label>
-          <input type="email" formControlName="email" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label>Branch</label>
-          <input type="text" formControlName="branch" class="form-control">
-        </div>
-        <div class="mb-3">
-          <label>Role</label>
-          <select formControlName="role" class="form-select">
-            <option value="">Select Role</option>
-            <option value="admin">Admin</option>
-            <option value="bankManager">Bank Manager</option>
-            <option value="bankOfficer">Bank Officer</option>
-          </select>
-        </div>
-        <!-- <div class="mb-3">
-          <label>Status</label>
-          <select formControlName="status" class="form-select">
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div> -->
-        <button type="submit" class="btn btn-primary w-100" [disabled]="signupForm.invalid">Register</button>
-      </form>
-    </div>
-  </div>
-</body>
-</html>
+</div>

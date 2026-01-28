@@ -1,5 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, Validators, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  Validators,
+  FormGroup,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService, User } from '../../auth/auth.service';
@@ -15,38 +23,61 @@ export class LandingPageComponent implements OnInit {
   signinForm!: FormGroup;
   signupForm!: FormGroup;
 
-  // Track which form is open: 'signin', 'register', or null (hidden)
   showForm: 'signin' | 'register' | null = null;
 
-  // Welcome message rotation
-  welcomeMessages: string[] = ['Welcome', 'स्वागत है', 'வணக்கம்', 'స్వాగతం'];
+  welcomeMessages: string[] = ['Welcome', 'स्वागत है', 'வணக்கம்', 'స్వాగతం','വണക്കം'];
   currentMessage: string = this.welcomeMessages[0];
   messageIndex: number = 0;
   fade: boolean = false;
 
-  // Feedback message for user actions
   message: string = '';
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {}
 
+  // ✅ Form-level validator (typed properly)
+  private passwordsMatchValidator: ValidatorFn = (group: AbstractControl): ValidationErrors | null => {
+    const password = group.get('password')?.value;
+    const confirm = group.get('confirmPassword')?.value;
+
+    // Don't show mismatch until both fields have values
+    if (!password || !confirm) return null;
+
+    return password === confirm ? null : { passwordMismatch: true };
+  };
+
   ngOnInit() {
-    // Sign In form
+    // ✅ Sign In: use password
     this.signinForm = this.fb.group({
       userId: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]]
+      password: ['', [Validators.required, Validators.minLength(8)]],
     });
 
-    // Register form
-    this.signupForm = this.fb.group({
-      name: ['', Validators.required],
-      userId: ['', [Validators.required, Validators.minLength(4)]],
-      email: ['', [Validators.required, Validators.email]],
-      branch: ['', Validators.required],
-      role: ['', Validators.required],
-      status: ['active', Validators.required]
-    });
+    // ✅ Register: include password + confirm, with match validator
+    this.signupForm = this.fb.group(
+      {
+        name: ['', Validators.required],
+        userId: ['', [Validators.required, Validators.minLength(4)]],
+        email: ['', [Validators.required, Validators.email]],
+        branch: ['', Validators.required],
+        role: ['', Validators.required],
+        status: ['active', Validators.required],
+        password: [
+          '',
+          [
+            Validators.required,
+            Validators.minLength(8),
+            Validators.pattern(/^(?=.*[A-Za-z])(?=.*\d).+$/), // letters + numbers
+          ],
+        ],
+        confirmPassword: ['', Validators.required],
+      },
+      {
+        validators: this.passwordsMatchValidator,
+        updateOn: 'change', // default; you can switch to 'blur' if you prefer
+      }
+    );
 
-    // Rotate welcome messages with fade transition
+    // Rotate welcome messages
     setInterval(() => {
       this.fade = true;
       setTimeout(() => {
@@ -57,21 +88,19 @@ export class LandingPageComponent implements OnInit {
     }, 3000);
   }
 
-  // Toggle which form to show
   toggleForm(type: 'signin' | 'register') {
     this.showForm = type;
   }
 
-  // Smooth scroll to About/Contact sections
   scrollTo(sectionId: string) {
     document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  // Sign In logic
+  // ✅ Sign In with password
   signin() {
     if (this.signinForm.valid) {
-      const { userId, email } = this.signinForm.value;
-      if (this.auth.signin(userId, email)) {
+      const { userId, password } = this.signinForm.value;
+      if (this.auth.signin(userId, password)) {
         const user = this.auth.getCurrentUser();
         if (user) {
           this.message = `Login successful! 🎉 Welcome ${user.role}`;
@@ -85,18 +114,25 @@ export class LandingPageComponent implements OnInit {
     }
   }
 
-  // Register logic
+  // ✅ Register: block submit if mismatch; exclude confirmPassword from payload
   signup() {
-    if (this.signupForm.valid) {
-      const user: User = this.signupForm.value as User;
-      this.auth.signup(user);
-      console.log('All registered users:', this.auth.getAllUsers());
-      this.message = 'Registration successful! You can now sign in.';
-      this.toggleForm('signin');
+    if (this.signupForm.invalid || this.signupForm.hasError('passwordMismatch')) {
+      this.message = 'Please fix the form errors before submitting.';
+      // Mark relevant controls as touched to show errors
+      this.signupForm.get('password')?.markAsTouched();
+      this.signupForm.get('confirmPassword')?.markAsTouched();
+      return;
     }
+
+    const { confirmPassword, ...payload } = this.signupForm.value;
+    const user: User = payload as User;
+
+    this.auth.signup(user);
+    console.log('All registered users:', this.auth.getAllUsers());
+    this.message = 'Registration successful! You can now sign in.';
+    this.toggleForm('signin');
   }
 
-  // Redirect based on role
   redirect(role: string) {
     if (role === 'admin') this.router.navigate(['/admin']);
     else if (role === 'bankManager') this.router.navigate(['/manager']);
