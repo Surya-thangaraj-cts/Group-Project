@@ -1,5 +1,3 @@
-
-// src/app/features/officer/create-account/create-account.component.ts
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -8,7 +6,7 @@ import { AccountType, AccountStatus } from '../model';
 import { Router } from '@angular/router';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { FormsModule } from '@angular/forms'; // <-- ADD THIS
+import { FormsModule } from '@angular/forms';
 
 type StatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
 
@@ -18,7 +16,7 @@ type StatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    FormsModule, // <-- AND REGISTER IT HERE (enables ngModel / ngModelOptions)
+    FormsModule,
   ],
   templateUrl: './create-account.component.html',
   styleUrls: ['../officer-theme.css'],
@@ -39,10 +37,10 @@ export class CreateAccountComponent {
 
   submitted = false;
 
-  // Source stream
+  // Source stream alias
   accounts$ = this.officerSvc.accounts$;
 
-  // -------- Filters (Existing Accounts) --------
+  
   statusFilter: StatusFilter = 'ALL';
   private statusFilter$ = new BehaviorSubject<StatusFilter>('ALL');
 

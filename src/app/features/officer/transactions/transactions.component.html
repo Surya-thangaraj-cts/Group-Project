@@ -139,12 +139,16 @@
               <td [attr.data-label]="'Amount'">₹{{ t.amount | number:'1.2-2' }}</td>
               <td [attr.data-label]="'Date'">{{ t.time | date:'medium' }}</td>
               <td [attr.data-label]="'Status'">
-                <span class="pill" [class.ok]="t.amount < highValueThreshold" [class.bad]="t.amount >= highValueThreshold">
+                <span
+                  class="status"
+                  [ngClass]="t.amount < highValueThreshold ? 'status--completed' : 'status--pending'">
                   {{ t.amount < highValueThreshold ? 'Completed' : 'Pending' }}
                 </span>
               </td>
               <td [attr.data-label]="'Flag'">
-                <span class="pill" [class.bad]="t.flagged" [class.ok]="!t.flagged">
+                <span
+                  class="status"
+                  [ngClass]="t.flagged ? 'status--flag-high' : 'status--flag-normal'">
                   {{ t.flagged ? 'High' : 'Normal' }}
                 </span>
               </td>

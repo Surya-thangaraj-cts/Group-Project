@@ -62,8 +62,8 @@
     <div class="section-header">
       <h3>Existing Accounts ({{ vm.total }})</h3>
 
-      <!-- Filters bar -->
-      <div class="filters-bar">
+      <!-- Filters bar (inline) -->
+      <div class="filters-bar" role="search">
         <!-- Compact search -->
         <div class="accounts-search">
           <input
@@ -116,8 +116,10 @@
             <td>{{ a.customerId }}</td>
             <td>{{ a.accountType }}</td>
             <td>
-              <span class="pill" [class.ok]="a.status==='ACTIVE'" [class.bad]="a.status==='CLOSED'">
-                {{ a.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE' }}
+              <span
+                class="status"
+                [ngClass]="a.status === 'ACTIVE' ? 'status--active' : 'status--inactive'">
+                {{ a.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
               </span>
             </td>
             <td>{{ a.openedAt | date:'medium' }}</td>

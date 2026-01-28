@@ -1,4 +1,4 @@
-<!-- Top Navigation Bar -->
+<!--nav bar starts-->
 <nav class="top-nav" (click)="$event.stopPropagation()" role="navigation" aria-label="Primary">
   <div class="brand">
     <a class="navbar-brand d-flex align-items-center" href="" aria-label="MyBank Home">
@@ -10,7 +10,7 @@
     </a>
   </div>
 
-  <!-- Desktop nav links -->
+  <!--desktop nav middle-->
   <ul class="nav-links">
     <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/create']">Create Bank Account</button></li>
     <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/update']">Update Bank Account</button></li>
@@ -23,7 +23,7 @@
     <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/history']">Transaction History</button></li>
   </ul>
 
-  <!-- Hamburger (mobile) -->
+  <!--hamburger mobile-->
   <button
     class="hamburger"
     type="button"
@@ -34,7 +34,7 @@
     <span></span><span></span><span></span>
   </button>
 
-  <!-- Profile Dropdown (Desktop) - Bootstrap dropdown -->
+  <!-- Profile Dropdown (Desktop) -->
   <div class="position-relative profile-desktop" *ngIf="currentUser">
     <div class="dropdown">
       <button
@@ -99,7 +99,8 @@
       </ul>
     </div>
   </div>
-</nav>
+</nav> 
+<!-- nav-bar ends -->
 
 <!-- Mobile Menu -->
 <div
@@ -153,12 +154,25 @@
   <!-- Global Alert -->
   <div *ngIf="(alert$ | async) as alert"
        class="console-alert"
-       [class.error]="alert.type==='error'"
-       [class.success]="alert.type==='success'"
+       [class.is-success]="alert.type === 'success'"
+       [class.is-error]="alert.type === 'error'"
        role="alert"
        aria-live="assertive">
-    <span class="msg">{{ alert.message }}</span>
-    <button class="close" (click)="clearAlert()" aria-label="Close alert">✕</button>
+    <div class="alert-left">
+      <span class="alert-icon" aria-hidden="true">
+        <!-- Success icon -->
+        <svg *ngIf="alert.type === 'success'" viewBox="0 0 24 24" width="18" height="18">
+          <path fill="currentColor" d="M9 16.2l-3.5-3.6L4 14l5 5 11-11-1.5-1.6z"></path>
+        </svg>
+        <!-- Error icon -->
+        <svg *ngIf="alert.type === 'error'" viewBox="0 0 24 24" width="18" height="18">
+          <path fill="currentColor" d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V8h2v5z"/>
+        </svg>
+      </span>
+      <span class="alert-text">{{ alert.message }}</span>
+    </div>
+    <button class="alert-close" (click)="clearAlert()" aria-label="Close alert">✕</button>
+    <div class="alert-progress" aria-hidden="true"></div>
   </div>
 
   <!-- Routed feature views -->
@@ -204,17 +218,12 @@
         <div class="text-muted small">Branch</div>
         <div class="fw-semibold profile-value">{{ currentUser?.branch || '' }}</div>
       </div>
+      <!-- Status: simple text -->
       <div class="col-12 col-md-6">
         <div class="text-muted small">Status</div>
-        <span
-          class="badge"
-          [ngClass]="{
-            'bg-success-subtle text-success border border-success': currentUser?.status === 'Active',
-            'bg-danger-subtle text-danger border border-danger': currentUser?.status === 'Inactive',
-            'bg-warning-subtle text-warning border border-warning': currentUser?.status === 'Pending'
-          }">
+        <div class="fw-semibold profile-value">
           {{ currentUser?.status || '' }}
-        </span>
+        </div>
       </div>
     </div>
   </div>

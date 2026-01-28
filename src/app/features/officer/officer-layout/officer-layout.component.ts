@@ -1,10 +1,8 @@
-
-// src/app/features/officer/officer-layout/officer-layout.component.ts
-import { Component, HostListener, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { Component, HostListener, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { OfficerService } from '../officer.service';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AlertMsg } from '../model';
 import { AuthService, User } from '../../../auth/auth.service';
@@ -15,24 +13,27 @@ import { AuthService, User } from '../../../auth/auth.service';
   imports: [CommonModule, RouterModule],
   templateUrl: './officer-layout.component.html',
   styleUrls: ['../officer-theme.css'],
-  // encapsulation: ViewEncapsulation.None
 })
-export class OfficerLayoutComponent implements OnInit {
+export class OfficerLayoutComponent implements OnInit, OnDestroy {
   private officerSvc = inject(OfficerService);
 
   currentUser: User | null = null;
 
-  // UI state
   isMobileNavOpen = false;
   isProfileMenuOpen = false;
 
-  // streams
+  // Global alert stream
   alert$: Observable<AlertMsg | null> = this.officerSvc.alert$;
 
-  // NEW: Notifications (unread count for badge)
+  // Notifications count
   unreadCount$: Observable<number> = this.officerSvc.notifications$.pipe(
     map(list => (Array.isArray(list) ? list.filter(n => !n.read).length : 0))
   );
+
+  // Auto-dismiss alert
+  private alertSub?: Subscription;
+  private alertTimer?: any;
+  private readonly ALERT_TIMEOUT_MS = 5000;
 
   constructor(
     private auth: AuthService,
@@ -41,13 +42,28 @@ export class OfficerLayoutComponent implements OnInit {
 
   ngOnInit(): void {
     this.currentUser = this.auth.currentUser;
+
+    // Auto-close alert after 5 seconds whenever a new alert appears
+    this.alertSub = this.alert$.subscribe(alert => {
+      if (this.alertTimer) {
+        clearTimeout(this.alertTimer);
+        this.alertTimer = undefined;
+      }
+      if (alert) {
+        this.alertTimer = setTimeout(() => this.clearAlert(), this.ALERT_TIMEOUT_MS);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.alertSub) this.alertSub.unsubscribe();
+    if (this.alertTimer) clearTimeout(this.alertTimer);
   }
 
   initials(name: string): string {
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
   }
 
-  /* Mobile nav */
   toggleMobileNav(ev?: Event) {
     if (ev) ev.stopPropagation();
     this.isMobileNavOpen = !this.isMobileNavOpen;
@@ -56,7 +72,6 @@ export class OfficerLayoutComponent implements OnInit {
     this.isMobileNavOpen = false;
   }
 
-  /* Profile menu */
   toggleProfileMenu() {
     this.isProfileMenuOpen = !this.isProfileMenuOpen;
   }
@@ -72,9 +87,15 @@ export class OfficerLayoutComponent implements OnInit {
     this.officerSvc.clearAlert();
   }
 
-  // Close overlays on outside click
-  @HostListener('document:click')
-  closeOverlays() {
+  @HostListener('document:click', ['$event'])
+  closeOverlays(ev?: MouseEvent) {
+    const target = ev?.target as HTMLElement | undefined;
+    const isDropdown = target?.closest('.dropdown-menu, [data-bs-toggle="dropdown"]');
+    const isOffcanvas = target?.closest('.offcanvas, [data-bs-toggle="offcanvas"]');
+    const isHamburger = target?.closest('.hamburger');
+
+    if (isDropdown || isOffcanvas || isHamburger) return;
+
     this.isProfileMenuOpen = false;
     this.isMobileNavOpen = false;
   }
@@ -85,12 +106,6 @@ export class OfficerLayoutComponent implements OnInit {
   }
 
   selectUser(user: User): void {
-    if (user) {
-      this.currentUser = user;
-    }
+    if (user) this.currentUser = user;
   }
-
-  // goToSettings(): void {
-  //   this.router.navigate(['/settings']);
-  // }
 }

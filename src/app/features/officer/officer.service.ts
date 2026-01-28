@@ -11,26 +11,21 @@ export class OfficerService {
   private transactionsSubject = new BehaviorSubject<Transaction[]>([]);
   private updateReqsSubject = new BehaviorSubject<UpdateRequest[]>([]);
   private alertSubject = new BehaviorSubject<AlertMsg | null>(null);
-
-  // NEW: Notifications
   private notificationsSubject = new BehaviorSubject<Notification[]>([]);
 
   accounts$ = this.accountsSubject.asObservable();
   transactions$ = this.transactionsSubject.asObservable();
   updateRequests$ = this.updateReqsSubject.asObservable();
   alert$ = this.alertSubject.asObservable();
-
-  // NEW: Expose notifications observable
   notifications$ = this.notificationsSubject.asObservable();
 
-  // Config
   readonly highValueThreshold = 100000;
 
   constructor() {
     this.load();
   }
 
-  // ---------- Persistence ----------
+  
   private save(): void {
     localStorage.setItem('accounts', JSON.stringify(this.accountsSubject.value));
     localStorage.setItem('transactions', JSON.stringify(this.transactionsSubject.value));
@@ -57,12 +52,12 @@ export class OfficerService {
     }
   }
 
-  // ---------- Alerts (banner) ----------
+  // for alerts subject
   clearAlert() { this.alertSubject.next(null); }
   setSuccess(message: string) { this.alertSubject.next({ type: 'success', message }); }
   setError(message: string) { this.alertSubject.next({ type: 'error', message }); }
 
-  // ---------- Accounts ----------
+  
   getAccountById(accountId: string): Account | undefined {
     return this.accountsSubject.value.find(a => a.accountId === accountId);
   }
@@ -112,7 +107,7 @@ export class OfficerService {
     const updateReqs = [req, ...this.updateReqsSubject.value];
     this.updateReqsSubject.next(updateReqs);
 
-    // NEW: Add notification for update request
+    //notification for update request
     this.addNotification({
       type: 'UPDATE_REQUEST',
       title: `Update request for ${req.accountId}`,
@@ -124,7 +119,7 @@ export class OfficerService {
     this.setSuccess(`Update request created for Account ${newValues.accountId}.`);
   }
 
-  // ---------- Transactions ----------
+
   recordTransaction(
     sourceAccountId: string,
     form: { type: TxnType; amount: number; toAccountId?: string; narrative?: string }
@@ -189,7 +184,7 @@ export class OfficerService {
       });
       txns.unshift(txOut);
       txns.unshift(txIn);
-
+      //adding notification for high value transfer
       if (isHigh) {
         this.addNotification({
           type: 'HIGH_VALUE_TXN',
@@ -208,25 +203,25 @@ export class OfficerService {
     this.save();
   }
 
-  toggleFlag(transactionId: string): void {
-    const txns = [...this.transactionsSubject.value];
-    const t = txns.find(x => x.id === transactionId);
-    if (!t) return;
-    t.flagged = !t.flagged;
-    this.transactionsSubject.next(txns);
-    this.save();
-    this.setSuccess(`Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`);
+  // toggleFlag(transactionId: string): void {
+  //   const txns = [...this.transactionsSubject.value];
+  //   const t = txns.find(x => x.id === transactionId);
+  //   if (!t) return;
+  //   t.flagged = !t.flagged;
+  //   this.transactionsSubject.next(txns);
+  //   this.save();
+  //   this.setSuccess(`Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`);
 
     // NEW: Only notify when it becomes flagged
-    if (t.flagged) {
-      this.addNotification({
-        type: 'TXN_FLAGGED',
-        title: `Transaction flagged HIGH (${t.accountId})`,
-        message: `Txn ${t.id} flagged as high value.`,
-        meta: { accountId: t.accountId, txnId: t.id, amount: t.amount }
-      });
-    }
-  }
+  //   if (t.flagged) {
+  //     this.addNotification({
+  //       type: 'TXN_FLAGGED',
+  //       title: `Transaction flagged HIGH (${t.accountId})`,
+  //       message: `Txn ${t.id} flagged as high value.`,
+  //       meta: { accountId: t.accountId, txnId: t.id, amount: t.amount }
+  //     });
+  //   }
+  // }
 
   // ---------- Notifications (helpers) ----------
   private addNotification(input: Omit<Notification, 'id' | 'time' | 'read'>): void {
