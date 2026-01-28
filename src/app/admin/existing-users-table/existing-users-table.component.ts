@@ -64,6 +64,7 @@ export class ExistingUsersTableComponent implements OnInit {
       status: u.status
     });
   }
+  
 
   cancelEdit(): void {
     this.editingUserId = undefined;

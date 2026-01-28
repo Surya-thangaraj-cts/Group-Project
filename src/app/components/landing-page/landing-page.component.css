@@ -1,165 +1,319 @@
-
 :host {
   display: block;
   min-height: 100vh;
 
-  /* Dark theme background with gradients */
-  background:
-    radial-gradient(1200px 600px at 10% 10%, rgba(139, 92, 246, 0.12), transparent 60%),
-    radial-gradient(900px 450px at 90% 80%, rgba(34, 211, 238, 0.10), transparent 55%),
-    var(--bg);
+  /* ===== Light Admin Theme Background with faint radial tints ===== */
+  --bg: #f5f7ff;            /* page background (soft bluish) */
+  --surface: #ffffff;       /* cards/panels */
+  --muted: #f0f3ff;         /* soft sections */
+  --subtle: #eef1fb;        /* section bands */
 
-  /* Theme tokens */
-  --bg: #0b0f14;
-  --bg-elevate: #0f141b;
-  --text: #e5e7eb;
-  --text-muted: #94a3b8;
-  --border: #1f2937;
-  --card: rgba(18, 24, 31, 0.7);
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  /* Text */
+  --text: #1f2937;          /* slate-800 */
+  --text-muted: #4b5563;    /* slate-600 */
+  --heading: #213c77;       /* section headings (blue-ish like Admin) */
 
-  --primary: #8b5cf6;
-  --primary-600: #7c3aed;
-  --primary-700: #6d28d9;
+  /* Borders/Shadows */
+  --border: #e5e8f5;
+  --border-strong: #d9def0;
+  --shadow-sm: 0 2px 8px rgba(31, 41, 55, .06);
+  --shadow-md: 0 6px 18px rgba(31, 41, 55, .08);
+  --shadow-lg: 0 16px 32px rgba(31, 41, 55, .12);
 
-  --secondary: #22d3ee;
-  --secondary-600: #06b6d4;
+  /* Primary (purple) */
+  --primary-300: #a78bfa;
+  --primary-400: #8b5cf6;
+  --primary-500: #7c3aed;
+  --primary-600: #6d28d9;
+  --primary-700: #5b21b6;
 
-  --danger: #ef4444;
-  --success: #10b981;
-  --warning: #f59e0b;
+  /* Accent (optional) */
+  --accent: #f59e0b;
 
-  --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-  --glass-backdrop: saturate(160%) blur(8px);
+  /* Gradient header like Admin Console */
+  --header-gradient: linear-gradient(90deg, #7c3aed, #6d28d9, #4f46e5);
 
+  /* Global font/color */
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, 'Noto Sans', sans-serif;
   color: var(--text);
+
+  /* Subtle radial lights */
+  background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(124, 58, 237, 0.08), transparent 60%),
+    radial-gradient(900px 450px at 90% 80%, rgba(79, 70, 229, 0.06), transparent 55%),
+    var(--bg);
 }
 
-/* Navbar */
+/* =========================
+   NAVBAR — Purple gradient, white text, pill buttons
+   ========================= */
 .navbar {
-  background: var(--card);
-  backdrop-filter: var(--glass-backdrop);
-  border: var(--glass-border);
-  border-radius: 1rem;
-  color: var(--text);
+  background: var(--header-gradient);
+  color: #fff;
+  border-radius: 20px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(255,255,255,.15);
+}
+.navbar #logo-text { color: #fff; }
+.navbar svg { filter: drop-shadow(0 2px 6px rgba(0,0,0,.25)); }
+
+/* Right-side actions */
+.navbar .btn.btn-primary {
+  background: #fff;
+  color: var(--primary-600);
+  border: none;
+  border-radius: 9999px;
+  padding: .5rem 1rem;
+  font-weight: 600;
+  box-shadow: 0 2px 0 rgba(0,0,0,.06);
+}
+.navbar .btn.btn-primary:hover {
+  background: #f8f7ff;
+  color: var(--primary-700);
+}
+button.secondary,
+.navbar .btn-secondary {
+  background: transparent;
+  color: #fff;
+  border: 1.5px solid rgba(255,255,255,.65);
+  border-radius: 9999px;
+  padding: .5rem 1rem;
+  font-weight: 600;
+}
+button.secondary:hover,
+.navbar .btn-secondary:hover {
+  background: rgba(255,255,255,.1);
 }
 
-/* Brand dot */
-.brand-dot {
-  width: 32px;
-  height: 32px;
-  background: var(--primary);
-  border-radius: 50%;
+/* Container sizing to match Admin spacing */
+.container { max-width: 1400px; }
+
+/* =========================
+   MAIN WRAPPER CARD
+   ========================= */
+.rounded-4.shadow-lg {
+  background: var(--surface);
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--border);
+  overflow: hidden;
 }
 
-/* Hero panel */
+/* =========================
+   LEFT: HERO PANEL
+   ========================= */
 .hero-panel {
   position: relative;
   min-height: 360px;
   height: 100%;
+  background: var(--surface);
 }
-
 .hero-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  border-right: 1px solid var(--border);
 }
-
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(11, 15, 20, 0.7) 0%,
-    rgba(11, 15, 20, 0.4) 60%,
-    rgba(11, 15, 20, 0.3) 100%
-  );
+  /* Softer than dark theme, enough to make white text readable */
+  background: linear-gradient(135deg, rgba(124,58,237,.25), rgba(79,70,229,.25));
 }
-
 .hero-content {
   position: absolute;
   bottom: 2rem;
   left: 2rem;
   right: 2rem;
-  color: var(--text);
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,.25);
 }
-
 .hero-content h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text);
+  font-size: clamp(1.75rem, 2.5vw, 2.4rem);
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 .25rem 0;
 }
-
 .hero-content p {
-  font-size: 1.1rem;
-  color: var(--text-muted);
-}
-
-@media (min-width: 992px) {
-  .hero-content {
-    bottom: 3rem;
-    left: 3rem;
-    right: 3rem;
-  }
-  .hero-content h1 {
-    font-size: 2.5rem;
-  }
-}
-
-/* Auth panel */
-.auth-panel {
+  font-size: 1.05rem;
+  color: #eef2ff;
   max-width: 480px;
-  margin: auto;
-  background: var(--card);
-  backdrop-filter: var(--glass-backdrop);
-  border: var(--glass-border);
-  border-radius: 1rem;
-  box-shadow: var(--shadow);
-  padding: 2rem;
+}
+@media (min-width: 992px) {
+  .hero-content { bottom: 3rem; left: 3rem; right: 3rem; }
 }
 
-/* Inputs and buttons */
+/* =========================
+   RIGHT: AUTH PANEL (white card)
+   ========================= */
+.auth-panel {
+  max-width: 520px;
+  margin: auto;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+.title h1 {
+  color: var(--heading);
+  font-weight: 800;
+  margin-bottom: .25rem;
+}
+.text-muted { color: var(--text-muted) !important; }
+
+/* =========================
+   INPUTS — large rounded, gentle focus
+   ========================= */
+.form-label {
+  color: var(--heading);
+  font-weight: 600;
+}
 .form-control,
 .form-select {
-  background: var(--bg-elevate);
+  background: #eef3ff;                 /* light fill like Admin */
   color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
+  border: 1.5px solid #dce3ff;         /* subtle border */
+  border-radius: 20px;                  /* big rounded */
+  padding: .9rem 1.1rem;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  box-shadow: inset 0 1px 0 rgba(0,0,0,.02);
 }
-
-.form-control::placeholder {
-  color: var(--text-muted);
-}
-
-.btn {
-  border-radius: 0.75rem;
-}
-
-.btn-primary {
-  background-color: var(--primary);
-  border-color: var(--primary-600);
-}
-
-.btn-outline-secondary {
-  color: var(--secondary);
-  border-color: var(--secondary);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-600);
-}
-
-.btn-outline-secondary:hover {
-  background-color: var(--secondary);
-  color: #fff;
-}
-
-/* Focus styles */
-.btn:focus,
+.form-control::placeholder { color: var(--text-muted); opacity: .8; }
 .form-control:focus,
 .form-select:focus {
-  box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.4);
+  background: #fff;
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 .25rem rgba(124,58,237,.18);
+  color: var(--text);
   outline: none;
 }
+
+/* Validation text */
+.text-danger { color: #ef4444 !important; font-weight: 600; }
+
+/* =========================
+   BUTTONS — purple pill primary, light secondary
+   ========================= */
+.btn {
+  border-radius: 9999px;    /* pill */
+  font-weight: 700;
+}
+.btn-primary {
+  background: var(--primary-500);
+  border: 1px solid var(--primary-500);
+  color: #fff;
+  padding: .8rem 1.25rem;
+  box-shadow: 0 8px 16px rgba(124,58,237,0.22);
+}
+.btn-primary:hover {
+  background: var(--primary-600);
+  border-color: var(--primary-600);
+}
+.btn-primary:active {
+  background: var(--primary-700) !important;
+  border-color: var(--primary-700) !important;
+}
+.btn-outline-secondary,
+.btn-light {
+  background: #fff;
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  padding: .7rem 1.1rem;
+  font-weight: 600;
+}
+.btn-outline-secondary:hover,
+.btn-light:hover {
+  background: var(--muted);
+  border-color: var(--border-strong);
+}
+
+/* Disabled */
+.btn:disabled,
+.btn.disabled { opacity: .6; cursor: not-allowed; }
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 991.98px) {
+  .auth-panel {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    width: 100%;
+  }
+  .hero-img {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+/* 1) Clip the hero section to its own column */
+#left-part,
+.hero-panel {
+  position: relative;
+  overflow: hidden;            /* 👈 prevents the image/overlay from bleeding into the right panel */
+  height: 100%;
+  border-right: 1px solid var(--border);
+}
+
+/* 2) Ensure the row/card clips inner children to rounded corners */
+.container .rounded-4,
+.container .rounded-4 .row.g-0 {
+  overflow: hidden;            /* 👈 keep inner layers inside the card rounding */
+  border-radius: 24px;         /* match your card radius */
+}
+
+/* 3) Constrain the hero height on desktop so it doesn't slide under the right side */
+@media (min-width: 992px) {
+  #left-part,
+  .hero-panel {
+    min-height: 520px;         /* pick a height that looks good with your image */
+    max-height: 640px;         /* optional guardrail */
+  }
+}
+
+/* 4) Absolutely positioned children stay inside because of (1) */
+.hero-panel .hero-img,
+.hero-panel #left-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+   display: block; 
+}
+
+/* 5) Overlay and content stack correctly */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(124,58,237,.25), rgba(79,70,229,.25));
+  z-index: 1;                  /* under the text */
+}
+
+.hero-content {
+  position: absolute;
+  z-index: 2;                  /* over the overlay */
+  bottom: 2rem;
+  left: 2rem;
+  right: 2rem;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,.25);
+}
+
+/* 6) Keep the right auth panel above any stray overlay (especially on narrow viewports) */
+.auth-panel {
+  position: relative;
+  z-index: 5;                  /* 👈 ensure it sits above */
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+}
+
+/* 7) On mobile, the hero is above the form — add a divider instead of right border */
+@media (max-width: 991.98px) {
+  #left-part {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+
+

@@ -35,13 +35,14 @@
 }
 
 .form-control, .form-select {
-  background: rgba(14, 19, 33, 0.75);
+  /* background: rgba(14, 19, 33, 0.75); */
+
   border: 1px solid var(--border);
   color: var(--text);
   border-radius: 12px;
 }
 .form-control:focus, .form-select:focus {
   border-color: rgba(124,77,255,0.45);
-  box-shadow: 0 0 0 3px rgba(124,77,255,0.18);
-  background: rgba(16, 24, 42, 0.85);
+  /* box-shadow: 0 0 0 3px rgba(124,77,255,0.18); */
+  /* background: rgba(16, 24, 42, 0.85); */
 }

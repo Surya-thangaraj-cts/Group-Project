@@ -1,6 +1,6 @@
 <div class="card">
   <h2>Update Bank Account</h2>
-
+ 
   <div class="inline">
     <input
       class="inline-input"
@@ -14,7 +14,7 @@
       Load
     </button>
   </div>
-
+ 
   <form
     [formGroup]="updateForm"
     (ngSubmit)="submitUpdateRequest()"
@@ -26,17 +26,17 @@
         Account ID
         <input type="text" formControlName="accountId" readonly />
       </label>
-
+ 
       <label>
         Customer Name
         <input type="text" formControlName="customerName" />
       </label>
-
+ 
       <label>
         Customer ID
         <input type="text" formControlName="customerId" />
       </label>
-
+ 
       <label>
         Account Type
         <select formControlName="accountType">
@@ -44,12 +44,12 @@
           <option value="CURRENT">Current</option>
         </select>
       </label>
-
+ 
       <label>
         Balance (admin adjustment)
         <input type="number" formControlName="balance" min="0" step="0.01" />
       </label>
-
+ 
       <label>
         Status
         <select formControlName="status">
@@ -58,22 +58,22 @@
         </select>
       </label>
     </div>
-
+ 
     <br />
-
+ 
     <div class="actions">
       <button class="primary" type="submit" [disabled]="updateForm.invalid">Submit Update Request</button>
       <button type="button" class="secondary" (click)="cancel()">Cancel</button>
     </div>
   </form>
-
+ 
   <hr />
-
+ 
   <!-- Updation Status (status filter + pagination) -->
   <ng-container *ngIf="urVm$ | async as vm">
     <div class="inline inline-justify">
       <h3 class="m-0">Updation Status</h3>
-
+ 
       <!-- Status Filter -->
       <label class="m-0">
         Filter Status
@@ -89,9 +89,9 @@
         </select>
       </label>
     </div>
-
+ 
     <br />
-
+ 
     <div class="table-wrap" *ngIf="vm.total > 0; else noUpdates">
       <table>
         <thead>
@@ -105,7 +105,7 @@
             <th scope="col">Status</th>
           </tr>
         </thead>
-
+ 
         <tbody>
           <tr *ngFor="let u of vm.pageData; trackBy: trackByUpdateId">
             <td [attr.data-label]="'Update ID'">{{ u.updateId }}</td>
@@ -113,12 +113,12 @@
             <td [attr.data-label]="'Customer Name'">{{ u.customerName }}</td>
             <td [attr.data-label]="'Customer ID'">{{ u.customerId }}</td>
             <td [attr.data-label]="'Type'">{{ u.accountType }}</td>
-
+ 
             <!-- Full changes summary -->
             <td [attr.data-label]="'Changes Summary'" class="wrap-normal">
               {{ u.changeSummary }}
             </td>
-
+ 
             <td [attr.data-label]="'Status'">
               <span
                 class="status"
@@ -133,7 +133,7 @@
           </tr>
         </tbody>
       </table>
-
+ 
       <!-- Pagination controls -->
       <div class="actions table-actions">
         <!-- Rows per page -->
@@ -147,17 +147,17 @@
             <option *ngFor="let size of urPageSizeOptions" [value]="size">{{ size }}</option>
           </select>
         </div>
-
+ 
         <!-- Range & total -->
         <div class="muted range-text">
           {{ vm.from }}–{{ vm.to }} of {{ vm.total }}
         </div>
-
+ 
         <!-- Pager -->
         <div class="pager">
           <button type="button" class="pager-btn" (click)="urSetPage(1)" [disabled]="vm.currentPage===1" aria-label="First page">First</button>
           <button type="button" class="pager-btn" (click)="urPrevPage()" [disabled]="vm.currentPage===1" aria-label="Previous page">Prev</button>
-
+ 
           <ng-container *ngFor="let p of vm.pages">
             <button
               type="button"
@@ -169,14 +169,14 @@
               {{ p }}
             </button>
           </ng-container>
-
+ 
           <button type="button" class="pager-btn" (click)="urNextPage()" [disabled]="vm.currentPage===vm.totalPages" aria-label="Next page">Next</button>
           <button type="button" class="pager-btn" (click)="urSetPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages" aria-label="Last page">Last</button>
         </div>
       </div>
     </div>
   </ng-container>
-
+ 
   <ng-template #noUpdates>
     <p class="muted">No update requests submitted yet.</p>
   </ng-template>

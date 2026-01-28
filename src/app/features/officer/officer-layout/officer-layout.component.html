@@ -9,7 +9,7 @@
       <span class="fw-bold" id="logo-text">MyBank</span>
     </a>
   </div>
-
+ 
   <!--desktop nav middle-->
   <ul class="nav-links">
     <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/create']">Create Bank Account</button></li>
@@ -22,7 +22,7 @@
     </li>
     <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/history']">Transaction History</button></li>
   </ul>
-
+ 
   <!--hamburger mobile-->
   <button
     class="hamburger"
@@ -33,7 +33,7 @@
     (click)="toggleMobileNav($event)">
     <span></span><span></span><span></span>
   </button>
-
+ 
   <!-- Profile Dropdown (Desktop) -->
   <div class="position-relative profile-desktop" *ngIf="currentUser">
     <div class="dropdown">
@@ -53,7 +53,7 @@
           {{ currentUser.name }}
         </span>
       </button>
-
+ 
       <ul
         class="dropdown-menu dropdown-menu-end text-sm themed-dropdown"
         aria-labelledby="headerProfileDropdown"
@@ -65,21 +65,21 @@
             {{ currentUser.email }}
           </div>
         </li>
-
+ 
         <li><hr class="dropdown-divider" /></li>
-
+ 
         <li class="px-3 py-2">
           <div class="small text-muted">Role</div>
           <div class="fw-semibold">{{ currentUser.role }}</div>
         </li>
-
+ 
         <li class="px-3 py-2">
           <div class="small text-muted">Branch</div>
           <div class="fw-semibold">{{ currentUser.branch }}</div>
         </li>
-
+ 
         <li><hr class="dropdown-divider" /></li>
-
+ 
         <li>
           <button
             class="dropdown-item"
@@ -90,7 +90,7 @@
             View full profile
           </button>
         </li>
-
+ 
         <li>
           <button class="dropdown-item text-danger" type="button" (click)="logout($event)">
             Sign out
@@ -99,9 +99,9 @@
       </ul>
     </div>
   </div>
-</nav> 
+</nav>
 <!-- nav-bar ends -->
-
+ 
 <!-- Mobile Menu -->
 <div
   id="mobileMenu"
@@ -120,9 +120,9 @@
     </button>
     <button type="button" class="mobile-link" routerLink="/officer/history" (click)="closeMobileNav()">Transaction History</button>
   </div>
-
+ 
   <div class="mobile-divider"></div>
-
+ 
   <div class="mobile-profile" *ngIf="currentUser">
     <div class="row1">
       <div
@@ -149,7 +149,7 @@
     </div>
   </div>
 </div>
-
+ 
 <section class="container">
   <!-- Global Alert -->
   <div *ngIf="(alert$ | async) as alert"
@@ -174,11 +174,11 @@
     <button class="alert-close" (click)="clearAlert()" aria-label="Close alert">✕</button>
     <div class="alert-progress" aria-hidden="true"></div>
   </div>
-
+ 
   <!-- Routed feature views -->
   <router-outlet></router-outlet>
 </section>
-
+ 
 <!-- ===== Offcanvas: Full Profile (Light) ===== -->
 <div
   class="offcanvas offcanvas-end themed-offcanvas"
@@ -189,7 +189,7 @@
     <h5 class="offcanvas-title" id="offcanvasProfileLabel">My Profile</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
-
+ 
   <div class="offcanvas-body">
     <!-- Header row -->
     <div class="d-flex align-items-center gap-3 mb-3">
@@ -203,7 +203,7 @@
         <div class="profile-email">{{ currentUser?.email || '' }}</div>
       </div>
     </div>
-
+ 
     <!-- Details grid -->
     <div class="row g-3">
       <div class="col-12 col-md-6">

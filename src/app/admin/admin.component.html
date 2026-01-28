@@ -1,6 +1,6 @@
 
 <!-- Admin Console Page -->
-<div class="py-3 admin-page" oncontextmenu="return false">
+<div class="py-3 admin-page" >
   <!-- ===== Header (Profile + toggles) ===== -->
   <div class="mb-3 header">
     <div class="d-flex align-items-center justify-content-between gap-3">
@@ -216,6 +216,7 @@
             <div class="col-md-3 mb-4 filter-col role-filter-col d-flex flex-column justify-content-center">
               <label for="roleFilter" class="form-label">Role</label>
               <select
+                class="text-dark"
                 id="roleFilter"
                 class="form-select"
                 [(ngModel)]="roleFilter"
@@ -233,7 +234,7 @@
       </div>
 
       <!-- User Details -->
-      <div class="card mb-3 text-white">
+      <div class="card mb-3 text-dark">
         <div class="card-header d-flex align-items-center justify-content-between">
           <h2 class="h6 mb-0">User Details</h2>
           <button type="button" class="btn btn-outline-dark btn-sm" (click)="clearSelected()">Clear</button>
@@ -242,29 +243,29 @@
           <ng-container *ngIf="selectedUser; else emptyDetails">
             <div class="row g-3">
               <div class="col-md-3">
-                <div class="text-white small">User ID</div>
+                <div class="text-dark small">User ID</div>
                 <div class="fw-semibold">{{ selectedUser.userId }}</div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Name</div>
+                <div class="text-dark small">Name</div>
                 <div class="fw-semibold">{{ selectedUser.name }}</div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Email</div>
+                <div class="text-dark small">Email</div>
                 <div class="fw-semibold text-truncate" style="max-width: 240px;">
                   {{ selectedUser.email }}
                 </div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Branch</div>
+                <div class="text-dark small">Branch</div>
                 <div class="fw-semibold">{{ selectedUser.branch }}</div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Role</div>
+                <div class="text-dark small">Role</div>
                 <div class="fw-semibold">{{ selectedUser.role }}</div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Status</div>
+                <div class="text-dark small">Status</div>
                 <span
                   class="badge"
                   [ngClass]="{
@@ -286,7 +287,7 @@
           </ng-container>
 
           <ng-template #emptyDetails>
-            <div class="text-center text-white py-4">
+            <div class="text-center text-dark py-4">
               <div class="mb-2">No user selected</div>
               <div class="small">Type in the search box or click a user row to view details.</div>
             </div>
@@ -371,19 +372,19 @@
           <div class="col-12 col-md-4">
             <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
               <div class="text-muted small">Total Transactions</div>
-              <div class="fs-5 fw-semibold text-white">{{ compliance.totalTransactions | number }}</div>
+              <div class="fs-5 fw-semibold text-dark">{{ compliance.totalTransactions | number }}</div>
             </div>
           </div>
           <div class="col-12 col-md-4">
             <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
               <div class="text-muted small">High-Value Count</div>
-              <div class="fs-5 fw-semibold text-white">{{ compliance.highValueCount | number }}</div>
+              <div class="fs-5 fw-semibold text-dark">{{ compliance.highValueCount | number }}</div>
             </div>
           </div>
           <div class="col-12 col-md-4">
             <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
               <div class="text-muted small">Account Growth Rate</div>
-              <div class="fs-5 fw-semibold text-white">{{ compliance.accountGrowthRate | number:'1.0-2' }}%</div>
+              <div class="fs-5 fw-semibold text-dark">{{ compliance.accountGrowthRate | number:'1.0-2' }}%</div>
             </div>
           </div>
         </div>

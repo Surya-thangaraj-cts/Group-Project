@@ -1,4 +1,4 @@
-
+ 
 // src/app/features/officer/officer.routes.ts
 import { Routes } from '@angular/router';
 import { OfficerLayoutComponent } from './officer-layout/officer-layout.component';
@@ -6,7 +6,7 @@ import { CreateAccountComponent } from './create-account/create-account.componen
 import { UpdateAccountComponent } from './update-account/update-account.component';
 import { TransactionsComponent } from './transactions/transactions.component';
 import { AlertsComponent } from './alerts/alerts.component';
-
+ 
 export const OFFICER_ROUTES: Routes = [
   {
     path: '',
@@ -20,3 +20,5 @@ export const OFFICER_ROUTES: Routes = [
     ]
   }
 ];
+ 
+ 
