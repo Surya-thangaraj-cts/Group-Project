@@ -7,6 +7,31 @@
     </div>
   </div>
 
+  <!-- High-Value Filter Tabs -->
+  <div class="transaction-tabs" style="margin: 15px 0; display: flex; gap: 10px; border-bottom: 2px solid #e5e7eb; padding-bottom: 0;">
+    <button 
+      class="tab-button" 
+      [class.active]="viewMode === 'all'"
+      (click)="toggleHighValueFilter('all')"
+      style="padding: 12px 20px; background: none; border: none; cursor: pointer; font-weight: 500; color: #667eea; border-bottom: 3px solid transparent; transition: all 0.3s;">
+      All Transactions ({{ transactions.length }})
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="viewMode === 'highvalue'"
+      (click)="toggleHighValueFilter('highvalue')"
+      style="padding: 12px 20px; background: none; border: none; cursor: pointer; font-weight: 500; color: #ff6b6b; border-bottom: 3px solid transparent; transition: all 0.3s;">
+      High-Value ₹100K+ ({{ getHighValueCount() }})
+    </button>
+  </div>
+
+  <style>
+    .tab-button.active {
+      border-bottom-color: #667eea !important;
+      color: #667eea !important;
+    }
+  </style>
+
   <div class="filters-section">
     <div class="filter-row">
       <div class="filter-group">

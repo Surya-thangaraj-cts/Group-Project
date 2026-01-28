@@ -7,6 +7,7 @@ import { TransactionTableComponent } from './components/transaction-table/transa
 import { NotificationsComponent } from './components/notifications/notifications.component';
 import { ApprovalsComponent } from './components/approvals/approvals.component';
 import { ProfileComponent } from './components/profile/profile.component';
+import { ReportsComponent } from './components/reports/reports.component';
 
 @Component({
   selector: 'app-manager',
@@ -17,7 +18,8 @@ import { ProfileComponent } from './components/profile/profile.component';
     TransactionTableComponent,
     NotificationsComponent,
     ApprovalsComponent,
-    ProfileComponent],
+    ProfileComponent,
+    ReportsComponent],
   templateUrl: './manager.component.html',
   styleUrl: './manager.component.css'
 })

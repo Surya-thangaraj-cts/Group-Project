@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DataService, Notification } from '../../services/data.service';
 import { Subject } from 'rxjs';
@@ -17,9 +16,13 @@ export class NotificationsComponent implements OnInit, OnDestroy {
 
   notifications: Notification[] = [];
   unreadCount: number = 0;
+  showDetailModal: boolean = false;
+  selectedNotification: Notification | null = null;
+  detailData: any = {};
+
   private destroy$ = new Subject<void>();
 
-  constructor(private dataService: DataService, private router: Router) {}
+  constructor(private dataService: DataService) {}
 
   ngOnInit(): void {
     this.dataService.getNotifications()
@@ -42,68 +45,91 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /**
+   * Opens detail modal instantly with relevant data
+   */
   handleNotificationClick(notification: Notification): void {
     this.dataService.markNotificationAsRead(notification.notificationId);
-    const navigationId = this.extractNavigationId(notification.message);
-    
-    this.closeDropdown();
-    setTimeout(() => {
-      if (navigationId.key && navigationId.value) {
-        this.router.navigate(['/manager'], {
-          fragment: 'approvals',
-          queryParams: { [navigationId.key]: navigationId.value }
-        });
-      } else {
-        this.router.navigate(['/manager'], { fragment: 'approvals' });
-      }
-    }, 100);
-  }
+    this.selectedNotification = notification;
 
-  private extractNavigationId(message: string): { key: string; value: string } {
-    const patterns = [
-      { regex: /TXN\d+/, key: 'transactionId' },
-      { regex: /DCH\d+/, key: 'changeId' },
-      { regex: /ACC\d+/, key: 'accountId' }
-    ];
+    // Extract details from notification message
+    const details = this.dataService.extractNotificationDetailsFromMessage(notification.message);
 
-    for (const pattern of patterns) {
-      const match = message.match(pattern.regex);
-      if (match) {
-        return { key: pattern.key, value: match[0] };
-      }
+    // Fetch relevant data based on notification type
+    if (details.type === 'transaction') {
+      const transaction = this.dataService.getTransactionById(details.value);
+      const approval = this.dataService.getApprovalByTransactionId(details.value);
+      this.detailData = {
+        type: 'transaction',
+        transaction,
+        approval
+      };
+    } else if (details.type === 'datachange') {
+      const dataChange = this.dataService.getDataChangeApprovalByChangeId(details.value);
+      this.detailData = {
+        type: 'datachange',
+        dataChange
+      };
+    } else {
+      // Suspicious activity - just show the notification message
+      this.detailData = {
+        type: 'suspicious',
+        accountId: details.value
+      };
     }
 
-    return { key: '', value: '' };
+    this.showDetailModal = true;
   }
 
+  /**
+   * Closes the detail modal
+   */
+  closeDetailModal(): void {
+    this.showDetailModal = false;
+    this.selectedNotification = null;
+    this.detailData = {};
+  }
+
+  /**
+   * Gets a short description for dropdown display
+   */
   getNotificationDescription(notification: Notification): string {
     if (notification.type === 'SuspiciousActivity') {
-      return this.describeSuspiciousActivity(notification.message);
+      if (notification.message.toLowerCase().includes('high-value')) {
+        return 'High-value transaction';
+      }
+      if (notification.message.toLowerCase().includes('unusual')) {
+        return 'Unusual pattern detected';
+      }
+      return 'Suspicious activity';
     } else if (notification.type === 'ApprovalReminder') {
-      return this.describeApprovalReminder(notification.message);
+      const amountMatch = notification.message.match(/₹[\d,]+/);
+      if (amountMatch) {
+        return `Pending: ${amountMatch[0]}`;
+      }
+      return 'Pending approval';
     }
     return notification.message;
   }
 
-  private describeSuspiciousActivity(message: string): string {
-    if (message.toLowerCase().includes('high-value')) {
-      return 'High-value transaction suspicious';
-    }
-    if (message.toLowerCase().includes('unusual')) {
-      return 'Unusual transaction detected';
-    }
-    if (message.toLowerCase().includes('multiple')) {
-      return 'Multiple rapid transactions';
-    }
-    return 'Suspicious activity detected';
+  /**
+   * Formats currency for display
+   */
+  formatCurrency(amount: number): string {
+    return '₹' + amount.toLocaleString('en-IN');
   }
 
-  private describeApprovalReminder(message: string): string {
-    const amountMatch = message.match(/₹[\d,]+/);
-    if (amountMatch) {
-      return `Pending approval: ${amountMatch[0]}`;
-    }
-    return 'Approval reminder - pending approvals';
+  /**
+   * Formats date for display
+   */
+  formatDate(date: Date): string {
+    return new Date(date).toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 
   closeDropdown(): void {

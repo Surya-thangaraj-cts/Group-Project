@@ -46,5 +46,29 @@
       <label class="detail-label">STATUS</label>
       <p class="detail-value status-active">{{ profile.status }}</p>
     </div>
+
+    <!-- Department -->
+    <div class="detail-item">
+      <label class="detail-label">DEPARTMENT</label>
+      <p class="detail-value">{{ profile.department || 'N/A' }}</p>
+    </div>
+
+    <!-- Phone -->
+    <div class="detail-item">
+      <label class="detail-label">PHONE</label>
+      <p class="detail-value">{{ profile.phone || 'N/A' }}</p>
+    </div>
+
+    <!-- Joining Date -->
+    <div class="detail-item">
+      <label class="detail-label">JOINING DATE</label>
+      <p class="detail-value">{{ profile.joinDate ? (profile.joinDate | date:'MMM dd, yyyy') : 'N/A' }}</p>
+    </div>
+
+    <!-- Address -->
+    <div class="detail-item">
+      <label class="detail-label">ADDRESS</label>
+      <p class="detail-value">{{ profile.address || 'N/A' }}</p>
+    </div>
   </div>
 </div>

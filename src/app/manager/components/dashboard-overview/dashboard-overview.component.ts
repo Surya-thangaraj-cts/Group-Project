@@ -14,8 +14,6 @@ export class DashboardOverviewComponent implements OnInit {
   pendingApprovalsCount = 0;
   // Chart data
   accountGrowth: { month: string; newAccounts: number; activeAccounts: number }[] = [];
-  // now holds monthly transaction volumes for the year
-  transactionVolume: { month: string; volume: number }[] = [];
 
   // SVG chart sizes
   lineChartWidth = 600;
@@ -34,9 +32,8 @@ export class DashboardOverviewComponent implements OnInit {
       this.pendingApprovalsCount = approvals.filter(a => a.decision === 'Pending').length;
     });
 
-    // Load account growth and monthly transaction volume from data service
+    // Load account growth from data service
     this.accountGrowth = this.dataService.getAccountGrowthTrends();
-    this.transactionVolume = this.dataService.getMonthlyTransactionVolumes();
 
     // Build chart path for account growth (activeAccounts over months)
     this.buildLineChart();
@@ -75,11 +72,7 @@ export class DashboardOverviewComponent implements OnInit {
   }
 
   getBarChartMax(): number {
-    if (!this.transactionVolume || this.transactionVolume.length === 0) return 1;
-    return Math.max(...this.transactionVolume.map(t => t.volume));
-  }
-
-  formatCurrency(value: number): string {
-    return '₹' + value.toLocaleString();
+    if (!this.accountGrowth || this.accountGrowth.length === 0) return 1;
+    return Math.max(...this.accountGrowth.map(a => a.newAccounts));
   }
 }

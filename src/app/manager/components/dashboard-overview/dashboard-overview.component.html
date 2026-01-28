@@ -25,27 +25,27 @@
       </svg>
     </div>
 
-    <!-- Transaction Volume Bar Chart -->
+    <!-- Account Volume Bar Chart -->
     <div class="chart-card">
-      <h3>Transaction Volume Analysis</h3>
+      <h3>Account Volume Analysis</h3>
       <svg [attr.width]="barChartWidth" [attr.height]="barChartHeight" [attr.viewBox]="`0 0 ${barChartWidth} ${barChartHeight}`" class="bar-chart">
         <rect x="0" y="0" [attr.width]="barChartWidth" [attr.height]="barChartHeight" fill="transparent"></rect>
-        <g *ngFor="let t of transactionVolume; let i = index">
+        <g *ngFor="let t of accountGrowth; let i = index">
           <!-- value label above bar -->
           <text
-            [attr.x]="20 + i * ((barChartWidth - 40) / transactionVolume.length) + (((barChartWidth - 40) / transactionVolume.length) - 12) / 2"
-            [attr.y]="(barChartHeight - 30) - ((t.volume / getBarChartMax()) * (barChartHeight - 60)) - 8"
+            [attr.x]="20 + i * ((barChartWidth - 40) / accountGrowth.length) + (((barChartWidth - 40) / accountGrowth.length) - 12) / 2"
+            [attr.y]="(barChartHeight - 30) - ((t.newAccounts / getBarChartMax()) * (barChartHeight - 60)) - 8"
             text-anchor="middle"
-            class="bar-value-label">{{ formatCurrency(t.volume) }}</text>
+            class="bar-value-label">{{ t.newAccounts }}</text>
           <rect
-            [attr.x]="20 + i * ((barChartWidth - 40) / transactionVolume.length)"
-            [attr.y]="(barChartHeight - 30) - ((t.volume / getBarChartMax()) * (barChartHeight - 60))"
-            [attr.width]="((barChartWidth - 40) / transactionVolume.length) - 12"
-            [attr.height]="((t.volume / getBarChartMax()) * (barChartHeight - 60))"
+            [attr.x]="20 + i * ((barChartWidth - 40) / accountGrowth.length)"
+            [attr.y]="(barChartHeight - 30) - ((t.newAccounts / getBarChartMax()) * (barChartHeight - 60))"
+            [attr.width]="((barChartWidth - 40) / accountGrowth.length) - 12"
+            [attr.height]="((t.newAccounts / getBarChartMax()) * (barChartHeight - 60))"
             fill="#4ac29a">
           </rect>
           <text
-            [attr.x]="20 + i * ((barChartWidth - 40) / transactionVolume.length) + (((barChartWidth - 40) / transactionVolume.length) - 12) / 2"
+            [attr.x]="20 + i * ((barChartWidth - 40) / accountGrowth.length) + (((barChartWidth - 40) / accountGrowth.length) - 12) / 2"
             [attr.y]="barChartHeight - 10"
             text-anchor="middle"
             class="chart-x-label">{{ t.month }}</text>

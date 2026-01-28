@@ -1,112 +1,208 @@
 <div class="reports-container">
-  <h2 class="reports-title">Reports & Analytics</h2>
+  <!-- Header Section -->
+  <div class="reports-header">
+    <h1 class="reports-title">Reports & Analytics</h1>
+    <p class="reports-subtitle">Generate and analyze comprehensive transaction reports with advanced filtering options</p>
+  </div>
 
-  <div class="charts-grid">
-    <!-- Monthly Expenditure Trends -->
-    <div class="chart-card">
-      <h3 class="chart-title">Monthly Expenditure Trends</h3>
-      <div class="chart-wrapper">
-        <div class="bar-chart">
-          <div *ngFor="let item of monthlyData" class="bar-item">
-            <div class="bar-value">₹{{ (item.value / 1000).toFixed(1) }}K</div>
-            <div class="bar-container">
-              <div class="bar" [style.width.%]="(item.value / 30000) * 100"></div>
-            </div>
-            <div class="bar-label">{{ item.name }}</div>
-          </div>
-        </div>
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-danger">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <h3 class="section-title">Generate Report</h3>
+    
+    <div class="filters-grid">
+      <!-- Date Range Column -->
+      <div class="filter-column">
+        <label class="filter-label">From Date</label>
+        <input type="date" class="form-control" [(ngModel)]="filterCriteria.fromDate" (change)="generateReport()">
+
+        <label class="filter-label">To Date</label>
+        <input type="date" class="form-control" [(ngModel)]="filterCriteria.toDate" (change)="generateReport()">
+
+        <label class="filter-label">Month</label>
+        <input type="month" class="form-control" [(ngModel)]="filterCriteria.month" (change)="generateReport()">
+      </div>
+
+      <!-- Amount & Location Column -->
+      <div class="filter-column">
+        <label class="filter-label">Branch</label>
+        <select class="form-control" [(ngModel)]="filterCriteria.branch" (change)="generateReport()">
+          <option value="">Select Branch</option>
+          <option *ngFor="let branch of branches" [value]="branch">{{ branch }}</option>
+        </select>
+
+        <label class="filter-label">Min Amount</label>
+        <input type="number" class="form-control" [(ngModel)]="filterCriteria.minAmount" (change)="generateReport()" placeholder="0">
+
+        <label class="filter-label">Max Amount</label>
+        <input type="number" class="form-control" [(ngModel)]="filterCriteria.maxAmount" (change)="generateReport()" placeholder="999999">
+      </div>
+
+      <!-- Transaction Details Column -->
+      <div class="filter-column">
+        <label class="filter-label">Account Type</label>
+        <select class="form-control" [(ngModel)]="filterCriteria.accountType" (change)="generateReport()">
+          <option value="">Select Account Type</option>
+          <option *ngFor="let type of accountTypes" [value]="type">{{ type }}</option>
+        </select>
+
+        <label class="filter-label">Transaction Type</label>
+        <select class="form-control" [(ngModel)]="filterCriteria.transactionType" (change)="generateReport()">
+          <option value="">Select Transaction Type</option>
+          <option *ngFor="let type of transactionTypes" [value]="type">{{ type }}</option>
+        </select>
+
+        <label class="filter-label">Status</label>
+        <select class="form-control" [(ngModel)]="filterCriteria.status" (change)="generateReport()">
+          <option value="">Select Status</option>
+          <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+        </select>
       </div>
     </div>
 
-    <!-- Account Growth Trends -->
-    <div class="chart-card">
-      <h3 class="chart-title">Account Growth Trends</h3>
-      <div class="chart-wrapper">
-        <div class="growth-chart">
-          <div *ngFor="let item of accountGrowthTrends" class="growth-item">
-            <div class="growth-label">{{ item.month }}</div>
-            <div class="growth-bars">
-              <div class="growth-bar new-accounts" [style.width.%]="(item.newAccounts / 100) * 100" [title]="'New: ' + item.newAccounts"></div>
-              <div class="growth-bar active-accounts" [style.width.%]="(item.activeAccounts / 1000) * 100" [title]="'Active: ' + item.activeAccounts"></div>
-            </div>
-            <div class="growth-stats">
-              <span class="stat new">+{{ item.newAccounts }}</span>
-              <span class="stat active">{{ item.activeAccounts }}</span>
-            </div>
-          </div>
-        </div>
+    <!-- Action Buttons -->
+    <div class="filter-actions">
+      <button class="btn btn-generate" (click)="generateReport()">Generate Report</button>
+      <button class="btn btn-reset" (click)="resetFilters()">Reset Filters</button>
+    </div>
+  </div>
+
+  <!-- Summary Statistics Section -->
+  <div class="summary-section" *ngIf="reportSummary.totalTransactions > 0">
+    <h3 class="section-title">Summary Statistics</h3>
+    
+    <div class="stats-grid">
+      <div class="stat-card stat-total">
+        <div class="stat-emoji">📊</div>
+        <div class="stat-label">Total Transactions</div>
+        <div class="stat-value">{{ reportSummary.totalTransactions }}</div>
+      </div>
+
+      <div class="stat-card stat-amount">
+        <div class="stat-emoji">💰</div>
+        <div class="stat-label">Total Amount</div>
+        <div class="stat-value">{{ formatCurrency(reportSummary.totalAmount) }}</div>
+      </div>
+
+      <div class="stat-card stat-average">
+        <div class="stat-emoji">📈</div>
+        <div class="stat-label">Average Amount</div>
+        <div class="stat-value">{{ formatCurrency(reportSummary.averageAmount) }}</div>
+      </div>
+
+      <div class="stat-card stat-completed">
+        <div class="stat-emoji">✅</div>
+        <div class="stat-label">Completed</div>
+        <div class="stat-value">{{ reportSummary.completedCount }}</div>
+      </div>
+
+      <div class="stat-card stat-pending">
+        <div class="stat-emoji">⏳</div>
+        <div class="stat-label">Pending</div>
+        <div class="stat-value">{{ reportSummary.pendingCount }}</div>
+      </div>
+
+      <div class="stat-card stat-deposit">
+        <div class="stat-emoji">📥</div>
+        <div class="stat-label">Deposits</div>
+        <div class="stat-value">{{ reportSummary.depositCount }}</div>
+      </div>
+
+      <div class="stat-card stat-withdrawal">
+        <div class="stat-emoji">📤</div>
+        <div class="stat-label">Withdrawals</div>
+        <div class="stat-value">{{ reportSummary.withdrawalCount }}</div>
+      </div>
+
+      <div class="stat-card stat-transfer">
+        <div class="stat-emoji">🔄</div>
+        <div class="stat-label">Transfers</div>
+        <div class="stat-value">{{ reportSummary.transferCount }}</div>
       </div>
     </div>
   </div>
 
-  <!-- Transaction Volume Analysis -->
-  <div class="analytics-section">
-    <h3 class="section-title">Transaction Volume Analysis</h3>
-    <div class="volume-grid">
-      <div *ngFor="let item of transactionVolumeAnalysis" class="volume-card">
-        <div class="volume-bracket">{{ item.bracket }}</div>
-        <div class="volume-metrics">
-          <div class="volume-number">{{ item.volume | number }}</div>
-          <div class="volume-bar-container">
-            <div class="volume-bar" [style.width.%]="item.percentage * 10"></div>
-          </div>
-          <div class="volume-percentage">{{ item.percentage }}%</div>
-        </div>
-      </div>
+  <!-- Download Section -->
+  <div class="download-section">
+    <h3 class="section-title">Export Report</h3>
+    <div class="download-buttons">
+      <button class="btn btn-pdf" (click)="downloadPDF()">📄 Download as PDF</button>
+      <button class="btn btn-csv" (click)="downloadAsCSV()">📊 Download as CSV</button>
     </div>
   </div>
 
-  <!-- Reports Summary -->
-  <div class="reports-section">
-    <h3 class="section-title">Recent Reports</h3>
-    <div class="reports-grid">
-      <div *ngFor="let report of reports" class="report-card">
-        <div class="report-header">
-          <div class="report-id">{{ report.reportId }}</div>
-          <div class="report-scope" [ngClass]="'scope-' + report.scope.toLowerCase()">{{ report.scope }}</div>
-        </div>
-        <div class="report-metrics">
-          <div class="metric">
-            <span class="metric-label">Total Transactions</span>
-            <span class="metric-value">{{ report.metrics.totalTransactions | number }}</span>
-          </div>
-          <div class="metric">
-            <span class="metric-label">High Value Count</span>
-            <span class="metric-value">{{ report.metrics.highValueCount | number }}</span>
-          </div>
-          <div class="metric">
-            <span class="metric-label">Growth Rate</span>
-            <span class="metric-value">{{ report.metrics.accountGrowthRate }}%</span>
-          </div>
-        </div>
-        <div class="report-footer">
-          <span class="generated-date">{{ formatDate(report.generatedDate) }}</span>
-        </div>
+  <!-- Transaction Table Section -->
+  <div class="table-section" *ngIf="filteredTransactions.length > 0">
+    <h3 class="section-title">Transaction Details</h3>
+    
+    <div class="table-wrapper">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Account ID</th>
+            <th>Customer Name</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Branch</th>
+            <th>Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of paginatedTransactions" [ngClass]="'row-' + transaction.status.toLowerCase()">
+            <td>{{ transaction.id }}</td>
+            <td>{{ transaction.accountId }}</td>
+            <td>{{ transaction.customerName }}</td>
+            <td>{{ transaction.type }}</td>
+            <td class="amount-cell">{{ formatCurrency(transaction.amount) }}</td>
+            <td>{{ transaction.branch }}</td>
+            <td>{{ formatDate(transaction.date) }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="'status-' + transaction.status.toLowerCase()">
+                {{ transaction.status }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-section">
+      <button class="pagination-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
+        ← Previous
+      </button>
+      
+      <div class="pagination-numbers">
+        <button *ngFor="let page of getPageNumbers()" 
+                class="pagination-number" 
+                [class.active]="page === currentPage"
+                (click)="onPageChange(page)">
+          {{ page }}
+        </button>
       </div>
+      
+      <button class="pagination-btn" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">
+        Next →
+      </button>
+      
+      <span class="pagination-info">Page {{ currentPage }} of {{ totalPages }}</span>
     </div>
   </div>
 
-  <!-- Key Insights -->
-  <div class="insights-grid">
-    <div class="insight-card">
-      <div class="insight-icon">📊</div>
-      <h4>Total Analyzed</h4>
-      <p>8,924 transactions processed</p>
-    </div>
-    <div class="insight-card">
-      <div class="insight-icon">✅</div>
-      <h4>Approval Rate</h4>
-      <p>94.5% successful approvals</p>
-    </div>
-    <div class="insight-card">
-      <div class="insight-icon">⏱️</div>
-      <h4>Avg Processing</h4>
-      <p>2.3 hours per transaction</p>
-    </div>
-    <div class="insight-card">
-      <div class="insight-icon">📈</div>
-      <h4>Growth Rate</h4>
-      <p>12.5% account growth</p>
-    </div>
+  <!-- No Data Message -->
+  <div *ngIf="filteredTransactions.length === 0 && !isLoading" class="no-data">
+    <p>No transactions found. Please adjust your filters and try again.</p>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading transactions...</p>
   </div>
 </div>

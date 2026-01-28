@@ -1,9 +1,12 @@
+/* Transaction Table Component - Bootstrap Optimized CSS */
+
 .transaction-container {
   padding: 40px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
+/* Table header with title and export buttons */
 .table-header {
   display: flex;
   justify-content: space-between;
@@ -34,11 +37,11 @@
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 14px;
+  color: white;
 }
 
 .csv-btn {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
   box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
 }
 
@@ -49,7 +52,6 @@
 
 .excel-btn {
   background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  color: white;
   box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
 }
 
@@ -58,6 +60,7 @@
   box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
 }
 
+/* Filters section */
 .filters-section {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
   border: 1px solid rgba(102, 126, 234, 0.1);
@@ -98,7 +101,7 @@
   border: 2px solid rgba(102, 126, 234, 0.2);
   border-radius: 10px;
   font-size: 14px;
-  font-family: 'Poppins', sans-serif;
+  font-family: inherit;
   background: white;
   color: #333;
   transition: all 0.3s ease;
@@ -131,6 +134,7 @@
   box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
 }
 
+/* Data table */
 .table-wrapper {
   background: white;
   border-radius: 15px;
@@ -184,6 +188,7 @@
   color: #f5576c;
 }
 
+/* Status badges */
 .status-badge {
   display: inline-block;
   padding: 6px 12px;
@@ -209,6 +214,7 @@
   color: #f44336;
 }
 
+/* Pagination */
 .pagination-container {
   display: flex;
   justify-content: space-between;
@@ -261,6 +267,7 @@
   text-align: center;
 }
 
+/* Responsive design */
 @media (max-width: 768px) {
   .transaction-container {
     padding: 20px;

@@ -1,3 +1,4 @@
+/* Layout and spacing handled by Bootstrap grid system */
 .overview-container {
   padding: 100px 40px 40px 40px;
   max-width: 1400px;
@@ -74,6 +75,7 @@
   margin: 0 0 12px 0;
   font-size: 16px;
   color: #10243a;
+  font-weight: 600;
 }
 
 .line-chart, .bar-chart {
@@ -97,6 +99,7 @@
   font-weight: 600;
 }
 
+/* Responsive design */
 @media (max-width: 768px) {
   .overview-container {
     padding: 90px 20px 30px 20px;

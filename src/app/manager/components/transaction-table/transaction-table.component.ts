@@ -43,6 +43,7 @@ export class TransactionTableComponent implements OnInit {
   maxAmount = '';
   startDate: Date | null = null;
   endDate: Date | null = null;
+  viewMode: 'all' | 'highvalue' = 'all';
 
   statuses = ['Approved', 'Pending', 'Rejected'];
   types = ['Deposit', 'Withdrawal', 'Transfer'];
@@ -58,6 +59,11 @@ export class TransactionTableComponent implements OnInit {
 
   applyFilters() {
     this.filteredTransactions = this.transactions.filter(txn => {
+      // Apply high-value filter
+      if (this.viewMode === 'highvalue' && txn.amount <= 100000) {
+        return false;
+      }
+
       const matchesSearch = 
         txn.id.toLowerCase().includes(this.searchText.toLowerCase()) ||
         (txn.accountId && txn.accountId.toLowerCase().includes(this.searchText.toLowerCase()));
@@ -78,6 +84,15 @@ export class TransactionTableComponent implements OnInit {
     });
 
     this.currentPage = 0;
+  }
+
+  toggleHighValueFilter(mode: 'all' | 'highvalue'): void {
+    this.viewMode = mode;
+    this.applyFilters();
+  }
+
+  getHighValueCount(): number {
+    return this.transactions.filter(t => t.amount > 100000).length;
   }
 
   get paginatedTransactions() {

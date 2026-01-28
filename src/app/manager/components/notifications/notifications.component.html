@@ -40,3 +40,170 @@
     <p class="scroll-indicator">↓ Scroll for more</p>
   </div>
 </div>
+
+<!-- NOTIFICATION DETAIL MODAL -->
+<div class="notification-modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+  <div class="notification-modal" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">Notification Details</h2>
+      <button class="modal-close-btn" (click)="closeDetailModal()" title="Close">×</button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-content">
+      <!-- Transaction Detail View -->
+      <div *ngIf="detailData.type === 'transaction' && detailData.transaction" class="detail-section">
+        <div class="detail-header">
+          <h3>Transaction Details</h3>
+          <span class="detail-type-badge transaction">{{ detailData.transaction.type }}</span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Transaction ID</label>
+            <span class="detail-value">{{ detailData.transaction.id }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Account ID</label>
+            <span class="detail-value">{{ detailData.transaction.accountId }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Account Holder</label>
+            <span class="detail-value">{{ detailData.transaction.user }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Amount</label>
+            <span class="detail-value amount">{{ formatCurrency(detailData.transaction.amount) }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Transaction Date</label>
+            <span class="detail-value">{{ formatDate(detailData.transaction.date) }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Recipient</label>
+            <span class="detail-value">{{ detailData.transaction.recipientName }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Transaction Status</label>
+            <span class="detail-value" [ngClass]="'status-' + detailData.transaction.status.toLowerCase()">{{ detailData.transaction.status }}</span>
+          </div>
+        </div>
+
+        <!-- Approval Info -->
+        <div *ngIf="detailData.approval" class="approval-section">
+          <h4>Approval Information</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <label>Approval ID</label>
+              <span class="detail-value">{{ detailData.approval.approvalId }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Reviewer ID</label>
+              <span class="detail-value">{{ detailData.approval.reviewerId }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Decision</label>
+              <span class="detail-value" [ngClass]="'status-' + detailData.approval.decision.toLowerCase()">{{ detailData.approval.decision }}</span>
+            </div>
+            <div class="detail-item">
+              <label>Decision Date</label>
+              <span class="detail-value">{{ formatDate(detailData.approval.approvalDate) }}</span>
+            </div>
+            <div class="detail-item full-width">
+              <label>Comments</label>
+              <span class="detail-value">{{ detailData.approval.comments || 'No comments' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Change Detail View -->
+      <div *ngIf="detailData.type === 'datachange' && detailData.dataChange" class="detail-section">
+        <div class="detail-header">
+          <h3>Account Change Request Details</h3>
+          <span class="detail-type-badge datachange">{{ detailData.dataChange.changeType }}</span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Change ID</label>
+            <span class="detail-value">{{ detailData.dataChange.changeId }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Account ID</label>
+            <span class="detail-value">{{ detailData.dataChange.accountId }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Change Type</label>
+            <span class="detail-value">{{ detailData.dataChange.changeType }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Requested By</label>
+            <span class="detail-value">{{ detailData.dataChange.requestedBy }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Request Date</label>
+            <span class="detail-value">{{ formatDate(detailData.dataChange.requestDate) }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Current Value</label>
+            <span class="detail-value">{{ detailData.dataChange.oldValue }}</span>
+          </div>
+          <div class="detail-item">
+            <label>New Value</label>
+            <span class="detail-value new-value">{{ detailData.dataChange.newValue }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Decision</label>
+            <span class="detail-value" [ngClass]="'status-' + detailData.dataChange.decision.toLowerCase()">{{ detailData.dataChange.decision }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Decision Date</label>
+            <span class="detail-value">{{ formatDate(detailData.dataChange.decisionDate) }}</span>
+          </div>
+          <div class="detail-item full-width">
+            <label>Comments</label>
+            <span class="detail-value">{{ detailData.dataChange.comments || 'No comments' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suspicious Activity Detail View -->
+      <div *ngIf="detailData.type === 'suspicious'" class="detail-section">
+        <div class="detail-header">
+          <h3>Alert Details</h3>
+          <span class="detail-type-badge suspicious">Alert</span>
+        </div>
+
+        <div class="alert-message-box">
+          <p class="alert-message">{{ selectedNotification?.message }}</p>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Notification ID</label>
+            <span class="detail-value">{{ selectedNotification?.notificationId }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Alert Type</label>
+            <span class="detail-value">{{ selectedNotification?.type }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Created Date</label>
+            <span class="detail-value">{{ selectedNotification && formatDate(selectedNotification.createdDate) || 'N/A' }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Status</label>
+            <span class="detail-value" [ngClass]="'status-' + (selectedNotification?.status || '').toLowerCase()">{{ selectedNotification?.status }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button class="close-btn" (click)="closeDetailModal()">Close</button>
+    </div>
+  </div>
+</div>

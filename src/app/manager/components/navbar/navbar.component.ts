@@ -18,7 +18,8 @@ export class NavbarComponent implements OnInit {
 
   navItems = [
     { label: 'Dashboard', icon: 'Dashboard', section: 'dashboard' },
-    { label: 'Approvals', icon: 'Approvals', section: 'approvals' }
+    { label: 'Approvals', icon: 'Approvals', section: 'approvals' },
+    { label: 'Reports', icon: 'Reports', section: 'reports' }
   ];
 
   activeNav = 'Dashboard';

@@ -127,7 +127,7 @@ export class ApprovalsComponent implements OnInit {
       this.approvalType = 'transaction';
       filtered = this.approvals.filter(a => {
         const transaction = this.transactions.find(t => t.id === a.transactionId);
-        return a.decision === 'Pending' && transaction && transaction.amount > 3000;
+        return a.decision === 'Pending' && transaction && transaction.amount > 100000;
       });
     }
 

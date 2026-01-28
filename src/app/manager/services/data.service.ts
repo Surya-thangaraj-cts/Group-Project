@@ -66,35 +66,55 @@ export class DataService {
     pendingApprovals: 42
   };
 
-  private transactions: Transaction[] = [
-    // High-value transactions (> ₹100,000)
-    { id: 'TXN001', accountId: 'ACC1001', user: 'John Smith', date: new Date('2025-12-25'), amount: 125000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 125000 },
-    { id: 'TXN002', accountId: 'ACC1002', user: 'Sarah Johnson', date: new Date('2025-12-24'), amount: 150000, status: 'Pending', type: 'Withdrawal', recipientName: 'Bank Account', recipientAmount: 150000 },
-    { id: 'TXN003', accountId: 'ACC1003', user: 'Mike Davis', date: new Date('2025-12-23'), amount: 200000, status: 'Approved', type: 'Transfer', recipientName: 'ACC2005 - Michael Chen', recipientAmount: 200000 },
-    { id: 'TXN004', accountId: 'ACC1004', user: 'Emily Brown', date: new Date('2025-12-22'), amount: 175000, status: 'Rejected', type: 'Withdrawal', recipientName: 'External Bank', recipientAmount: 175000 },
-    { id: 'TXN005', accountId: 'ACC1005', user: 'James Wilson', date: new Date('2025-12-21'), amount: 225000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 225000 },
-    { id: 'TXN006', accountId: 'ACC1006', user: 'Lisa Anderson', date: new Date('2025-12-20'), amount: 180000, status: 'Pending', type: 'Transfer', recipientName: 'ACC3001 - Finance Dept', recipientAmount: 180000 },
-    { id: 'TXN007', accountId: 'ACC1007', user: 'Robert Taylor', date: new Date('2025-12-19'), amount: 210000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 210000 },
-    { id: 'TXN008', accountId: 'ACC1008', user: 'Jennifer Lee', date: new Date('2025-12-18'), amount: 160000, status: 'Approved', type: 'Withdrawal', recipientName: 'Savings Account', recipientAmount: 160000 },
-    { id: 'TXN009', accountId: 'ACC1009', user: 'David Martinez', date: new Date('2025-12-17'), amount: 190000, status: 'Pending', type: 'Transfer', recipientName: 'ACC2008 - Operations Team', recipientAmount: 190000 },
-    { id: 'TXN010', accountId: 'ACC1010', user: 'Amanda Clark', date: new Date('2025-12-16'), amount: 205000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 205000 },
-    { id: 'TXN011', accountId: 'ACC1011', user: 'Thomas Brown', date: new Date('2025-12-15'), amount: 145000, status: 'Pending', type: 'Transfer', recipientName: 'ACC2010 - Sales Team', recipientAmount: 145000 },
-    { id: 'TXN012', accountId: 'ACC1012', user: 'Rachel White', date: new Date('2025-12-14'), amount: 185000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 185000 },
-    // Regular transactions (≤ ₹100,000)
-    { id: 'TXN013', accountId: 'ACC2001', user: 'Kevin Martin', date: new Date('2025-12-13'), amount: 75000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 75000 },
-    { id: 'TXN014', accountId: 'ACC2002', user: 'Patricia Garcia', date: new Date('2025-12-12'), amount: 85000, status: 'Approved', type: 'Transfer', recipientName: 'ACC3005 - HR Dept', recipientAmount: 85000 },
-    { id: 'TXN015', accountId: 'ACC2003', user: 'Steven Rodriguez', date: new Date('2025-12-11'), amount: 65000, status: 'Approved', type: 'Withdrawal', recipientName: 'Savings Account', recipientAmount: 65000 },
-    { id: 'TXN016', accountId: 'ACC2004', user: 'Donna Lewis', date: new Date('2025-12-10'), amount: 95000, status: 'Pending', type: 'Deposit', recipientName: 'N/A', recipientAmount: 95000 },
-    { id: 'TXN017', accountId: 'ACC2005', user: 'Michael Chen', date: new Date('2025-12-09'), amount: 48000, status: 'Approved', type: 'Transfer', recipientName: 'ACC3010 - IT Dept', recipientAmount: 48000 },
-    { id: 'TXN018', accountId: 'ACC2006', user: 'Karen White', date: new Date('2025-12-08'), amount: 38000, status: 'Approved', type: 'Withdrawal', recipientName: 'External Bank', recipientAmount: 38000 },
-    { id: 'TXN019', accountId: 'ACC2007', user: 'Christopher Hall', date: new Date('2025-12-07'), amount: 72000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 72000 },
-    { id: 'TXN020', accountId: 'ACC2008', user: 'Betty Allen', date: new Date('2025-12-06'), amount: 88000, status: 'Rejected', type: 'Transfer', recipientName: 'ACC3015 - Marketing', recipientAmount: 88000 },
-    { id: 'TXN021', accountId: 'ACC2009', user: 'Daniel Young', date: new Date('2025-12-05'), amount: 55000, status: 'Approved', type: 'Withdrawal', recipientName: 'Personal Account', recipientAmount: 55000 },
-    { id: 'TXN022', accountId: 'ACC2010', user: 'Sandra Hernandez', date: new Date('2025-12-04'), amount: 92000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 92000 },
-    { id: 'TXN023', accountId: 'ACC2011', user: 'Paul King', date: new Date('2025-12-03'), amount: 45000, status: 'Pending', type: 'Transfer', recipientName: 'ACC3020 - Sales', recipientAmount: 45000 },
-    { id: 'TXN024', accountId: 'ACC2012', user: 'Margaret Wright', date: new Date('2025-12-02'), amount: 78000, status: 'Approved', type: 'Withdrawal', recipientName: 'Savings Account', recipientAmount: 78000 },
-    { id: 'TXN025', accountId: 'ACC2013', user: 'Charles Anderson', date: new Date('2025-12-01'), amount: 52000, status: 'Approved', type: 'Deposit', recipientName: 'N/A', recipientAmount: 52000 }
-  ];
+  private transactions: Transaction[] = [];
+
+  constructor() {
+    this.generateComprehensiveTransactions();
+  }
+
+  private generateComprehensiveTransactions(): void {
+    const customerNames = ['John Smith', 'Sarah Johnson', 'Michael Brown', 'Emily Davis', 'Robert Wilson', 
+                          'Jessica Miller', 'David Anderson', 'Lisa Taylor', 'James Thomas', 'Maria Garcia',
+                          'Christopher Lee', 'Jennifer Martinez', 'Daniel Rodriguez', 'Patricia Lee', 'Matthew White'];
+    
+    const accounts = ['ACC1001', 'ACC1002', 'ACC1003', 'ACC1004', 'ACC1005', 'ACC1006', 'ACC1007', 'ACC1008', 'ACC1009', 'ACC1010'];
+    const transactionTypes: Array<'Deposit' | 'Withdrawal' | 'Transfer'> = ['Deposit', 'Withdrawal', 'Transfer'];
+    const statuses: Array<'Approved' | 'Pending' | 'Rejected'> = ['Approved', 'Pending', 'Rejected'];
+
+    // Generate 150 comprehensive transactions
+    for (let i = 1; i <= 150; i++) {
+      const randomDay = Math.floor(Math.random() * 28) + 1;
+      const randomMonth = Math.floor(Math.random() * 12);
+      const randomYear = 2025;
+      
+      const date = new Date(randomYear, randomMonth, randomDay);
+      const transactionType = transactionTypes[Math.floor(Math.random() * transactionTypes.length)];
+      const status = statuses[Math.floor(Math.random() * statuses.length)];
+      const customerName = customerNames[Math.floor(Math.random() * customerNames.length)];
+      const accountId = accounts[Math.floor(Math.random() * accounts.length)];
+      
+      let amount: number;
+      if (transactionType === 'Deposit') {
+        amount = Math.floor(Math.random() * 500000) + 1000;
+      } else if (transactionType === 'Withdrawal') {
+        amount = Math.floor(Math.random() * 100000) + 500;
+      } else {
+        amount = Math.floor(Math.random() * 250000) + 1000;
+      }
+
+      this.transactions.push({
+        id: `TXN${String(i).padStart(6, '0')}`,
+        accountId: accountId,
+        user: customerName,
+        date: date,
+        amount: amount,
+        status: status,
+        type: transactionType,
+        recipientName: customerName,
+        recipientAmount: amount
+      });
+    }
+  }
 
   private monthlyData = [
     { month: 'Jan', expenditure: 15000, approvals: 120 },
@@ -188,118 +208,183 @@ export class DataService {
   ];
 
   private notifications: Notification[] = [
+    // PENDING HIGH-VALUE TRANSACTION NOTIFICATIONS
     {
       notificationId: 'NOT001',
       userId: 'USER1001',
-      type: 'SuspiciousActivity',
-      message: 'High-value transaction detected: ₹210,000 transfer from ACC1007 to ACC2015. Please review TXN007.',
+      type: 'ApprovalReminder',
+      message: 'Transaction TXN000001 (High-value Deposit ₹125,500) requires your approval. Account: ACC1001',
       status: 'Unread',
-      createdDate: new Date('2025-12-30T14:30:00')
+      createdDate: new Date('2025-12-30T10:30:00')
     },
     {
       notificationId: 'NOT002',
       userId: 'USER1002',
       type: 'ApprovalReminder',
-      message: 'Transaction TXN006 (₹180,000) is pending your approval. Account: ACC1006',
+      message: 'Transaction TXN000002 (High-value Transfer ₹156,000) awaits approval. Account: ACC1002',
       status: 'Unread',
-      createdDate: new Date('2025-12-30T13:15:00')
+      createdDate: new Date('2025-12-30T09:45:00')
     },
     {
       notificationId: 'NOT003',
-      userId: 'USER1001',
+      userId: 'USER1003',
       type: 'ApprovalReminder',
-      message: 'Account change request DCH001 for ACC1001 (Name change) awaits your approval.',
+      message: 'Account change request DCH001 for ACC1001 (Name change: John Smith → John Robert Smith) awaits approval.',
       status: 'Unread',
-      createdDate: new Date('2025-12-30T12:45:00')
+      createdDate: new Date('2025-12-30T08:30:00')
     },
     {
       notificationId: 'NOT004',
-      userId: 'USER1003',
-      type: 'SuspiciousActivity',
-      message: 'High-value withdrawal detected: ₹210,000 from ACC1007. Verification required.',
+      userId: 'USER1001',
+      type: 'ApprovalReminder',
+      message: 'Transaction TXN000005 (High-value Withdrawal ₹98,750) requires approval. Account: ACC1005',
       status: 'Unread',
-      createdDate: new Date('2025-12-29T16:20:00')
+      createdDate: new Date('2025-12-30T07:15:00')
     },
     {
       notificationId: 'NOT005',
       userId: 'USER1002',
       type: 'ApprovalReminder',
-      message: 'Transaction TXN009 (₹190,000) requires your approval. Account: ACC1009',
+      message: 'Transaction TXN000007 (High-value Deposit ₹210,000) pending your review. Account: ACC1007',
       status: 'Unread',
-      createdDate: new Date('2025-12-29T15:05:00')
+      createdDate: new Date('2025-12-30T06:00:00')
     },
+    
+    // DATA CHANGE NOTIFICATIONS
     {
       notificationId: 'NOT006',
       userId: 'USER1001',
       type: 'ApprovalReminder',
-      message: 'Account change request DCH002 for ACC1002 (Address update) is pending review.',
+      message: 'Account change request DCH002 for ACC1002 (Address update) is pending review and requires approval.',
       status: 'Unread',
-      createdDate: new Date('2025-12-29T14:30:00')
+      createdDate: new Date('2025-12-29T17:45:00')
     },
     {
       notificationId: 'NOT007',
-      userId: 'USER1004',
-      type: 'SuspiciousActivity',
-      message: 'Unusual pattern detected: Multiple high-value transactions from ACC1003. Flagged for review.',
+      userId: 'USER1003',
+      type: 'ApprovalReminder',
+      message: 'Account change request DCH003 for ACC1003 (Email update: michael.d@email.com → michael.davis.business@email.com) requires decision.',
       status: 'Unread',
-      createdDate: new Date('2025-12-29T13:45:00')
+      createdDate: new Date('2025-12-29T16:30:00')
     },
     {
       notificationId: 'NOT008',
       userId: 'USER1002',
       type: 'ApprovalReminder',
-      message: 'Transaction TXN002 (₹150,000) awaits approval. Account: ACC1002',
-      status: 'Read',
-      createdDate: new Date('2025-12-29T11:05:00')
+      message: 'Account change request DCH004 for ACC1004 (Phone number update) is awaiting approval.',
+      status: 'Unread',
+      createdDate: new Date('2025-12-29T15:15:00')
     },
+    
+    // SUSPICIOUS ACTIVITY NOTIFICATIONS
     {
       notificationId: 'NOT009',
       userId: 'USER1001',
-      type: 'ApprovalReminder',
-      message: 'Account change request DCH003 for ACC1003 (Email update) requires your decision.',
-      status: 'Read',
-      createdDate: new Date('2025-12-28T15:20:00')
+      type: 'SuspiciousActivity',
+      message: 'High-value deposit detected: ₹225,000 to ACC1005 (TXN000010). Multiple verifications required.',
+      status: 'Unread',
+      createdDate: new Date('2025-12-29T14:00:00')
     },
     {
       notificationId: 'NOT010',
+      userId: 'USER1004',
+      type: 'SuspiciousActivity',
+      message: 'Unusual pattern detected: Multiple high-value transfers from ACC1003 within 2 hours. Flagged for immediate review.',
+      status: 'Unread',
+      createdDate: new Date('2025-12-29T13:30:00')
+    },
+    
+    // APPROVED TRANSACTION NOTIFICATIONS
+    {
+      notificationId: 'NOT011',
+      userId: 'USER1001',
+      type: 'ApprovalReminder',
+      message: 'Transaction TXN000015 (Approved) - High-value deposit ₹180,500 approved after identity confirmation.',
+      status: 'Read',
+      createdDate: new Date('2025-12-29T11:00:00')
+    },
+    {
+      notificationId: 'NOT012',
+      userId: 'USER1002',
+      type: 'ApprovalReminder',
+      message: 'Transaction TXN000018 (Approved) - Transfer of ₹145,000 approved with fraud check clearance.',
+      status: 'Read',
+      createdDate: new Date('2025-12-28T16:30:00')
+    },
+    {
+      notificationId: 'NOT013',
+      userId: 'USER1001',
+      type: 'ApprovalReminder',
+      message: 'Account change request DCH006 (Approved) - Address change verified with government ID. Decision finalized.',
+      status: 'Read',
+      createdDate: new Date('2025-12-28T14:00:00')
+    },
+    
+    // REJECTED TRANSACTION NOTIFICATIONS
+    {
+      notificationId: 'NOT014',
       userId: 'USER1003',
       type: 'SuspiciousActivity',
-      message: 'High-value deposit detected: ₹225,000 to ACC1005. Verification in progress.',
+      message: 'Transaction TXN000035 (Rejected) - High-value withdrawal flagged for suspicious activity patterns.',
       status: 'Read',
-      createdDate: new Date('2025-12-28T10:30:00')
+      createdDate: new Date('2025-12-28T13:15:00')
+    },
+    {
+      notificationId: 'NOT015',
+      userId: 'USER1002',
+      type: 'ApprovalReminder',
+      message: 'Account change request DCH010 (Rejected) - Address change could not be verified with postal database.',
+      status: 'Read',
+      createdDate: new Date('2025-12-27T15:00:00')
     }
   ];
   private notificationsSubject = new BehaviorSubject<Notification[]>(this.notifications);
   private unreadCountSubject = new BehaviorSubject<number>(this.getUnreadNotificationsCountInternal());
 
+  // High-value transaction IDs for consistent linking (amounts > 100,000)
+  private highValueTransactionIds = [
+    'TXN000001', 'TXN000002', 'TXN000005', 'TXN000007', 'TXN000010',
+    'TXN000015', 'TXN000018', 'TXN000022', 'TXN000028', 'TXN000031',
+    'TXN000035', 'TXN000042', 'TXN000048', 'TXN000055', 'TXN000062'
+  ];
+
   private approvals: Approval[] = [
-    { approvalId: 'APR001', transactionId: 'TXN002', reviewerId: 'REV001', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T10:00:00') },
-    { approvalId: 'APR002', transactionId: 'TXN006', reviewerId: 'REV001', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T09:30:00') },
-    { approvalId: 'APR003', transactionId: 'TXN009', reviewerId: 'REV002', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T09:15:00') },
-    { approvalId: 'APR004', transactionId: 'TXN011', reviewerId: 'REV003', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T08:45:00') },
-    { approvalId: 'APR005', transactionId: 'TXN007', reviewerId: 'REV001', decision: 'Approved', comments: 'High-value deposit ₹210,000 approved after verification', approvalDate: new Date('2025-12-29T14:20:00') },
-    { approvalId: 'APR006', transactionId: 'TXN001', reviewerId: 'REV002', decision: 'Approved', comments: 'High-value deposit ₹125,000 verified and accepted', approvalDate: new Date('2025-12-28T16:45:00') },
-    { approvalId: 'APR007', transactionId: 'TXN005', reviewerId: 'REV001', decision: 'Approved', comments: 'High-value deposit ₹225,000 verified, account holder confirmed', approvalDate: new Date('2025-12-27T11:30:00') },
-    { approvalId: 'APR008', transactionId: 'TXN003', reviewerId: 'REV002', decision: 'Approved', comments: 'Transfer ₹200,000 approved after fraud checks', approvalDate: new Date('2025-12-27T10:15:00') },
-    { approvalId: 'APR009', transactionId: 'TXN004', reviewerId: 'REV003', decision: 'Rejected', comments: 'High-value withdrawal ₹175,000 rejected - Insufficient account balance', approvalDate: new Date('2025-12-28T13:10:00') },
-    { approvalId: 'APR010', transactionId: 'TXN008', reviewerId: 'REV001', decision: 'Rejected', comments: 'High-value withdrawal ₹160,000 failed fraud detection checks', approvalDate: new Date('2025-12-27T09:45:00') },
-    { approvalId: 'APR011', transactionId: 'TXN010', reviewerId: 'REV002', decision: 'Approved', comments: 'High-value deposit ₹205,000 approved', approvalDate: new Date('2025-12-26T14:30:00') },
-    { approvalId: 'APR012', transactionId: 'TXN012', reviewerId: 'REV001', decision: 'Approved', comments: 'High-value deposit ₹185,000 verified', approvalDate: new Date('2025-12-25T11:00:00') }
+    // PENDING APPROVALS - High-Value Transactions
+    { approvalId: 'APR001', transactionId: 'TXN000001', reviewerId: 'REV001', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T10:00:00') },
+    { approvalId: 'APR002', transactionId: 'TXN000002', reviewerId: 'REV002', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T09:30:00') },
+    { approvalId: 'APR003', transactionId: 'TXN000005', reviewerId: 'REV003', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T09:15:00') },
+    { approvalId: 'APR004', transactionId: 'TXN000007', reviewerId: 'REV001', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T08:45:00') },
+    { approvalId: 'APR005', transactionId: 'TXN000010', reviewerId: 'REV002', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T08:15:00') },
+    
+    // APPROVED APPROVALS - High-Value Transactions
+    { approvalId: 'APR006', transactionId: 'TXN000015', reviewerId: 'REV001', decision: 'Approved', comments: 'High-value deposit verified and approved after identity confirmation', approvalDate: new Date('2025-12-29T14:20:00') },
+    { approvalId: 'APR007', transactionId: 'TXN000018', reviewerId: 'REV002', decision: 'Approved', comments: 'Transfer approved after fraud check clearance', approvalDate: new Date('2025-12-28T16:45:00') },
+    { approvalId: 'APR008', transactionId: 'TXN000022', reviewerId: 'REV003', decision: 'Approved', comments: 'High-value deposit approved with account holder confirmation', approvalDate: new Date('2025-12-27T11:30:00') },
+    { approvalId: 'APR009', transactionId: 'TXN000028', reviewerId: 'REV001', decision: 'Approved', comments: 'Large withdrawal approved after verification of beneficiary details', approvalDate: new Date('2025-12-27T10:15:00') },
+    { approvalId: 'APR010', transactionId: 'TXN000031', reviewerId: 'REV002', decision: 'Approved', comments: 'High-value transfer approved with compliance checks complete', approvalDate: new Date('2025-12-26T14:30:00') },
+    
+    // REJECTED APPROVALS - High-Value Transactions
+    { approvalId: 'APR011', transactionId: 'TXN000035', reviewerId: 'REV003', decision: 'Rejected', comments: 'Rejected due to suspicious activity flags and KYC verification failure', approvalDate: new Date('2025-12-28T13:10:00') },
+    { approvalId: 'APR012', transactionId: 'TXN000042', reviewerId: 'REV001', decision: 'Rejected', comments: 'Rejected - Account has insufficient balance for this transaction', approvalDate: new Date('2025-12-27T09:45:00') }
   ];
 
   private dataChangeApprovals: DataChangeApproval[] = [
+    // PENDING DATA CHANGES
     { changeId: 'DCH001', accountId: 'ACC1001', changeType: 'Name', oldValue: 'John Smith', newValue: 'John Robert Smith', requestedBy: 'ACC1001', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T08:00:00'), decisionDate: new Date('2025-12-30T08:00:00') },
-    { changeId: 'DCH002', accountId: 'ACC1002', changeType: 'Address', oldValue: '123 Main St', newValue: '456 Oak Avenue', requestedBy: 'ACC1002', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T07:30:00'), decisionDate: new Date('2025-12-30T07:30:00') },
-    { changeId: 'DCH003', accountId: 'ACC1003', changeType: 'Email', oldValue: 'mike.d@email.com', newValue: 'michael.davis@email.com', requestedBy: 'ACC1003', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T06:45:00'), decisionDate: new Date('2025-12-30T06:45:00') },
-    { changeId: 'DCH004', accountId: 'ACC1004', changeType: 'Phone', oldValue: '555-1234', newValue: '555-5678', requestedBy: 'ACC1004', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T06:00:00'), decisionDate: new Date('2025-12-30T06:00:00') },
-    { changeId: 'DCH005', accountId: 'ACC1005', changeType: 'Email', oldValue: 'james.w@email.com', newValue: 'james.m.wilson@email.com', requestedBy: 'ACC1005', decision: 'Pending', comments: '', requestDate: new Date('2025-12-29T17:15:00'), decisionDate: new Date('2025-12-29T17:15:00') },
-    { changeId: 'DCH006', accountId: 'ACC1006', changeType: 'Phone', oldValue: '555-6789', newValue: '555-9012', requestedBy: 'ACC1006', decision: 'Pending', comments: '', requestDate: new Date('2025-12-29T16:30:00'), decisionDate: new Date('2025-12-29T16:30:00') },
-    { changeId: 'DCH007', accountId: 'ACC1007', changeType: 'Address', oldValue: '100 North St', newValue: '200 South Ave', requestedBy: 'ACC1007', decision: 'Approved', comments: 'Address change verified with government ID', decisionDate: new Date('2025-12-29T15:45:00'), requestDate: new Date('2025-12-29T10:00:00') },
-    { changeId: 'DCH008', accountId: 'ACC1008', changeType: 'Name', oldValue: 'Jennifer Lee', newValue: 'Jennifer Marie Lee', requestedBy: 'ACC1008', decision: 'Approved', comments: 'Legal name change documentation verified', decisionDate: new Date('2025-12-28T14:20:00'), requestDate: new Date('2025-12-28T09:00:00') },
-    { changeId: 'DCH009', accountId: 'ACC1009', changeType: 'Email', oldValue: 'david.m@email.com', newValue: 'david.martinez.ops@email.com', requestedBy: 'ACC1009', decision: 'Approved', comments: 'Email change confirmed', decisionDate: new Date('2025-12-27T16:10:00'), requestDate: new Date('2025-12-27T11:00:00') },
-    { changeId: 'DCH010', accountId: 'ACC1010', changeType: 'Phone', oldValue: '555-3456', newValue: '555-7890', requestedBy: 'ACC1010', decision: 'Rejected', comments: 'Phone number format invalid', decisionDate: new Date('2025-12-27T14:30:00'), requestDate: new Date('2025-12-27T09:15:00') },
-    { changeId: 'DCH011', accountId: 'ACC1011', changeType: 'Address', oldValue: '300 West Ln', newValue: '400 East Blvd', requestedBy: 'ACC1011', decision: 'Rejected', comments: 'Address could not be verified', decisionDate: new Date('2025-12-26T15:45:00'), requestDate: new Date('2025-12-26T10:30:00') },
-    { changeId: 'DCH012', accountId: 'ACC1012', changeType: 'Name', oldValue: 'Rachel White', newValue: 'Rachel Elizabeth White', requestedBy: 'ACC1012', decision: 'Approved', comments: 'Name change verified', decisionDate: new Date('2025-12-25T13:00:00'), requestDate: new Date('2025-12-25T08:00:00') }
+    { changeId: 'DCH002', accountId: 'ACC1002', changeType: 'Address', oldValue: '123 Main Street, New York, NY 10001', newValue: '456 Oak Avenue, Brooklyn, NY 11201', requestedBy: 'ACC1002', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T07:30:00'), decisionDate: new Date('2025-12-30T07:30:00') },
+    { changeId: 'DCH003', accountId: 'ACC1003', changeType: 'Email', oldValue: 'michael.d@email.com', newValue: 'michael.davis.business@email.com', requestedBy: 'ACC1003', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T06:45:00'), decisionDate: new Date('2025-12-30T06:45:00') },
+    { changeId: 'DCH004', accountId: 'ACC1004', changeType: 'Phone', oldValue: '+1-555-0001', newValue: '+1-555-0004', requestedBy: 'ACC1004', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T06:00:00'), decisionDate: new Date('2025-12-30T06:00:00') },
+    { changeId: 'DCH005', accountId: 'ACC1005', changeType: 'Email', oldValue: 'james.wilson@email.com', newValue: 'james.michael.wilson@email.com', requestedBy: 'ACC1005', decision: 'Pending', comments: '', requestDate: new Date('2025-12-29T17:15:00'), decisionDate: new Date('2025-12-29T17:15:00') },
+    
+    // APPROVED DATA CHANGES
+    { changeId: 'DCH006', accountId: 'ACC1006', changeType: 'Address', oldValue: '789 Elm Street, Queens, NY 11354', newValue: '321 Park Lane, Manhattan, NY 10019', requestedBy: 'ACC1006', decision: 'Approved', comments: 'Address change verified with government-issued ID and utility bill', decisionDate: new Date('2025-12-29T15:45:00'), requestDate: new Date('2025-12-29T10:00:00') },
+    { changeId: 'DCH007', accountId: 'ACC1007', changeType: 'Name', oldValue: 'Jennifer Lee', newValue: 'Jennifer Marie Lee-Anderson', requestedBy: 'ACC1007', decision: 'Approved', comments: 'Legal marriage certificate provided and verified successfully', decisionDate: new Date('2025-12-28T14:20:00'), requestDate: new Date('2025-12-28T09:00:00') },
+    { changeId: 'DCH008', accountId: 'ACC1008', changeType: 'Email', oldValue: 'david.martinez@email.com', newValue: 'david.m.martinez.operations@email.com', requestedBy: 'ACC1008', decision: 'Approved', comments: 'Email change verified through OTP confirmation and identity check', decisionDate: new Date('2025-12-27T16:10:00'), requestDate: new Date('2025-12-27T11:00:00') },
+    { changeId: 'DCH009', accountId: 'ACC1009', changeType: 'Phone', oldValue: '+1-555-0005', newValue: '+1-555-0009', requestedBy: 'ACC1009', decision: 'Approved', comments: 'Phone number updated with SMS and call verification completed', decisionDate: new Date('2025-12-26T13:35:00'), requestDate: new Date('2025-12-26T10:30:00') },
+    
+    // REJECTED DATA CHANGES
+    { changeId: 'DCH010', accountId: 'ACC1010', changeType: 'Address', oldValue: '555 Beach Avenue, Brooklyn, NY 11218', newValue: 'Invalid Address Format - (incomplete)', requestedBy: 'ACC1010', decision: 'Rejected', comments: 'Rejected - Address format incomplete and could not be verified with postal database', decisionDate: new Date('2025-12-27T14:30:00'), requestDate: new Date('2025-12-27T09:15:00') },
+    { changeId: 'DCH011', accountId: 'ACC1011', changeType: 'Email', oldValue: 'robert.johnson@email.com', newValue: 'robert.johnson99999@email.com', requestedBy: 'ACC1011', decision: 'Rejected', comments: 'Rejected - Email format suspicious and OTP verification failed after 3 attempts', decisionDate: new Date('2025-12-26T15:45:00'), requestDate: new Date('2025-12-26T10:30:00') }
   ];
 
   getDashboardStats() {
@@ -319,15 +404,66 @@ export class DataService {
   }
 
   getAccountGrowthTrends() {
-    return this.accountGrowthTrends;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const accountsByMonth = Array(12).fill(0);
+
+    // Count transactions per month
+    this.transactions.forEach(txn => {
+      const monthIndex = txn.date.getMonth();
+      accountsByMonth[monthIndex]++;
+    });
+
+    // Calculate progressive account growth based on transaction distribution
+    return months.map((month, index) => {
+      const baseAccounts = 500 + (index * 80);
+      const newAccountsThisMonth = Math.floor(accountsByMonth[index] * 0.15) + 30;
+      return {
+        month,
+        newAccounts: newAccountsThisMonth,
+        activeAccounts: baseAccounts
+      };
+    });
   }
 
   getTransactionVolumeAnalysis() {
-    return this.transactionVolumeAnalysis;
+    const brackets = [
+      { bracket: 'Under ₹50,000', min: 0, max: 50000 },
+      { bracket: '₹50K - ₹100K', min: 50000, max: 100000 },
+      { bracket: '₹100K - ₹150K', min: 100000, max: 150000 },
+      { bracket: '₹150K - ₹200K', min: 150000, max: 200000 },
+      { bracket: 'Over ₹200K', min: 200000, max: Infinity }
+    ];
+
+    const total = this.transactions.length;
+    const analysis = brackets.map(b => {
+      const count = this.transactions.filter(t => t.amount >= b.min && t.amount < b.max).length;
+      return {
+        bracket: b.bracket,
+        volume: count,
+        percentage: Math.round((count / total) * 100)
+      };
+    });
+
+    return analysis;
   }
 
   getMonthlyTransactionVolumes() {
-    return this.monthlyTransactionVolumes;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyVolumes = Array(12).fill(0);
+    const monthlyAmounts = Array(12).fill(0);
+
+    // Calculate transaction counts and amounts per month
+    this.transactions.forEach(txn => {
+      const monthIndex = txn.date.getMonth();
+      monthlyVolumes[monthIndex]++;
+      monthlyAmounts[monthIndex] += txn.amount;
+    });
+
+    return months.map((month, index) => ({
+      month,
+      volume: monthlyVolumes[index],
+      expenditure: Math.round(monthlyAmounts[index] / 1000) // in thousands
+    }));
   }
 
   getReports(): Observable<Report[]> {
@@ -403,6 +539,7 @@ export class DataService {
 
   getHighValueTransactions(): Approval[] {
     return this.approvals.filter(a => {
+      if (a.decision !== 'Pending') { return false; }
       const transaction = this.transactions.find(t => t.id === a.transactionId);
       return transaction && transaction.amount > 100000;
     });
@@ -444,6 +581,69 @@ export class DataService {
     }
   }
 
+  approveHighValueTransaction(transactionId: string, comments: string): boolean {
+    const approval = this.approvals.find(a => a.transactionId === transactionId);
+    if (approval) {
+      approval.decision = 'Approved';
+      approval.comments = comments;
+      approval.approvalDate = new Date();
+      
+      // Update transaction status
+      const transaction = this.transactions.find(t => t.id === transactionId);
+      if (transaction) {
+        transaction.status = 'Approved';
+      }
+      
+      // Add notification
+      this.createHighValueApprovalNotification(transactionId, 'Approved', comments);
+      this.notificationsSubject.next([...this.notifications]);
+      this.unreadCountSubject.next(this.getUnreadNotificationsCountInternal());
+      
+      return true;
+    }
+    return false;
+  }
+
+  rejectHighValueTransaction(transactionId: string, comments: string): boolean {
+    const approval = this.approvals.find(a => a.transactionId === transactionId);
+    if (approval) {
+      approval.decision = 'Rejected';
+      approval.comments = comments;
+      approval.approvalDate = new Date();
+      
+      // Update transaction status
+      const transaction = this.transactions.find(t => t.id === transactionId);
+      if (transaction) {
+        transaction.status = 'Rejected';
+      }
+      
+      // Add notification
+      this.createHighValueApprovalNotification(transactionId, 'Rejected', comments);
+      this.notificationsSubject.next([...this.notifications]);
+      this.unreadCountSubject.next(this.getUnreadNotificationsCountInternal());
+      
+      return true;
+    }
+    return false;
+  }
+
+  private createHighValueApprovalNotification(transactionId: string, decision: string, comments: string): void {
+    const transaction = this.transactions.find(t => t.id === transactionId);
+    if (!transaction) return;
+
+    const notificationId = `NOT${String(this.notifications.length + 1).padStart(3, '0')}`;
+    const message = `High-value transaction ${transactionId} (₹${transaction.amount.toLocaleString('en-IN')}) has been ${decision.toLowerCase()}. ${comments ? 'Reason: ' + comments : ''}`;
+    
+    this.notifications.push({
+      notificationId,
+      userId: 'MANAGER001',
+      type: 'ApprovalReminder',
+      message,
+      status: 'Unread',
+      createdDate: new Date()
+    });
+  }
+
   getApprovalWithTransaction(approvalId: string): { approval: Approval; transaction: Transaction } | undefined {
     const approval = this.approvals.find(a => a.approvalId === approvalId);
     if (approval) {
@@ -453,6 +653,46 @@ export class DataService {
       }
     }
     return undefined;
+  }
+
+  // Methods to fetch notification details
+  getTransactionById(transactionId: string): Transaction | undefined {
+    return this.transactions.find(t => t.id === transactionId);
+  }
+
+  getApprovalByTransactionId(transactionId: string): Approval | undefined {
+    return this.approvals.find(a => a.transactionId === transactionId);
+  }
+
+  getDataChangeApprovalByChangeId(changeId: string): DataChangeApproval | undefined {
+    return this.dataChangeApprovals.find(d => d.changeId === changeId);
+  }
+
+  getNotificationById(notificationId: string): Notification | undefined {
+    return this.notifications.find(n => n.notificationId === notificationId);
+  }
+
+  /**
+   * Extract IDs from notification message
+   * Returns { type, key, value } to identify what should be displayed
+   */
+  extractNotificationDetailsFromMessage(message: string): { type: 'transaction' | 'datachange' | 'suspicious', key: string, value: string } {
+    const txnMatch = message.match(/TXN\d+/);
+    if (txnMatch) {
+      return { type: 'transaction', key: 'transactionId', value: txnMatch[0] };
+    }
+
+    const dchMatch = message.match(/DCH\d+/);
+    if (dchMatch) {
+      return { type: 'datachange', key: 'changeId', value: dchMatch[0] };
+    }
+
+    const accMatch = message.match(/ACC\d+/);
+    if (accMatch) {
+      return { type: 'suspicious', key: 'accountId', value: accMatch[0] };
+    }
+
+    return { type: 'suspicious', key: '', value: '' };
   }
 
   // Data Change Approval Methods
