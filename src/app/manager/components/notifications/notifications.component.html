@@ -1,56 +1,42 @@
-<p>notifications works!</p>
-<div class="notifications-container">
-  <div class="notifications-header">
-    <h2 class="notifications-title">Notifications & Alerts</h2>
-    <div class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount }} New</div>
+<div class="notifications-dropdown">
+  <!-- Dropdown Header -->
+  <div class="dropdown-header">
+    <h3 class="dropdown-title">Notifications</h3>
+    <button class="close-btn" (click)="closeDropdown()" title="Close">×</button>
   </div>
 
-  <div class="notifications-list" *ngIf="notifications.length > 0; else noNotifications">
-    <div
-      *ngFor="let notification of notifications"
+  <!-- Notifications List -->
+  <div class="notifications-list">
+    <div *ngIf="notifications.length === 0" class="no-notifications">
+      <span class="empty-icon">🔔</span>
+      <p>No notifications</p>
+    </div>
+
+    <div 
+      *ngFor="let notification of notifications" 
       class="notification-item"
-      [ngClass]="{
-        'unread': notification.status === 'Unread',
-        'suspicious': notification.type === 'SuspiciousActivity',
-        'approval': notification.type === 'ApprovalReminder'
-      }"
-      (click)="handleNotificationClick(notification)"
-    >
-      <div class="notification-icon">{{ getNotificationIcon(notification.type) }}</div>
+      [class.unread]="notification.status === 'Unread'"
+      (click)="handleNotificationClick(notification)">
       
-      <div class="notification-content">
-        <div class="notification-header">
-          <div class="notification-type">
-            {{ notification.type === 'SuspiciousActivity' ? 'Suspicious Activity' : 'Approval Reminder' }}
-          </div>
-          <div class="notification-date">{{ formatDate(notification.createdDate) }}</div>
-        </div>
-        <p class="notification-message">{{ notification.message }}</p>
+      <!-- Notification Icon -->
+      <div class="notification-icon" [ngClass]="notification.type.toLowerCase()">
+        <span *ngIf="notification.type === 'ApprovalReminder'">✓</span>
+        <span *ngIf="notification.type === 'SuspiciousActivity'">⚠</span>
       </div>
 
-      <div class="notification-actions">
-        <button
-          *ngIf="notification.status === 'Unread'"
-          class="btn-mark-read"
-          (click)="markAsRead(notification.notificationId)"
-          title="Mark as read"
-        >
-          Done
-        </button>
-        <button
-          class="btn-delete"
-          (click)="deleteNotification(notification.notificationId)"
-          title="Delete notification"
-        >
-          Dismiss
-        </button>
+      <!-- Notification Content -->
+      <div class="notification-content">
+        <p class="notification-description">{{ getNotificationDescription(notification) }}</p>
+        <p class="notification-time">{{ notification.createdDate | date: 'short' }}</p>
       </div>
+
+      <!-- Unread Indicator -->
+      <div class="unread-indicator" *ngIf="notification.status === 'Unread'"></div>
     </div>
   </div>
 
-  <ng-template #noNotifications>
-    <div class="no-notifications">
-      <p>You're all caught up! No notifications at the moment.</p>
-    </div>
-  </ng-template>
+  <!-- Dropdown Footer -->
+  <div class="dropdown-footer">
+    <p class="scroll-indicator">↓ Scroll for more</p>
+  </div>
 </div>

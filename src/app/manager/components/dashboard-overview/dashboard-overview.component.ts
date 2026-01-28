@@ -80,6 +80,6 @@ export class DashboardOverviewComponent implements OnInit {
   }
 
   formatCurrency(value: number): string {
-    return '$' + value.toLocaleString();
+    return '₹' + value.toLocaleString();
   }
 }

@@ -133,7 +133,7 @@ export class TransactionTableComponent implements OnInit {
   }
 
   formatAmount(amount: number): string {
-    return '$' + amount.toLocaleString();
+    return '₹' + amount.toLocaleString();
   }
 
   resetFilters() {

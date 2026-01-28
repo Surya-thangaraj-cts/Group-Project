@@ -4,12 +4,12 @@ import { RouterModule, Router } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { ProfileService } from '../../services/profile.service';
 import { AuthService } from '../../../auth/auth.service';
-import { NotificationsDropdownComponent } from '../notifications-dropdown/notifications-dropdown.component';
+import { NotificationsComponent } from '../notifications/notifications.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterModule, NotificationsDropdownComponent],
+  imports: [CommonModule, RouterModule, NotificationsComponent],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -18,8 +18,7 @@ export class NavbarComponent implements OnInit {
 
   navItems = [
     { label: 'Dashboard', icon: 'Dashboard', section: 'dashboard' },
-    { label: 'Approvals', icon: 'Approvals', section: 'approvals' },
-    { label: 'Alerts', icon: 'Alerts', section: 'alerts' }
+    { label: 'Approvals', icon: 'Approvals', section: 'approvals' }
   ];
 
   activeNav = 'Dashboard';
@@ -92,9 +91,6 @@ export class NavbarComponent implements OnInit {
   setActive(item: any): void {
     this.activeNav = item.label;
     this.setActiveSection.emit(item.section);
-    if (item.section === 'alerts') {
-      this.closeNotificationDropdown();
-    }
   }
 
   navigateToDashboard(): void {

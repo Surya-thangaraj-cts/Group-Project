@@ -8,7 +8,7 @@
       <div class="chart-wrapper">
         <div class="bar-chart">
           <div *ngFor="let item of monthlyData" class="bar-item">
-            <div class="bar-value">{{ (item.value / 1000).toFixed(1) }}K</div>
+            <div class="bar-value">₹{{ (item.value / 1000).toFixed(1) }}K</div>
             <div class="bar-container">
               <div class="bar" [style.width.%]="(item.value / 30000) * 100"></div>
             </div>

@@ -1,90 +1,112 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DataService, Notification } from '../../services/data.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './notifications.component.html',
-  styleUrls: ['./notifications.component.css']
+  styleUrl: './notifications.component.css'
 })
-export class NotificationsComponent implements OnInit {
+export class NotificationsComponent implements OnInit, OnDestroy {
+  @Output() close = new EventEmitter<void>();
+
   notifications: Notification[] = [];
   unreadCount: number = 0;
-  private notificationsSub?: any;
-  private unreadCountSub?: any;
+  private destroy$ = new Subject<void>();
 
   constructor(private dataService: DataService, private router: Router) {}
-  handleNotificationClick(notification: Notification): void {
-    this.dataService.markNotificationAsRead(notification.notificationId);
-    // Extract transaction or change ID from the message
-    const txnMatch = notification.message.match(/TXN\d+/);
-    const changeMatch = notification.message.match(/DCH\d+/);
-    const accountMatch = notification.message.match(/ACC\d+/);
-    if (txnMatch) {
-      setTimeout(() => {
-        this.router.navigate(['/manager'], {
-          fragment: 'approvals',
-          queryParams: { transactionId: txnMatch[0] }
-        });
-      }, 100);
-    } else if (changeMatch) {
-      setTimeout(() => {
-        this.router.navigate(['/manager'], {
-          fragment: 'approvals',
-          queryParams: { changeId: changeMatch[0] }
-        });
-      }, 100);
-    } else if (accountMatch) {
-      setTimeout(() => {
-        this.router.navigate(['/manager'], {
-          fragment: 'approvals',
-          queryParams: { accountId: accountMatch[0] }
-        });
-      }, 100);
-    } else {
-      setTimeout(() => {
-        this.router.navigate(['/manager'], { fragment: 'approvals' });
-      }, 100);
-    }
-  }
 
   ngOnInit(): void {
-    this.notificationsSub = this.dataService.getNotifications().subscribe(data => {
-      this.notifications = data;
-    });
-    this.unreadCountSub = this.dataService.getUnreadNotificationsCount().subscribe(count => {
-      this.unreadCount = count;
-    });
+    this.dataService.getNotifications()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.notifications = data.sort((a, b) => 
+          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+        );
+      });
+
+    this.dataService.getUnreadNotificationsCount()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        this.unreadCount = count;
+      });
   }
 
   ngOnDestroy(): void {
-    if (this.notificationsSub) this.notificationsSub.unsubscribe();
-    if (this.unreadCountSub) this.unreadCountSub.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  // loadNotifications and updateUnreadCount removed, now handled by subscriptions
-
-  markAsRead(notificationId: string): void {
-    this.dataService.markNotificationAsRead(notificationId);
+  handleNotificationClick(notification: Notification): void {
+    this.dataService.markNotificationAsRead(notification.notificationId);
+    const navigationId = this.extractNavigationId(notification.message);
+    
+    this.closeDropdown();
+    setTimeout(() => {
+      if (navigationId.key && navigationId.value) {
+        this.router.navigate(['/manager'], {
+          fragment: 'approvals',
+          queryParams: { [navigationId.key]: navigationId.value }
+        });
+      } else {
+        this.router.navigate(['/manager'], { fragment: 'approvals' });
+      }
+    }, 100);
   }
 
-  deleteNotification(notificationId: string): void {
-    this.dataService.deleteNotification(notificationId);
+  private extractNavigationId(message: string): { key: string; value: string } {
+    const patterns = [
+      { regex: /TXN\d+/, key: 'transactionId' },
+      { regex: /DCH\d+/, key: 'changeId' },
+      { regex: /ACC\d+/, key: 'accountId' }
+    ];
+
+    for (const pattern of patterns) {
+      const match = message.match(pattern.regex);
+      if (match) {
+        return { key: pattern.key, value: match[0] };
+      }
+    }
+
+    return { key: '', value: '' };
   }
 
-  getNotificationIcon(type: 'ApprovalReminder' | 'SuspiciousActivity'): string {
-    return type === 'SuspiciousActivity' ? '⚠️' : '📋';
+  getNotificationDescription(notification: Notification): string {
+    if (notification.type === 'SuspiciousActivity') {
+      return this.describeSuspiciousActivity(notification.message);
+    } else if (notification.type === 'ApprovalReminder') {
+      return this.describeApprovalReminder(notification.message);
+    }
+    return notification.message;
   }
 
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  private describeSuspiciousActivity(message: string): string {
+    if (message.toLowerCase().includes('high-value')) {
+      return 'High-value transaction suspicious';
+    }
+    if (message.toLowerCase().includes('unusual')) {
+      return 'Unusual transaction detected';
+    }
+    if (message.toLowerCase().includes('multiple')) {
+      return 'Multiple rapid transactions';
+    }
+    return 'Suspicious activity detected';
+  }
+
+  private describeApprovalReminder(message: string): string {
+    const amountMatch = message.match(/₹[\d,]+/);
+    if (amountMatch) {
+      return `Pending approval: ${amountMatch[0]}`;
+    }
+    return 'Approval reminder - pending approvals';
+  }
+
+  closeDropdown(): void {
+    this.close.emit();
   }
 }

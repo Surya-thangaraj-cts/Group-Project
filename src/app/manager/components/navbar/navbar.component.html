@@ -12,11 +12,6 @@
         (click)="setActive(item)">
         <span class="nav-icon" *ngIf="item.icon && item.icon !== item.label">{{ item.icon }}</span>
         {{ item.label }}
-        <span 
-          *ngIf="item.label === 'Alerts' && unreadNotificationsCount > 0" 
-          class="notification-badge">
-          {{ unreadNotificationsCount }}
-        </span>
       </button>
     </div>
 
@@ -29,11 +24,11 @@
         </span>
       </button>
 
-      <!-- Notifications Dropdown -->
-      <app-notifications-dropdown 
+      <!-- Consolidated Notifications Component -->
+      <app-notifications 
         *ngIf="showNotificationDropdown" 
         (close)="closeNotificationDropdown()">
-      </app-notifications-dropdown>
+      </app-notifications>
     </div>
 
     <!-- Profile Icon and Dropdown -->
