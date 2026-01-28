@@ -85,7 +85,7 @@ export class NavbarComponent implements OnInit {
 
   logout(): void {
     this.showProfileDropdown = false;
-    this.authService.logout();
+    this.authService.signout();
     this.router.navigate(['/landing']);
   }
 

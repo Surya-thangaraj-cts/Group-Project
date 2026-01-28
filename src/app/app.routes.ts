@@ -13,12 +13,11 @@ export const routes: Routes = [
 
   { path: 'admin', component: AdminComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'manager', component: ManagerComponent, canActivate: [roleGuard], data: { role: 'bankManager' } },
-
-  // ⬇️ Lazy load the officer feature
   {
     path: 'officer',
     loadChildren: () =>
-      import('./features/officer/officer.routes').then(m => m.OFFICER_ROUTES)
+      import('./features/officer/officer.routes').then(m => m.OFFICER_ROUTES),
+    canActivate: [roleGuard], data: { role: 'officer' }
   },
 
   { path: '**', redirectTo: 'landing' },
