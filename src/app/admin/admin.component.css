@@ -1,0 +1,231 @@
+/* ====== Light Gradient Admin Theme (Screenshot Style) ====== */
+:host {
+  --bg-1: #f5f7fb;
+  --bg-2: #eef1fb;
+  --panel: #ffffff;
+  --panel-strong: #ffffff;
+  --border: #e6e9f2;
+  --border-strong: #dfe3f3;
+
+  --text: #0f2552;
+  --muted: #6b7280;
+
+  --primary: #6a64e2;
+  --primary-2: #a852c8;
+  --primary-glow: rgba(106, 100, 226, 0.25);
+
+  --cyan: #36d1dc;
+  --cyan-deep: #5b86e5;
+  --cyan-glow: rgba(54, 209, 220, .35);
+
+  --radius-xl: 18px;
+  --radius-lg: 14px;
+  --radius-md: 12px;
+
+  --shadow-soft: 0 12px 34px rgba(90, 92, 180, 0.15);
+  --shadow-btn: 0 10px 30px rgba(80,70,180,.15);
+
+  font-family: Inter, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.admin-page {
+  color: var(--text);
+  background: linear-gradient(180deg, #f4f6fb 0%, #f6f8fe 100%);
+  min-height: 100vh;
+}
+
+/* ===== Header (purple gradient) ===== */
+.header {
+  padding: 8px 0 2px 0;
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  border-bottom: none;
+  box-shadow: 0 8px 28px rgba(106,100,226,.35);
+}
+.header .h4,
+.header .h6 { color: #fff; }
+
+/* ===== Cards ===== */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+}
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  border-top-left-radius: var(--radius-xl);
+  border-top-right-radius: var(--radius-xl);
+}
+.card-body { color: var(--text); }
+
+/* ===== Forms ===== */
+.form-control, .form-select {
+  background: #fafbff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 10px 12px;
+  outline: none;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.04);
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+.form-control::placeholder, .form-select::placeholder { color: #94a3b8; }
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(106,100,226,.15);
+  background: #fff;
+  color: var(--text);
+}
+
+/* ===== Buttons ===== */
+.btn { border-radius: 12px; border-width: 1px; }
+
+/* Primary pill (Reset Filters) */
+.btn-primary {
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  border: none;
+  color: #fff;
+  border-radius: 999px;
+  font-weight: 800;
+  box-shadow: var(--shadow-btn);
+  transition: transform .06s ease, filter .2s ease;
+}
+.btn-primary:hover { transform: translateY(-1px); filter: brightness(1.03); }
+
+/* Header outline pills (Dashboard, Approvals, Alerts) */
+.btn-outline-light {
+  border-color: rgba(255,255,255,0.28);
+  color: #ffffff;
+  background: rgba(255,255,255,0.12);
+  border-radius: 999px;
+  font-weight: 700;
+}
+.btn-outline-light:hover { background: rgba(255,255,255,0.2); }
+
+/* Export buttons */
+.btn-pink, .btn-cyan {
+  border-radius: 999px;
+  color: #fff;
+  border: 0;
+  font-weight: 800;
+  box-shadow: var(--shadow-btn);
+  padding: 10px 16px;
+}
+.btn-pink { background: linear-gradient(90deg, #ff5fa2, #ff7e6e); }
+.btn-cyan { background: linear-gradient(90deg, var(--cyan), var(--cyan-deep)); }
+
+/* Transparent header button (if you keep any icon buttons) */
+.btn-transparent { background: transparent; border: 0; color: #fff; }
+
+/* ===== Table (gradient header) ===== */
+.table { color: var(--text); }
+.table thead,
+.table thead.table-light {
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  color: #fff;
+  border-bottom: none;
+}
+.table td, .table th { border-color: #eef0f6; }
+.table tbody tr { background: #fff; }
+.table-hover tbody tr:hover { background: #f2f5ff; }
+
+/* ===== Badges (status chips) ===== */
+.badge {
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border: 0;
+}
+.badge.bg-success-subtle { background: #e6f9ee !important; color: #118a4e !important; }
+.badge.bg-warning-subtle { background: #fff4e5 !important; color: #b15e07 !important; }
+.badge.bg-danger-subtle  { background: #ffe8e8 !important; color: #b42318 !important; }
+
+/* ===== Page title ===== */
+.panel-title-xl {
+  font-size: clamp(1.4rem, 1.1rem + 1vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: #0f2552;
+}
+
+/* ===== Minor responsive tweaks ===== */
+@media (max-width: 768px) {
+  .header { padding-top: .5rem; padding-bottom: .5rem; }
+}
+/* ======================================================
+   Amount Buckets (Light Theme)
+   ====================================================== */
+
+.amount-buckets-title {
+  color: #0f2552;
+  font-size: 1.125rem; /* ~18px */
+  font-weight: 800;
+  letter-spacing: .2px;
+  margin: 0 0 .75rem 0;
+}
+
+/* Container holding all bucket rows */
+.chart-block .bars {
+  background: #ffffff;
+  border: 1px solid #e6e9f2;         /* subtle border so it shows on white bg */
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 6px 20px rgba(90, 92, 180, 0.08);
+}
+
+/* Each bucket row */
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 180px) 1fr auto;  /* label | progress | value */
+  align-items: center;
+  gap: 14px;
+  padding: 10px 2px;
+  border-bottom: 1px dashed rgba(15, 37, 82, 0.12);
+}
+.bar-row:last-child { border-bottom: 0; }
+
+/* Label at the left */
+.bar-label {
+  color: #0f2552;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Track */
+.bar-track {
+  position: relative;
+  height: 12px;                        /* ensure visible height */
+  background: #f2f5ff;                 /* light lavender track */
+  border: 1px solid #e6e9f2;           /* help visibility on white */
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Fill (purple gradient like the rest of the theme) */
+.bar-fill {
+  height: 100%;
+  min-width: 2%;                       /* show even tiny values */
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  box-shadow: 0 0 14px rgba(106,100,226,0.25);
+}
+
+/* Value at the right */
+.bar-value {
+  color: #0f2552;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;  /* aligned digits */
+}
+
+/* Optional: compact variant for smaller widths */
+@media (max-width: 768px) {
+  .bar-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .bar-value {
+    justify-self: end;
+  }
+}

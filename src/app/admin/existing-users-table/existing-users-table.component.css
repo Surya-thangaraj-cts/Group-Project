@@ -1,0 +1,48 @@
+
+/* Make the child table match the admin theme */
+:host {
+  display: block;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.card-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+.table thead.table-light {
+  background: rgba(255,255,255,0.04);
+  color: #dbe7ff;
+  border-bottom: 1px solid var(--border);
+}
+.table tbody tr { background: rgba(8,14,26,0.35); }
+.table-hover tbody tr:hover { background: rgba(14,22,38,0.6); }
+
+.btn-outline-dark.btn-sm {
+  color: #eaf2ff;
+  border-color: rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px;
+}
+.btn-outline-dark.btn-sm:hover {
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.06);
+}
+
+.form-control, .form-select {
+  /* background: rgba(14, 19, 33, 0.75); */
+
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 12px;
+}
+.form-control:focus, .form-select:focus {
+  border-color: rgba(124,77,255,0.45);
+  /* box-shadow: 0 0 0 3px rgba(124,77,255,0.18); */
+  /* background: rgba(16, 24, 42, 0.85); */
+}
