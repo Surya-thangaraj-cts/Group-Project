@@ -242,29 +242,29 @@
           <ng-container *ngIf="selectedUser; else emptyDetails">
             <div class="row g-3">
               <div class="col-md-3">
-                <div class="text-white small">User ID</div>
+                <div class="text-dark small">User ID</div>
                 <div class="fw-semibold">{{ selectedUser.userId }}</div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Name</div>
+                <div class="text-dark small">Name</div>
                 <div class="fw-semibold">{{ selectedUser.name }}</div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Email</div>
+                <div class="text-dark small">Email</div>
                 <div class="fw-semibold text-truncate" style="max-width: 240px;">
                   {{ selectedUser.email }}
                 </div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Branch</div>
+                <div class="text-dark small">Branch</div>
                 <div class="fw-semibold">{{ selectedUser.branch }}</div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Role</div>
+                <div class="text-dark small">Role</div>
                 <div class="fw-semibold">{{ selectedUser.role }}</div>
               </div>
               <div class="col-md-3">
-                <div class="text-white small">Status</div>
+                <div class="text-dark small">Status</div>
                 <span
                   class="badge"
                   [ngClass]="{
@@ -371,19 +371,19 @@
           <div class="col-12 col-md-4">
             <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
               <div class="text-muted small">Total Transactions</div>
-              <div class="fs-5 fw-semibold text-white">{{ compliance.totalTransactions | number }}</div>
+              <div class="fs-5 fw-semibold text-dark">{{ compliance.totalTransactions | number }}</div>
             </div>
           </div>
           <div class="col-12 col-md-4">
             <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
               <div class="text-muted small">High-Value Count</div>
-              <div class="fs-5 fw-semibold text-white">{{ compliance.highValueCount | number }}</div>
+              <div class="fs-5 fw-semibold text-dark">{{ compliance.highValueCount | number }}</div>
             </div>
           </div>
           <div class="col-12 col-md-4">
             <div class="p-3 border rounded-3 kpi h-100 d-flex flex-column justify-content-between">
               <div class="text-muted small">Account Growth Rate</div>
-              <div class="fs-5 fw-semibold text-white">{{ compliance.accountGrowthRate | number:'1.0-2' }}%</div>
+              <div class="fs-5 fw-semibold text-dark">{{ compliance.accountGrowthRate | number:'1.0-2' }}%</div>
             </div>
           </div>
         </div>

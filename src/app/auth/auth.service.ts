@@ -9,7 +9,7 @@ export interface User {
   status?: 'active' | 'inactive' | 'pending';
   lastLogin?: string;
   avatarUrl?: string;
-  password?: string; // ✅ DEMO ONLY
+  password: string; 
 }
 
 @Injectable({ providedIn: 'root' })
@@ -64,25 +64,6 @@ export class AuthService {
     this.saveUsers();
   }
 
-  /** ✅ Register → always pending */
-  // signup(user: User) {
-  //   if (!user.userId || !user.password) {
-  //     throw new Error('userId and password required');
-  //   }
-
-  //   if (this.users.some(u => u.userId === user.userId)) {
-  //     throw new Error('User ID already exists');
-  //   }
-
-  //   if (user.email && this.users.some(u => u.email === user.email)) {
-  //     throw new Error('Email already in use');
-  //   }
-
-  //   user.status = 'pending'; // ✅ IMPORTANT
-
-  //   this.users.push(user);
-  //   this.saveUsers();
-  // }
   signup(user: User) {
   if (!user.userId || !user.password) {
     throw new Error('userId and password required');
