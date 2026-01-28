@@ -217,9 +217,9 @@
         <span
           class="badge"
           [ngClass]="{
-            'bg-success-subtle text-success border border-success': currentUser?.status === 'Active',
-            'bg-danger-subtle text-danger border border-danger': currentUser?.status === 'Inactive',
-            'bg-warning-subtle text-warning border border-warning': currentUser?.status === 'Pending'
+            'bg-success-subtle text-success border border-success': currentUser?.status === 'active',
+            'bg-danger-subtle text-danger border border-danger': currentUser?.status === 'inactive',
+            'bg-warning-subtle text-warning border border-warning': currentUser?.status === 'pending'
           }">
           {{ currentUser?.status || '' }}
         </span>

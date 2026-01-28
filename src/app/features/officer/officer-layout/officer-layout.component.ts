@@ -63,7 +63,7 @@ export class OfficerLayoutComponent implements OnInit {
 
   logout(event: Event): void {
     event.stopPropagation();
-    this.auth.logout();
+    this.auth.signout();
     this.currentUser = null;
     this.router.navigate(['/landing']);
   }
