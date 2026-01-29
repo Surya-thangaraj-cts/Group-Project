@@ -42,9 +42,9 @@
         </thead>
  
         <tbody>
-          <tr *ngFor="let u of getFilteredRows()">
+          <tr *ngFor="let u of getFilteredRows(); trackBy: trackByUserId">
             <!-- Non-editing row -->
-            <ng-container *ngIf="editingUserId !== u.userId; else editRow ;trackBy: trackByUserId">
+            <ng-container *ngIf="editingUserId !== u.userId; else editRow">
               <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.userId }}</td>
               <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.name }}</td>
               <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.role }}</td>

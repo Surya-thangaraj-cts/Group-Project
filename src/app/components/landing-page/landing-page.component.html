@@ -37,14 +37,14 @@
         <!-- RIGHT: Auth Forms -->
         <div class="col-12 col-lg-6 d-flex">
           <div class="auth-panel mx-auto w-100">
-
+ 
             <div class="title">
               <h1>Welcome</h1>
             </div>
-
+ 
             <!-- Alert Message Box -->
-            <div 
-              *ngIf="showMessage && message" 
+            <div
+              *ngIf="showMessage && message"
               [ngClass]="{
                 'alert alert-success': messageType === 'success',
                 'alert alert-danger': messageType === 'error',
@@ -58,7 +58,7 @@
                 <button type="button" class="btn-close" (click)="clearMessage()" aria-label="Close"></button>
               </div>
             </div>
-
+ 
             <!-- Sign In Form -->
             <form *ngIf="showForm !== 'register'" [formGroup]="signinForm" (ngSubmit)="signin()" novalidate>
               <div class="mb-3">
