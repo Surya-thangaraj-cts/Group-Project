@@ -1,4 +1,4 @@
-
+ 
 // src/app/features/officer/transactions/transactions.component.ts
 import { Component, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -7,7 +7,7 @@ import { OfficerService } from '../officer.service';
 import { TxnType, Transaction } from '../model';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
+ 
 @Component({
   selector: 'transactions',
   standalone: true,
@@ -20,11 +20,11 @@ export class TransactionsComponent {
   // Services
   private fb = inject(FormBuilder);
   private officerSvc = inject(OfficerService);
-
+ 
   // Streams
   accounts$ = this.officerSvc.accounts$;
   transactions$ = this.officerSvc.transactions$;
-
+ 
   // Record form
   txnForm: FormGroup = this.fb.group({
     type: ['DEPOSIT' as TxnType, [Validators.required]],
@@ -32,19 +32,19 @@ export class TransactionsComponent {
     toAccountId: [undefined],
     narrative: ['']
   });
-
+ 
   selectedHistoryAccountId?: string;
   highValueThreshold = this.officerSvc.highValueThreshold;
-
+ 
   // ----- Filters (bind to ngModel; also push into subjects for VM) -----
   historyFilterAccountId?: string;
   fromDate?: string; // yyyy-MM-dd
   toDate?: string;
-
+ 
   private filterAccountId$ = new BehaviorSubject<string | undefined>(undefined);
   private fromDate$ = new BehaviorSubject<string | undefined>(undefined);
   private toDate$ = new BehaviorSubject<string | undefined>(undefined);
-
+ 
   onFilterAccountChange(val: string | undefined) {
     this.historyFilterAccountId = val || undefined;
     this.filterAccountId$.next(this.historyFilterAccountId);
@@ -60,12 +60,12 @@ export class TransactionsComponent {
     this.toDate$.next(this.toDate);
     this.txPageIndex$.next(1);
   }
-
+ 
   // ----- Pagination (Transaction History) -----
   txPageSizeOptions = [5, 10, 20];
   private txPageIndex$ = new BehaviorSubject<number>(1);  // 1-based
   private txPageSize$ = new BehaviorSubject<number>(10);  // default 10
-
+ 
   txVm$: Observable<{
     total: number;
     totalPages: number;
@@ -85,11 +85,11 @@ export class TransactionsComponent {
   ]).pipe(
     map(([all, accountId, from, to, pageIndex, pageSize]) => {
       const list: Transaction[] = Array.isArray(all) ? [...all] : [];
-
+ 
       // Apply filters
       const filtered = list.filter(t => {
         if (accountId && t.accountId !== accountId) return false;
-
+ 
         const txDate = new Date(t.time).setHours(0, 0, 0, 0);
         if (from) {
           const f = new Date(from).setHours(0, 0, 0, 0);
@@ -101,7 +101,7 @@ export class TransactionsComponent {
         }
         return true;
       });
-
+ 
       const total = filtered.length;
       const totalPages = Math.max(1, Math.ceil(total / pageSize));
       const currentPage = Math.min(Math.max(1, pageIndex), totalPages);
@@ -111,11 +111,11 @@ export class TransactionsComponent {
       const fromIdx = total ? start + 1 : 0;
       const toIdx = Math.min(end, total);
       const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
-
+ 
       return { total, totalPages, currentPage, pageSize, pageData, from: fromIdx, to: toIdx, pages };
     })
   );
-
+ 
   // ----- Pagination handlers -----
   txSetPage(page: number): void {
     this.txPageIndex$.next(page);
@@ -131,18 +131,18 @@ export class TransactionsComponent {
     this.txPageSize$.next(size);
     this.txPageIndex$.next(1);
   }
-
+ 
   // ----- Record form helpers -----
   onTxnTypeChange() {
     if (this.txnForm.value.type !== 'TRANSFER') {
       this.txnForm.patchValue({ toAccountId: undefined });
     }
   }
-
+ 
   resetTxnForm(): void {
     this.txnForm.reset({ type: 'DEPOSIT', amount: 0, toAccountId: undefined, narrative: '' });
   }
-
+ 
   recordTransaction(): void {
     try {
       this.officerSvc.recordTransaction(
@@ -155,12 +155,12 @@ export class TransactionsComponent {
       this.officerSvc.setError(e?.message || 'Failed to record transaction');
     }
   }
-
+ 
   // Removed toggleFlag handler per your request (flag pill is now read-only)
-
+ 
   // TrackBy
   trackByTxnId(index: number, t: Transaction) {
     return t?.id ?? index;
   }
 }
-``
+ 
