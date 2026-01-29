@@ -37,11 +37,28 @@
         <!-- RIGHT: Auth Forms -->
         <div class="col-12 col-lg-6 d-flex">
           <div class="auth-panel mx-auto w-100">
- 
+
             <div class="title">
               <h1>Welcome</h1>
             </div>
- 
+
+            <!-- Alert Message Box -->
+            <div 
+              *ngIf="showMessage && message" 
+              [ngClass]="{
+                'alert alert-success': messageType === 'success',
+                'alert alert-danger': messageType === 'error',
+                'alert alert-warning': messageType === 'warning'
+              }"
+              role="alert"
+              class="mb-3"
+              style="animation: slideDown 0.3s ease-in-out;">
+              <div class="d-flex justify-content-between align-items-center">
+                <span>{{ message }}</span>
+                <button type="button" class="btn-close" (click)="clearMessage()" aria-label="Close"></button>
+              </div>
+            </div>
+
             <!-- Sign In Form -->
             <form *ngIf="showForm !== 'register'" [formGroup]="signinForm" (ngSubmit)="signin()" novalidate>
               <div class="mb-3">
@@ -52,7 +69,7 @@
                   formControlName="userId"
                   placeholder="Enter your user ID"
                   inputmode="text"
-                  autocomplete="username"
+                  autocomplete="off"
                 />
               </div>
  
@@ -64,7 +81,7 @@
                   class="form-control form-control-lg"
                   formControlName="password"
                   placeholder="Enter your password"
-                  autocomplete="current-password"
+                  autocomplete="off"
                 />
               </div>
  
