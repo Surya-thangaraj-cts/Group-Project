@@ -1,4 +1,4 @@
-
+ 
 <!-- Admin Console Page -->
 <div class="py-3 admin-page" >
   <!-- ===== Header (Profile + toggles) ===== -->
@@ -19,7 +19,7 @@
           </ng-template>
         </p>
       </div>
-
+ 
       <div class="d-flex align-items-center gap-2 flex-wrap">
         <!-- Toggle Admin/Compliance -->
         <button
@@ -41,7 +41,7 @@
             Back to Admin Console
           </button>
         </ng-template>
-
+ 
         <!-- Existing Users button visible on both Admin & Compliance -->
         <button
           *ngIf="!(activeView === 'admin' && showExistingOnly); else backToFull"
@@ -62,7 +62,7 @@
             Back to Admin
           </button>
         </ng-template>
-
+ 
         <!-- Profile dropdown -->
         <div class="position-relative ms-1">
           <button
@@ -80,7 +80,7 @@
             </span>
             <span class="d-none d-md-inline text-white fw-semibold">{{ currentUser?.name || 'User' }}</span>
           </button>
-
+ 
           <ul class="dropdown-menu dropdown-menu-end text-sm" aria-labelledby="headerProfileDropdown">
             <li class="px-3 py-2">
               <div class="small text-muted mb-1">Signed in as</div>
@@ -118,7 +118,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- ===== Offcanvas: Full Profile ===== -->
   <div
     class="offcanvas offcanvas-end text-bg-dark"
@@ -143,7 +143,7 @@
           <div class="text-muted">{{ currentUser?.email || '' }}</div>
         </div>
       </div>
-
+ 
       <div class="row g-3">
         <div class="col-12 col-md-6">
           <div class="text-muted small">User ID</div>
@@ -171,9 +171,9 @@
           </span>
         </div>
       </div>
-
+ 
       <div class="mt-4 d-flex gap-2">
-        <button class="btn btn-outline-light btn-sm" (click)="startEdit(currentUser!)" data-bs-dismiss="offcanvas">
+        <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#editMyDetailsModal" data-bs-dismiss="offcanvas">
           Edit My Details
         </button>
         <button class="btn btn-primary btn-sm" (click)="goToSettings()" data-bs-dismiss="offcanvas">
@@ -182,123 +182,39 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- ===== ADMIN VIEW ===== -->
   <div *ngIf="activeView === 'admin'">
     <!-- Normal Admin layout (hidden in Existing-only mode) -->
     <ng-container *ngIf="!showExistingOnly; else existingOnlyBlock">
-      <!-- Filters -->
-      <div class="card mb-3">
-        <div class="card-body">
-          <form class="row g-3 align-items-center" (submit)="$event.preventDefault()">
-            <div class="col-md-6 filter-col d-flex flex-column justify-content-center">
-              <label for="searchTerm" class="form-label">Search</label>
-              <input
-                id="searchTerm"
-                #searchInput
-                name="searchTerm"
-                type="text"
-                class="form-control"
-                [(ngModel)]="searchTerm"
-                (ngModelChange)="onSearchChange($event)"
-                (input)="onSearchChange(searchInput.value)"
-                placeholder="Search by name, email, branch, or ID"
-              />
-              <div class="mt-2 d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-primary" (click)="onSearchChange(searchInput.value)">
-                  Search
-                </button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" (click)="clearSearch(searchInput)">
-                  Clear
-                </button>
-              </div>
-            </div>
-            <div class="col-md-3 mb-4 filter-col role-filter-col d-flex flex-column justify-content-center">
-              <label for="roleFilter" class="form-label">Role</label>
-              <select
-                class="text-dark"
-                id="roleFilter"
-                class="form-select"
-                [(ngModel)]="roleFilter"
-                (ngModelChange)="onRoleChange($event)"
-                placeholder="select"
-              >
-                <option value="All">All</option>
-                <option value="Officer">Officer</option>
-                <option value="Manager">Manager</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- User Details -->
-      <div class="card mb-3 text-dark">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h2 class="h6 mb-0">User Details</h2>
-          <button type="button" class="btn btn-outline-dark btn-sm" (click)="clearSelected()">Clear</button>
-        </div>
-        <div class="card-body">
-          <ng-container *ngIf="selectedUser; else emptyDetails">
-            <div class="row g-3">
-              <div class="col-md-3">
-                <div class="text-dark small">User ID</div>
-                <div class="fw-semibold">{{ selectedUser.userId }}</div>
-              </div>
-              <div class="col-md-3">
-                <div class="text-dark small">Name</div>
-                <div class="fw-semibold">{{ selectedUser.name }}</div>
-              </div>
-              <div class="col-md-3">
-                <div class="text-dark small">Email</div>
-                <div class="fw-semibold text-truncate" style="max-width: 240px;">
-                  {{ selectedUser.email }}
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="text-dark small">Branch</div>
-                <div class="fw-semibold">{{ selectedUser.branch }}</div>
-              </div>
-              <div class="col-md-3">
-                <div class="text-dark small">Role</div>
-                <div class="fw-semibold">{{ selectedUser.role }}</div>
-              </div>
-              <div class="col-md-3">
-                <div class="text-dark small">Status</div>
-                <span
-                  class="badge"
-                  [ngClass]="{
-                    'bg-success-subtle text-success border border-success': selectedUser.status === 'Active',
-                    'bg-danger-subtle text-danger border border-danger': selectedUser.status === 'Inactive',
-                    'bg-warning-subtle text-warning border border-warning': selectedUser.status === 'Pending'
-                  }"
-                >
-                  {{ selectedUser.status }}
-                </span>
-              </div>
-            </div>
-
-            <div class="mt-3 d-flex gap-2">
-              <button type="button" class="btn btn-outline-primary btn-sm" (click)="startEdit(selectedUser!)">
-                Edit This User
-              </button>
-            </div>
-          </ng-container>
-
-          <ng-template #emptyDetails>
-            <div class="text-center text-dark py-4">
-              <div class="mb-2">No user selected</div>
-              <div class="small">Type in the search box or click a user row to view details.</div>
-            </div>
-          </ng-template>
-        </div>
-      </div>
-
+ 
+ 
       <!-- Pending Approvals -->
       <div class="card mb-3">
-        <div class="card-header d-flex align-items-center justify-content-between">
-          <h2 class="h6 mb-0">Pending Approvals</h2>
+        <div class="card-header">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 class="h6 mb-0">Pending Approvals</h2>
+            <div class="small text-white">
+              Showing {{ getFilteredPendingUsers().length | number }} of {{ pendingUsers.length | number }} pending
+            </div>
+          </div>
+          <div class="search-container">
+            <input
+              type="text"
+              class="form-control form-control-sm"
+              placeholder="Search by User ID, Name, Email, Role, or Branch..."
+              [(ngModel)]="pendingSearchTerm"
+            />
+            <button
+              *ngIf="pendingSearchTerm"
+              type="button"
+              class="btn btn-sm btn-outline-light"
+              (click)="clearPendingSearch()"
+              title="Clear search"
+            >
+              ✕
+            </button>
+          </div>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -314,7 +230,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let u of pendingUsers">
+                <tr *ngFor="let u of getFilteredPendingUsers()">
                   <td>{{ u.userId }}</td>
                   <td>{{ u.name }}</td>
                   <td>{{ u.role }}</td>
@@ -333,7 +249,7 @@
                     </button>
                   </td>
                 </tr>
-                <tr *ngIf="pendingUsers.length === 0">
+                <tr *ngIf="getFilteredPendingUsers().length === 0">
                   <td colspan="6" class="text-center text-muted py-3">No pending approvals</td>
                 </tr>
               </tbody>
@@ -342,7 +258,7 @@
         </div>
       </div>
     </ng-container>
-
+ 
     <!-- Existing-only mode: ONLY show the child component -->
     <ng-template #existingOnlyBlock>
       <app-existing-users-table
@@ -352,21 +268,12 @@
       ></app-existing-users-table>
     </ng-template>
   </div>
-
+ 
   <!-- ===== COMPLIANCE VIEW ===== -->
   <div *ngIf="activeView === 'compliance'" class="compliance-root">
     <!-- Compliance KPIs -->
     <div class="card mb-3">
-      <!-- Optional actions in header -->
-      <!--
-      <div class="card-header d-flex align-items-center justify-content-between">
-        <h2 class="h6 mb-0">KPIs</h2>
-        <div class="compliance-actions">
-          <button class="btn btn-sm btn-outline-dark" type="button" (click)="showAdmin()">Back to Admin</button>
-          <button class="btn btn-sm btn-warning" type="button" (click)="openExistingUsers()">Existing Users</button>
-        </div>
-      </div>
-      -->
+     
       <div class="card-body">
         <div class="row g-3 mb-3 kpis-row">
           <div class="col-12 col-md-4">
@@ -388,7 +295,7 @@
             </div>
           </div>
         </div>
-
+ 
         <!-- Dual line chart -->
         <div class="chart-block mb-3">
           <div class="container-fluid px-3 px-md-4">
@@ -403,7 +310,7 @@
                 </span>
               </div>
             </div>
-
+ 
             <!-- Chart wrapper reference -->
             <div class="svg-wrap" #chartWrap>
               <svg
@@ -433,17 +340,17 @@
                     </text>
                   </g>
                 </g>
-
+ 
                 <!-- Move plot area right to make room for Y axis labels -->
                 <g [attr.transform]="'translate(' + chartLeftMargin + ',0)'">
                   <!-- baseline -->
                   <line [attr.x1]="0" [attr.y1]="chartHeight - 60" [attr.x2]="plotWidth()" [attr.y2]="chartHeight - 60" stroke="#cfd8dc" />
-
+ 
                   <!-- series -->
                   <path [attr.d]="linePath(compliance.monthlyTxnVolume, plotWidth(), chartHeight - 60)" fill="none" stroke="#1976d2" stroke-width="2"></path>
-
+ 
                   <path [attr.d]="linePath(compliance.monthlySuspicious, plotWidth(), chartHeight - 60)" fill="none" stroke="#d32f2f" stroke-width="2" stroke-dasharray="4 3"></path>
-
+ 
                   <!-- x-axis labels -->
                   <g class="x-labels text-dark">
                     <text
@@ -461,7 +368,7 @@
             </div>
           </div>
         </div>
-
+ 
         <!-- Amount Buckets -->
         <div class="chart-block mb-3">
           <h3 class="h6 mb-2">Amount Buckets</h3>
@@ -469,7 +376,7 @@
             <div class="bar-row" *ngFor="let b of compliance.amountBuckets">
               <div class="bar-label">{{ b.label }}</div>
               <div class="bar-track">
-                <div class="bar-fill" [style.width.%]="(b.count / maxBucket) * 100"></div>
+                <div class="bar-fill" [style.width.%]="bucketPercent(b.count)"></div>
               </div>
               <div class="bar-value text-white">{{ b.count | number }}</div>
             </div>
@@ -478,7 +385,7 @@
       </div>
     </div>
   </div>
-
+ 
   <!-- ===== Proceed Modal (for Pending Approvals) ===== -->
   <div
     class="modal fade glass-modal"
@@ -495,7 +402,7 @@
           </h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-
+ 
         <div class="modal-body">
           <ng-container *ngIf="pendingSelectedUser; else noPendingUser">
             <div class="row g-3">
@@ -538,7 +445,7 @@
             <div class="text-muted">No user selected.</div>
           </ng-template>
         </div>
-
+ 
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Close</button>
           <button
@@ -561,10 +468,112 @@
       </div>
     </div>
   </div>
-
+ 
+  <!-- Edit User Modal -->
+  <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="editUserModalLabel">Edit User</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" *ngIf="editingUser">
+          <form [formGroup]="editUserForm" (ngSubmit)="saveEditedUser()">
+            <div class="mb-3">
+              <label for="editName" class="form-label">Name</label>
+              <input id="editName" type="text" class="form-control" formControlName="name" />
+              <div class="form-text text-danger" *ngIf="editUserForm.get('name')?.touched && editUserForm.get('name')?.invalid">
+                Name is required
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editEmail" class="form-label">Email</label>
+              <input id="editEmail" type="email" class="form-control" formControlName="email" />
+              <div class="form-text text-danger" *ngIf="editUserForm.get('email')?.touched && editUserForm.get('email')?.invalid">
+                Valid email is required
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editRole" class="form-label">Role</label>
+              <select id="editRole" class="form-select" formControlName="role">
+                <option value="Officer">Officer</option>
+                <option value="Manager">Manager</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="editBranch" class="form-label">Branch</label>
+              <input id="editBranch" type="text" class="form-control" formControlName="branch" />
+              <div class="form-text text-danger" *ngIf="editUserForm.get('branch')?.touched && editUserForm.get('branch')?.invalid">
+                Branch is required
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="editStatus" class="form-label">Status</label>
+              <select id="editStatus" class="form-select" formControlName="status">
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+            <div class="d-flex gap-2 justify-content-end">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="editUserForm.invalid">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- Edit My Details Modal -->
+  <div class="modal fade" id="editMyDetailsModal" tabindex="-1" aria-labelledby="editMyDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header" style="background: linear-gradient(90deg, var(--primary), var(--primary-2));">
+          <h1 class="modal-title fs-5 text-white" id="editMyDetailsLabel">Edit My Details</h1>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="myDetailsForm" (ngSubmit)="submitDetailsChangeRequest()">
+            <div class="mb-3">
+              <label for="myName" class="form-label">Name</label>
+              <input type="text" id="myName" class="form-control" formControlName="name" required />
+              <small class="text-muted">Your full name</small>
+            </div>
+            <div class="mb-3">
+              <label for="myEmail" class="form-label">Email</label>
+              <input type="email" id="myEmail" class="form-control" formControlName="email" required />
+              <small class="text-muted">Your contact email</small>
+            </div>
+            <div class="mb-3">
+              <label for="myPhone" class="form-label">Phone (Optional)</label>
+              <input type="tel" id="myPhone" class="form-control" formControlName="phone" />
+              <small class="text-muted">Your contact number</small>
+            </div>
+            <div class="mb-3">
+              <label for="myAddress" class="form-label">Address (Optional)</label>
+              <textarea id="myAddress" class="form-control" formControlName="address" rows="3"></textarea>
+              <small class="text-muted">Your address</small>
+            </div>
+            <div class="alert alert-info">
+              <strong>Note:</strong> Your changes will be sent for admin approval. You'll be notified once approved or rejected.
+            </div>
+            <div class="d-flex gap-2 justify-content-end">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary" [disabled]="myDetailsForm.invalid">
+                Send Request
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
   <!-- Footer (optional) -->
 </div>
-
+ 
 <!-- Optional small styles (component-scoped if using Angular's styles) -->
 <style>
   .dropdown-menu.text-sm { font-size: 0.9rem; }

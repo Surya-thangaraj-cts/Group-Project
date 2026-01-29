@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-
+ 
 export interface User {
   name: string;
   userId?: string;
@@ -9,20 +9,20 @@ export interface User {
   status?: 'active' | 'inactive' | 'pending';
   lastLogin?: string;
   avatarUrl?: string;
-  password: string; 
+  password: string;
 }
-
+ 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private users: User[] = [];
   public currentUser: User | null = null;
-
+ 
   constructor() {
     this.loadUsers();
     this.addDummyUsers();
     this.loadCurrentUser();
   }
-
+ 
   /** Seed initial demo users */
   private addDummyUsers() {
     const dummyUsers: User[] = [
@@ -54,52 +54,52 @@ export class AuthService {
         password: 'Officer@123',
       },
     ];
-
+ 
     dummyUsers.forEach(u => {
       const exists = this.users.find(x => x.userId === u.userId);
       if (!exists) this.users.push(u);
       else if (!exists.password) exists.password = u.password;
     });
-
+ 
     this.saveUsers();
   }
-
+ 
   signup(user: User) {
   if (!user.userId || !user.password) {
     throw new Error('userId and password required');
   }
-
+ 
   const userId = user.userId.trim();
   const email  = (user.email ?? '').trim();
-
+ 
   // CASE-INSENSITIVE duplicate checks
   const idExists = this.users.some(
     u => (u.userId ?? '').trim().toLowerCase() === userId.toLowerCase()
   );
   if (idExists) throw new Error('User ID already exists');
-
+ 
   if (email) {
     const emailExists = this.users.some(
       u => (u.email ?? '').trim().toLowerCase() === email.toLowerCase()
     );
     if (emailExists) throw new Error('Email already in use');
   }
-
+ 
   // Force all new signups to pending
   user.status = 'pending';
-
+ 
   // Normalize before persisting
   const normalized: User = { ...user, userId, email };
   this.users.push(normalized);
   this.saveUsers();
 }
-
+ 
   /** ✅ Sign in with status check */
   signin(
     userId: string,
     password: string
   ): { ok: true; user: User } | { ok: false; reason: 'invalid' | 'pending' | 'inactive' } {
-
+ 
     const found = this.users.find(u => u.userId === userId);
     if (!found) return { ok: false, reason: 'invalid' };
     if (found.status === 'pending') return { ok: false, reason: 'pending' };
@@ -107,51 +107,69 @@ export class AuthService {
     if (!found.password || found.password !== password) {
       return { ok: false, reason: 'invalid' };
     }
-
+ 
     found.lastLogin = new Date().toISOString();
     this.currentUser = found;
     localStorage.setItem('currentUser', JSON.stringify(found));
     return { ok: true, user: found };
   }
-
+ 
   signout() {
     this.currentUser = null;
     localStorage.removeItem('currentUser');
   }
-
+ 
   getCurrentUser(): User | null {
     if (this.currentUser) return this.currentUser;
     const stored = localStorage.getItem('currentUser');
     return stored ? JSON.parse(stored) : null;
   }
-
+ 
   getAllUsers(): User[] {
     return [...this.users];
   }
-
+ 
   // ✅ Admin helpers
   getPendingUsers(): User[] {
-    return this.users.filter(u => u.status === 'pending');
+    return this.users.filter(u => u.status === 'pending' );
   }
-
+ 
   approveUser(userId: string) {
     const user = this.users.find(u => u.userId === userId);
     if (!user) return;
     user.status = 'active';
     this.saveUsers();
   }
-
+ 
   rejectUser(userId: string) {
     const user = this.users.find(u => u.userId === userId);
     if (!user) return;
     user.status = 'inactive';
     this.saveUsers();
+   
+    // If the current user is being set to inactive, log them out
+    if (this.currentUser?.userId === userId) {
+      this.signout();
+    }
   }
-
+ 
+  /** Update user status and handle logout if needed */
+  updateUserStatus(userId: string, newStatus: 'active' | 'inactive' | 'pending'): void {
+    const user = this.users.find(u => u.userId === userId);
+    if (!user) return;
+    user.status = newStatus;
+    this.saveUsers();
+   
+    // If the current user is being set to inactive, log them out
+    if (this.currentUser?.userId === userId && newStatus === 'inactive') {
+      this.signout();
+    }
+  }
+ 
   private saveUsers() {
     localStorage.setItem('users', JSON.stringify(this.users));
   }
-
+ 
   // private loadUsers() {
   //   const stored = localStorage.getItem('users');
   //   this.users = stored ? JSON.parse(stored) : [];
@@ -159,7 +177,7 @@ export class AuthService {
   private loadUsers() {
   const stored = localStorage.getItem('users');
   const arr: User[] = stored ? JSON.parse(stored) : [];
-
+ 
   // De‑duplicate by userId (trimmed, lowercased); newest wins
   const map = new Map<string, User>();
   for (const u of arr) {
@@ -169,8 +187,8 @@ export class AuthService {
   }
   this.users = Array.from(map.values());
 }
-
-
+ 
+ 
   private loadCurrentUser() {
     const stored = localStorage.getItem('currentUser');
     this.currentUser = stored ? JSON.parse(stored) : null;

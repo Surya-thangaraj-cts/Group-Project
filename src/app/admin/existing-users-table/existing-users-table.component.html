@@ -1,12 +1,31 @@
-
+ 
 <div class="card m-3">
-  <div class="card-header d-flex align-items-center justify-content-between">
-    <h2 class="h6 mb-0 text-white">Existing Users</h2>
-    <div class="small text-white">
-      Showing {{ rows.length | number }} {{ rows.length === 1 ? 'user' : 'users' }}
+  <div class="card-header">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h2 class="h6 mb-0 text-dark">Existing Users</h2>
+      <div class="small text-white">
+        Showing {{ getFilteredRows().length | number }} of {{ rows.length | number }} {{ rows.length === 1 ? 'user' : 'users' }}
+      </div>
+    </div>
+    <div class="search-container">
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        placeholder="Search by User ID, Name, Email, Role, Branch, or Status..."
+        [(ngModel)]="searchTerm"
+        />
+      <button
+        *ngIf="searchTerm"
+        type="button"
+        class="btn btn-sm btn-outline-light"
+        (click)="clearSearch()"
+        title="Clear search"
+        >
+        ✕
+      </button>
     </div>
   </div>
-
+ 
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-sm table-hover mb-0 align-middle">
@@ -21,9 +40,9 @@
             <th class="text-end">Actions</th>
           </tr>
         </thead>
-
+ 
         <tbody>
-          <tr *ngFor="let u of rows">
+          <tr *ngFor="let u of getFilteredRows()">
             <!-- Non-editing row -->
             <ng-container *ngIf="editingUserId !== u.userId; else editRow ;trackBy: trackByUserId">
               <td (click)="selectUser.emit(u)" style="cursor:pointer">{{ u.userId }}</td>
@@ -49,7 +68,7 @@
                 <button type="button" class="btn btn-outline-dark btn-sm text-black bg-primary px-3 py-2" (click)="startEdit(u)">Edit</button>
               </td>
             </ng-container>
-
+ 
             <!-- Editing row -->
             <ng-template #editRow>
               <td>{{ u.userId }}</td>
@@ -85,7 +104,7 @@
                       </select>
                     </div>
                   </div>
-
+ 
                   <div class="mt-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary btn-sm" [disabled]="editForm.invalid">Save</button>
                     <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
@@ -95,8 +114,8 @@
               <td></td>
             </ng-template>
           </tr>
-
-          <tr *ngIf="rows.length === 0">
+ 
+          <tr *ngIf="getFilteredRows().length === 0">
             <td colspan="7" class="text-center text-muted py-3">No existing users</td>
           </tr>
         </tbody>
@@ -104,3 +123,5 @@
     </div>
   </div>
 </div>
+ 
+ 
