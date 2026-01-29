@@ -80,7 +80,7 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.auth.signout();
     this.currentUser = null;
-    this.router.navigate(['/landing']);
+    this.router.navigate(['/signin']);
   }
  
   clearAlert(): void {

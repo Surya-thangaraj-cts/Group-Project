@@ -1,15 +1,19 @@
 
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
-import { LandingPageComponent } from './components/landing-page/landing-page.component';
+import { HomeComponent } from './components/home/home.component';
+import { SigninComponent } from './components/signin/signin.component';
+import { RegisterComponent } from './components/register/register.component';
 import { AdminComponent } from './admin/admin.component';
 import { ManagerComponent } from './manager/manager.component';
 import { roleGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'landing' },
+  { path: '', pathMatch: 'full', redirectTo: 'home' },
 
-  { path: 'landing', component: LandingPageComponent },
+  { path: 'home', component: HomeComponent },
+  { path: 'signin', component: SigninComponent },
+  { path: 'register', component: RegisterComponent },
 
   { path: 'admin', component: AdminComponent, canActivate: [roleGuard], data: { role: 'admin' } },
   { path: 'manager', component: ManagerComponent, canActivate: [roleGuard], data: { role: 'bankManager' } },
@@ -20,5 +24,5 @@ export const routes: Routes = [
     canActivate: [roleGuard], data: { role: 'officer' }
   },
 
-  { path: '**', redirectTo: 'landing' },
+  { path: '**', redirectTo: 'home' },
 ];
