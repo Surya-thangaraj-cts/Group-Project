@@ -1,5 +1,3 @@
-
-// src/app/features/officer/model.ts
 export type AccountType = 'SAVINGS' | 'CURRENT';
 export type AccountStatus = 'ACTIVE' | 'CLOSED';
 export type TxnType = 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER';

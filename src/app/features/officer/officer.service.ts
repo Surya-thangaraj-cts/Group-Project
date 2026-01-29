@@ -1,5 +1,3 @@
-
-// src/app/features/officer/officer.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Account, Transaction, UpdateRequest, TxnType, AlertMsg, Notification } from './model';
@@ -11,16 +9,12 @@ export class OfficerService {
   private transactionsSubject = new BehaviorSubject<Transaction[]>([]);
   private updateReqsSubject = new BehaviorSubject<UpdateRequest[]>([]);
   private alertSubject = new BehaviorSubject<AlertMsg | null>(null);
-
-  // NEW: Notifications
   private notificationsSubject = new BehaviorSubject<Notification[]>([]);
 
   accounts$ = this.accountsSubject.asObservable();
   transactions$ = this.transactionsSubject.asObservable();
   updateRequests$ = this.updateReqsSubject.asObservable();
   alert$ = this.alertSubject.asObservable();
-
-  // NEW: Expose notifications observable
   notifications$ = this.notificationsSubject.asObservable();
 
   // Config
@@ -208,25 +202,25 @@ export class OfficerService {
     this.save();
   }
 
-  toggleFlag(transactionId: string): void {
-    const txns = [...this.transactionsSubject.value];
-    const t = txns.find(x => x.id === transactionId);
-    if (!t) return;
-    t.flagged = !t.flagged;
-    this.transactionsSubject.next(txns);
-    this.save();
-    this.setSuccess(`Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`);
+  // toggleFlag(transactionId: string): void {
+  //   const txns = [...this.transactionsSubject.value];
+  //   const t = txns.find(x => x.id === transactionId);
+  //   if (!t) return;
+  //   t.flagged = !t.flagged;
+  //   this.transactionsSubject.next(txns);
+  //   this.save();
+  //   this.setSuccess(`Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`);
 
     // NEW: Only notify when it becomes flagged
-    if (t.flagged) {
-      this.addNotification({
-        type: 'TXN_FLAGGED',
-        title: `Transaction flagged HIGH (${t.accountId})`,
-        message: `Txn ${t.id} flagged as high value.`,
-        meta: { accountId: t.accountId, txnId: t.id, amount: t.amount }
-      });
-    }
-  }
+  //   if (t.flagged) {
+  //     this.addNotification({
+  //       type: 'TXN_FLAGGED',
+  //       title: `Transaction flagged HIGH (${t.accountId})`,
+  //       message: `Txn ${t.id} flagged as high value.`,
+  //       meta: { accountId: t.accountId, txnId: t.id, amount: t.amount }
+  //     });
+  //   }
+  // }
 
   // ---------- Notifications (helpers) ----------
   private addNotification(input: Omit<Notification, 'id' | 'time' | 'read'>): void {
