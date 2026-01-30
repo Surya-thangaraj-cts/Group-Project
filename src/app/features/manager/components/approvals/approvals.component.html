@@ -152,7 +152,7 @@
     </table>
 
     <!-- Transaction Approvals Table -->
-    <table class="approvals-table" *ngIf="approvalType === 'transaction'">
+    <table class="approvals-table" *ngIf="activeTab !== 'pending' && approvalType === 'transaction'">
       <thead>
         <tr>
           <th>ID</th>

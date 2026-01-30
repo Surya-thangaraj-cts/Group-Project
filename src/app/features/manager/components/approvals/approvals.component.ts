@@ -105,12 +105,10 @@ export class ApprovalsComponent implements OnInit {
     let filtered: any[] = [];
 
     if (this.activeTab === 'pending') {
-      if (this.approvalType === 'transaction') {
-        filtered = this.approvals.filter(a => a.decision === 'Pending');
-      } else {
-        this.approvalType = 'datachange';
-        filtered = this.dataChangeApprovals.filter(d => d.decision === 'Pending');
-      }
+      // Show both pending transaction approvals and pending data change approvals
+      const pendingTransactions = this.approvals.filter(a => a.decision === 'Pending');
+      const pendingDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Pending');
+      filtered = [...pendingTransactions, ...pendingDataChanges];
     } else if (this.activeTab === 'approved') {
       this.approvalType = 'transaction';
       // Show both approved data changes and approved transactions
