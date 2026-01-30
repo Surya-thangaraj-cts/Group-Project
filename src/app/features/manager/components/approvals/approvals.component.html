@@ -109,7 +109,7 @@
             <td class="amount-cell">{{ item.newValue }}</td>
             <td class="date-cell">{{ getNullableDate(item.requestDate) }}</td>
             <td class="action-cell">
-              <button class="btn-review" (click)="openApprovalModal(item.changeId)">Review</button>
+              <button class="btn-review" (click)="approvalType = 'datachange'; openApprovalModal(item.changeId)">Review</button>
             </td>
           </ng-container>
         </tr>
