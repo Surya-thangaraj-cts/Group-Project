@@ -91,7 +91,7 @@
             <td class="amount-cell">₹{{ getTransaction(item.transactionId)?.amount | number:'1.2-2' }}</td>
             <td class="date-cell">{{ getNullableDate(getTransaction(item.transactionId)?.date) }}</td>
             <td class="action-cell">
-              <button class="btn-review" (click)="openApprovalModal(item.approvalId)">Review</button>
+              <button class="btn-review" (click)="approvalType = 'transaction'; openApprovalModal(item.approvalId)">Review</button>
             </td>
           </ng-container>
 
