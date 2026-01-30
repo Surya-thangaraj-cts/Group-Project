@@ -81,6 +81,13 @@ export class DataService {
     const transactionTypes: Array<'Deposit' | 'Withdrawal' | 'Transfer'> = ['Deposit', 'Withdrawal', 'Transfer'];
     const statuses: Array<'Approved' | 'Pending' | 'Rejected'> = ['Approved', 'Pending', 'Rejected'];
 
+    // High-value transaction IDs that need amounts > 100,000
+    const highValueIds = [
+      'TXN000001', 'TXN000002', 'TXN000005', 'TXN000007', 'TXN000010',
+      'TXN000015', 'TXN000018', 'TXN000022', 'TXN000028', 'TXN000031',
+      'TXN000035', 'TXN000042', 'TXN000048', 'TXN000055', 'TXN000062'
+    ];
+
     // Generate 150 comprehensive transactions
     for (let i = 1; i <= 150; i++) {
       const randomDay = Math.floor(Math.random() * 28) + 1;
@@ -93,17 +100,25 @@ export class DataService {
       const customerName = customerNames[Math.floor(Math.random() * customerNames.length)];
       const accountId = accounts[Math.floor(Math.random() * accounts.length)];
       
+      const txnId = `TXN${String(i).padStart(6, '0')}`;
+      const isHighValueTxn = highValueIds.includes(txnId);
+      
       let amount: number;
-      if (transactionType === 'Deposit') {
-        amount = Math.floor(Math.random() * 500000) + 1000;
-      } else if (transactionType === 'Withdrawal') {
-        amount = Math.floor(Math.random() * 100000) + 500;
+      if (isHighValueTxn) {
+        // High-value transactions must be > 100,000
+        amount = Math.floor(Math.random() * 400000) + 100001;
       } else {
-        amount = Math.floor(Math.random() * 250000) + 1000;
+        if (transactionType === 'Deposit') {
+          amount = Math.floor(Math.random() * 100000) + 1000;
+        } else if (transactionType === 'Withdrawal') {
+          amount = Math.floor(Math.random() * 100000) + 500;
+        } else {
+          amount = Math.floor(Math.random() * 100000) + 1000;
+        }
       }
 
       this.transactions.push({
-        id: `TXN${String(i).padStart(6, '0')}`,
+        id: txnId,
         accountId: accountId,
         user: customerName,
         date: date,
