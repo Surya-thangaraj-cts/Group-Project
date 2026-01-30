@@ -1,11 +1,11 @@
 
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
-import { HomeComponent } from './components/home/home.component';
-import { SigninComponent } from './components/signin/signin.component';
-import { RegisterComponent } from './components/register/register.component';
-import { AdminComponent } from './admin/admin.component';
-import { ManagerComponent } from './manager/manager.component';
+import { HomeComponent } from './pages/home/home.component';
+import { SigninComponent } from './pages/signin/signin.component';
+import { RegisterComponent } from './pages/register/register.component';
+import { AdminComponent } from './features/admin/admin.component';
+import { ManagerComponent } from './features/manager/manager.component';
 import { roleGuard } from './auth/auth.guard';
 
 export const routes: Routes = [
