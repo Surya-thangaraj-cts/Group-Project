@@ -99,6 +99,15 @@
   flex-wrap: wrap;
 }
 
+/* Reuse pending filter layout for approved and rejected groups */
+.approved-filters,
+.rejected-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  align-items: center;
+}
 .filter-button {
   padding: 10px 18px;
   border: 2px solid #7c3aed;

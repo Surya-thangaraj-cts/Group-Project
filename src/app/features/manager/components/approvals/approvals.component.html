@@ -30,13 +30,7 @@
       Rejected
       <span class="tab-count">{{ dataService.getCombinedApprovalsCount('Rejected') }}</span>
     </button>
-    <button 
-      class="tab-button"
-      [class.active]="activeTab === 'highvalue'"
-      (click)="selectTab('highvalue')">
-      High-Value
-      <span class="tab-count">{{ dataService.getHighValuePendingCount() }}</span>
-    </button>
+    <!-- High-Value tab removed -->
   </div>
 
   <!-- Pending Tab Filters -->
@@ -61,6 +55,56 @@
       (click)="setPendingFilter('highvalue')">
       High Value
       <span class="filter-count">{{ getPendingCountHighValue() }}</span>
+    </button>
+  </div>
+
+  <!-- Approved Tab Filters -->
+  <div class="approved-filters" *ngIf="activeTab === 'approved'">
+    <button 
+      class="filter-button"
+      [class.active]="approvedFilter === 'all'"
+      (click)="setApprovedFilter('all')">
+      All Approved
+      <span class="filter-count">{{ getApprovedCountAll() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="approvedFilter === 'accountchanges'"
+      (click)="setApprovedFilter('accountchanges')">
+      Account Changes
+      <span class="filter-count">{{ getApprovedCountAccountChanges() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="approvedFilter === 'highvalue'"
+      (click)="setApprovedFilter('highvalue')">
+      High Value
+      <span class="filter-count">{{ getApprovedCountHighValue() }}</span>
+    </button>
+  </div>
+
+  <!-- Rejected Tab Filters -->
+  <div class="rejected-filters" *ngIf="activeTab === 'rejected'">
+    <button 
+      class="filter-button"
+      [class.active]="rejectedFilter === 'all'"
+      (click)="setRejectedFilter('all')">
+      All Rejected
+      <span class="filter-count">{{ getRejectedCountAll() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="rejectedFilter === 'accountchanges'"
+      (click)="setRejectedFilter('accountchanges')">
+      Account Changes
+      <span class="filter-count">{{ getRejectedCountAccountChanges() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="rejectedFilter === 'highvalue'"
+      (click)="setRejectedFilter('highvalue')">
+      High Value
+      <span class="filter-count">{{ getRejectedCountHighValue() }}</span>
     </button>
   </div>
 
@@ -187,7 +231,7 @@
           <th>Amount</th>
           <th>Date</th>
           <th>Decision</th>
-          <th *ngIf="activeTab !== 'highvalue'">Comments</th>
+          <th *ngIf="activeTab === 'approved' || activeTab === 'rejected'">Comments</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -214,7 +258,7 @@
             <td>
               <span class="decision-badge" [ngClass]="'decision-' + approval.decision.toLowerCase()">{{ approval.decision }}</span>
             </td>
-            <td class="comments-cell" *ngIf="activeTab !== 'highvalue'" [title]="approval.comments || 'No comments'">{{ approval.comments || '-' }}</td>
+            <td class="comments-cell" *ngIf="activeTab === 'approved' || activeTab === 'rejected'" [title]="approval.comments || 'No comments'">{{ approval.comments || '-' }}</td>
             <td class="action-cell">
               <button *ngIf="approval.decision === 'Pending'" class="btn-review" (click)="approvalType = 'transaction'; openApprovalModal(approval.approvalId)">Review</button>
               <span *ngIf="approval.decision !== 'Pending'" class="status-text">Completed</span>
@@ -237,7 +281,7 @@
             <td>
               <span class="decision-badge" [ngClass]="'decision-' + approval.decision.toLowerCase()">{{ approval.decision }}</span>
             </td>
-            <td class="comments-cell" *ngIf="activeTab !== 'highvalue'" [title]="approval.comments || 'No comments'">{{ approval.comments || '-' }}</td>
+            <td class="comments-cell" *ngIf="activeTab === 'approved' || activeTab === 'rejected'" [title]="approval.comments || 'No comments'">{{ approval.comments || '-' }}</td>
             <td class="action-cell">
               <button *ngIf="approval.decision === 'Pending'" class="btn-review" (click)="approvalType = 'datachange'; openApprovalModal(approval.changeId)">Review</button>
               <span *ngIf="approval.decision !== 'Pending'" class="status-text">Completed</span>

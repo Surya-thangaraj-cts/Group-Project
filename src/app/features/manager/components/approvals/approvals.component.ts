@@ -16,10 +16,12 @@ export class ApprovalsComponent implements OnInit {
   dataChangeApprovals: DataChangeApproval[] = [];
   transactions: Transaction[] = [];
   
-  activeTab: 'pending' | 'approved' | 'rejected' | 'highvalue' = 'pending';
+  activeTab: 'pending' | 'approved' | 'rejected' = 'pending';
   filteredItems: any[] = [];
   approvalType: 'transaction' | 'datachange' = 'datachange';
   pendingFilter: 'all' | 'accountchanges' | 'highvalue' = 'all';
+  approvedFilter: 'all' | 'accountchanges' | 'highvalue' = 'all';
+  rejectedFilter: 'all' | 'accountchanges' | 'highvalue' = 'all';
   
   showApprovalModal = false;
   selectedItemId: string | null = null;
@@ -96,10 +98,12 @@ export class ApprovalsComponent implements OnInit {
     });
   }
 
-  selectTab(tab: 'pending' | 'approved' | 'rejected' | 'highvalue'): void {
+  selectTab(tab: 'pending' | 'approved' | 'rejected'): void {
     this.activeTab = tab;
     this.searchQuery = '';
     this.pendingFilter = 'all';
+    this.approvedFilter = 'all';
+    this.rejectedFilter = 'all';
     this.filterApprovals();
   }
 
@@ -126,6 +130,52 @@ export class ApprovalsComponent implements OnInit {
     }).length;
   }
 
+    setApprovedFilter(filter: 'all' | 'accountchanges' | 'highvalue'): void {
+      this.approvedFilter = filter;
+      this.filterApprovals();
+    }
+
+    getApprovedCountAll(): number {
+      const approvedTransactions = this.approvals.filter(a => a.decision === 'Approved').length;
+      const approvedDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Approved').length;
+      return approvedTransactions + approvedDataChanges;
+    }
+
+    getApprovedCountAccountChanges(): number {
+      return this.dataChangeApprovals.filter(d => d.decision === 'Approved').length;
+    }
+
+    getApprovedCountHighValue(): number {
+      return this.approvals.filter(a => {
+        if (a.decision !== 'Approved') return false;
+        const transaction = this.transactions.find(t => t.id === a.transactionId);
+        return transaction && transaction.amount > 100000;
+      }).length;
+    }
+
+    setRejectedFilter(filter: 'all' | 'accountchanges' | 'highvalue'): void {
+      this.rejectedFilter = filter;
+      this.filterApprovals();
+    }
+
+    getRejectedCountAll(): number {
+      const rejectedTransactions = this.approvals.filter(a => a.decision === 'Rejected').length;
+      const rejectedDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Rejected').length;
+      return rejectedTransactions + rejectedDataChanges;
+    }
+
+    getRejectedCountAccountChanges(): number {
+      return this.dataChangeApprovals.filter(d => d.decision === 'Rejected').length;
+    }
+
+    getRejectedCountHighValue(): number {
+      return this.approvals.filter(a => {
+        if (a.decision !== 'Rejected') return false;
+        const transaction = this.transactions.find(t => t.id === a.transactionId);
+        return transaction && transaction.amount > 100000;
+      }).length;
+    }
+
   filterApprovals(): void {
     let filtered: any[] = [];
 
@@ -150,19 +200,35 @@ export class ApprovalsComponent implements OnInit {
       // Show both approved data changes and approved transactions
       const approvedTransactions = this.approvals.filter(a => a.decision === 'Approved');
       const approvedDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Approved');
-      filtered = [...approvedTransactions, ...approvedDataChanges];
+  
+      // Apply approved filter
+      if (this.approvedFilter === 'accountchanges') {
+        filtered = approvedDataChanges;
+      } else if (this.approvedFilter === 'highvalue') {
+        filtered = approvedTransactions.filter(a => {
+          const transaction = this.transactions.find(t => t.id === a.transactionId);
+          return transaction && transaction.amount > 100000;
+        });
+      } else {
+        filtered = [...approvedTransactions, ...approvedDataChanges];
+      }
     } else if (this.activeTab === 'rejected') {
       this.approvalType = 'transaction';
       // Show both rejected data changes and rejected transactions
       const rejectedTransactions = this.approvals.filter(a => a.decision === 'Rejected');
       const rejectedDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Rejected');
-      filtered = [...rejectedTransactions, ...rejectedDataChanges];
-    } else if (this.activeTab === 'highvalue') {
-      this.approvalType = 'transaction';
-      filtered = this.approvals.filter(a => {
-        const transaction = this.transactions.find(t => t.id === a.transactionId);
-        return a.decision === 'Pending' && transaction && transaction.amount > 100000;
-      });
+  
+      // Apply rejected filter
+      if (this.rejectedFilter === 'accountchanges') {
+        filtered = rejectedDataChanges;
+      } else if (this.rejectedFilter === 'highvalue') {
+        filtered = rejectedTransactions.filter(a => {
+          const transaction = this.transactions.find(t => t.id === a.transactionId);
+          return transaction && transaction.amount > 100000;
+        });
+      } else {
+        filtered = [...rejectedTransactions, ...rejectedDataChanges];
+      }
     }
 
     if (this.searchQuery.trim()) {
