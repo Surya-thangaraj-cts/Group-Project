@@ -199,8 +199,17 @@
 }
 
 /* Make the ROLE value white for visibility (second detail item in the grid) */
-.details-grid .detail-item:nth-child(2) .detail-value {
-  color: #ffffff;
+.profile-sidebar .details-grid .detail-item:nth-child(2) {
+  background: linear-gradient(135deg, #ffffff 0%, #ffffff 100%);
+  border: none;
+}
+
+.profile-sidebar .details-grid .detail-item:nth-child(2) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.profile-sidebar .details-grid .detail-item:nth-child(2) {
+  color: #ffffff !important;
 }
 
 .detail-value.status-active {
@@ -312,7 +321,7 @@
 .manager-name {
   font-size: 24px;
   font-weight: 700;
-  color: #1f2937;
+  color: #ffffff;
   margin: 0 0 8px 0;
 }
 
