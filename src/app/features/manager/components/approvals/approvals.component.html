@@ -46,18 +46,21 @@
       [class.active]="pendingFilter === 'all'"
       (click)="setPendingFilter('all')">
       All Pending
+      <span class="filter-count">{{ getPendingCountAll() }}</span>
     </button>
     <button 
       class="filter-button"
       [class.active]="pendingFilter === 'accountchanges'"
       (click)="setPendingFilter('accountchanges')">
       Account Changes
+      <span class="filter-count">{{ getPendingCountAccountChanges() }}</span>
     </button>
     <button 
       class="filter-button"
       [class.active]="pendingFilter === 'highvalue'"
       (click)="setPendingFilter('highvalue')">
       High Value
+      <span class="filter-count">{{ getPendingCountHighValue() }}</span>
     </button>
   </div>
 

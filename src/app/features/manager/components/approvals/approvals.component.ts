@@ -108,6 +108,24 @@ export class ApprovalsComponent implements OnInit {
     this.filterApprovals();
   }
 
+  getPendingCountAll(): number {
+    const pendingTransactions = this.approvals.filter(a => a.decision === 'Pending').length;
+    const pendingDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Pending').length;
+    return pendingTransactions + pendingDataChanges;
+  }
+
+  getPendingCountAccountChanges(): number {
+    return this.dataChangeApprovals.filter(d => d.decision === 'Pending').length;
+  }
+
+  getPendingCountHighValue(): number {
+    return this.approvals.filter(a => {
+      if (a.decision !== 'Pending') return false;
+      const transaction = this.transactions.find(t => t.id === a.transactionId);
+      return transaction && transaction.amount > 100000;
+    }).length;
+  }
+
   filterApprovals(): void {
     let filtered: any[] = [];
 
