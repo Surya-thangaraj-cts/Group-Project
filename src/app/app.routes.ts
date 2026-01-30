@@ -4,6 +4,7 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
 import { SigninComponent } from './components/signin/signin.component';
 import { RegisterComponent } from './components/register/register.component';
+import { NotFoundComponent } from './components/not-found/not-found.component';
 import { AdminComponent } from './admin/admin.component';
 import { ManagerComponent } from './manager/manager.component';
 import { roleGuard } from './auth/auth.guard';
@@ -24,5 +25,5 @@ export const routes: Routes = [
     canActivate: [roleGuard], data: { role: 'officer' }
   },
 
-  { path: '**', redirectTo: 'home' },
+  { path: '**', component: NotFoundComponent },
 ];

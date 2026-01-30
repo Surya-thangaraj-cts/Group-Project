@@ -583,7 +583,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   signOut(): void {
     try {
       this.auth.signout();
-      this.router.navigate(['/landing']);
+      this.router.navigate(['/home']);
     } catch (e) {
       console.error('Sign out failed', e);
     }
