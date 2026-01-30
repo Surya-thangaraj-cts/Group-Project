@@ -19,6 +19,7 @@ export class ApprovalsComponent implements OnInit {
   activeTab: 'pending' | 'approved' | 'rejected' | 'highvalue' = 'pending';
   filteredItems: any[] = [];
   approvalType: 'transaction' | 'datachange' = 'datachange';
+  pendingFilter: 'all' | 'accountchanges' | 'highvalue' = 'all';
   
   showApprovalModal = false;
   selectedItemId: string | null = null;
@@ -98,6 +99,12 @@ export class ApprovalsComponent implements OnInit {
   selectTab(tab: 'pending' | 'approved' | 'rejected' | 'highvalue'): void {
     this.activeTab = tab;
     this.searchQuery = '';
+    this.pendingFilter = 'all';
+    this.filterApprovals();
+  }
+
+  setPendingFilter(filter: 'all' | 'accountchanges' | 'highvalue'): void {
+    this.pendingFilter = filter;
     this.filterApprovals();
   }
 
@@ -108,7 +115,18 @@ export class ApprovalsComponent implements OnInit {
       // Show both pending transaction approvals and pending data change approvals
       const pendingTransactions = this.approvals.filter(a => a.decision === 'Pending');
       const pendingDataChanges = this.dataChangeApprovals.filter(d => d.decision === 'Pending');
-      filtered = [...pendingTransactions, ...pendingDataChanges];
+      
+      // Apply pending filter
+      if (this.pendingFilter === 'accountchanges') {
+        filtered = pendingDataChanges;
+      } else if (this.pendingFilter === 'highvalue') {
+        filtered = pendingTransactions.filter(a => {
+          const transaction = this.transactions.find(t => t.id === a.transactionId);
+          return transaction && transaction.amount > 100000;
+        });
+      } else {
+        filtered = [...pendingTransactions, ...pendingDataChanges];
+      }
     } else if (this.activeTab === 'approved') {
       this.approvalType = 'transaction';
       // Show both approved data changes and approved transactions

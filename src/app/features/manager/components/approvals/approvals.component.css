@@ -90,6 +90,40 @@
 }
 
 /* ============================================
+   Pending Filters
+   ============================================ */
+.pending-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.filter-button {
+  padding: 10px 18px;
+  border: 2px solid #7c3aed;
+  background-color: transparent;
+  color: #7c3aed;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.filter-button:hover {
+  background-color: rgba(124, 58, 237, 0.1);
+  transform: translateY(-2px);
+}
+
+.filter-button.active {
+  background-color: #7c3aed;
+  color: white;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+/* ============================================
    Filters Section
    ============================================ */
 .filters-container {

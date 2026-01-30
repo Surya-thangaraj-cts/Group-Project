@@ -39,6 +39,28 @@
     </button>
   </div>
 
+  <!-- Pending Tab Filters -->
+  <div class="pending-filters" *ngIf="activeTab === 'pending'">
+    <button 
+      class="filter-button"
+      [class.active]="pendingFilter === 'all'"
+      (click)="setPendingFilter('all')">
+      All Pending
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="pendingFilter === 'accountchanges'"
+      (click)="setPendingFilter('accountchanges')">
+      Account Changes
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="pendingFilter === 'highvalue'"
+      (click)="setPendingFilter('highvalue')">
+      High Value
+    </button>
+  </div>
+
   <!-- Filters and Search -->
   <div class="filters-container">
     <div class="search-box">
