@@ -14,7 +14,7 @@
       [class.active]="activeTab === 'pending'"
       (click)="selectTab('pending')">
       Pending 
-      <span class="tab-count">{{ dataService.getPendingDataChangeCount() }}</span>
+      <span class="tab-count">{{ dataService.getApprovalsByStatus('Pending').length + dataService.getDataChangeApprovalsByStatus('Pending').length }}</span>
     </button>
     <button 
       class="tab-button"
@@ -62,8 +62,62 @@
 
   <!-- Approval Items Table -->
   <div class="approvals-table-wrapper" *ngIf="filteredItems.length > 0; else noApprovals">
-    <!-- Data Change Approvals Table -->
-    <table class="approvals-table" *ngIf="approvalType === 'datachange'">
+    <!-- Combined Table for Pending Tab (shows both transactions and data changes) -->
+    <table class="approvals-table" *ngIf="activeTab === 'pending'">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Account/Details</th>
+          <th>Information</th>
+          <th>Amount/Value</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of filteredItems" class="approval-row" [ngClass]="'row-pending'">
+          <!-- Transaction Row -->
+          <ng-container *ngIf="item.transactionId">
+            <td class="approval-id-cell">{{ item.approvalId }}</td>
+            <td class="type-badge">Transaction</td>
+            <td>{{ getTransaction(item.transactionId)?.accountId || 'N/A' }}</td>
+            <td>
+              <div class="details-content">
+                <div><strong>{{ getTransaction(item.transactionId)?.user || 'N/A' }}</strong></div>
+                <div class="details-sub">{{ getTransaction(item.transactionId)?.type || 'N/A' }}</div>
+              </div>
+            </td>
+            <td class="amount-cell">₹{{ getTransaction(item.transactionId)?.amount | number:'1.2-2' }}</td>
+            <td class="date-cell">{{ getNullableDate(getTransaction(item.transactionId)?.date) }}</td>
+            <td class="action-cell">
+              <button class="btn-review" (click)="openApprovalModal(item.approvalId)">Review</button>
+            </td>
+          </ng-container>
+
+          <!-- Data Change Row -->
+          <ng-container *ngIf="item.changeId">
+            <td class="approval-id-cell">{{ item.changeId }}</td>
+            <td class="type-badge">Data Change</td>
+            <td>{{ item.accountId }}</td>
+            <td>
+              <div class="details-content">
+                <div><strong>{{ item.changeType }}</strong></div>
+                <div class="details-sub">{{ item.oldValue }}</div>
+              </div>
+            </td>
+            <td class="amount-cell">{{ item.newValue }}</td>
+            <td class="date-cell">{{ getNullableDate(item.requestDate) }}</td>
+            <td class="action-cell">
+              <button class="btn-review" (click)="openApprovalModal(item.changeId)">Review</button>
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Data Change Approvals Table for non-pending tabs -->
+    <table class="approvals-table" *ngIf="activeTab !== 'pending' && approvalType === 'datachange'">
       <thead>
         <tr>
           <th>Change ID</th>
