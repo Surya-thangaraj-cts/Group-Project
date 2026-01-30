@@ -28,12 +28,20 @@ export class ManagerComponent implements OnInit {
   title = 'manager';
   activeSection = 'dashboard';
   showProfileSidebar = false;
+  managerProfile: any = {};
 
   constructor(private profileService: ProfileService) {}
 
   ngOnInit(): void {
     // Refresh profile to load current logged-in user data
     this.profileService.refreshProfile();
+    this.fetchManagerProfile();
+  }
+
+  async fetchManagerProfile() {
+    this.profileService.profile$.subscribe(profile => {
+      this.managerProfile = profile;
+    });
   }
 
   handleNavigation(section: string): void {
@@ -52,3 +60,4 @@ export class ManagerComponent implements OnInit {
     this.showProfileSidebar = true;
   }
 }
+
