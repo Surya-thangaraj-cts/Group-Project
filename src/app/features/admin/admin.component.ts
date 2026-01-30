@@ -51,9 +51,6 @@ interface ComplianceMetrics {
   imports: [CommonModule, ReactiveFormsModule, FormsModule, ExistingUsersTableComponent]
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
-  // ----- Page info -----
-  // currentYear = new Date().getFullYear();
- 
   activeView: 'admin' | 'compliance' = 'admin';
   showCompliance(): void { this.activeView = 'compliance'; }
   showAdmin(): void {

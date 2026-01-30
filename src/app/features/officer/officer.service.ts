@@ -202,26 +202,6 @@ export class OfficerService {
     this.save();
   }
 
-  // toggleFlag(transactionId: string): void {
-  //   const txns = [...this.transactionsSubject.value];
-  //   const t = txns.find(x => x.id === transactionId);
-  //   if (!t) return;
-  //   t.flagged = !t.flagged;
-  //   this.transactionsSubject.next(txns);
-  //   this.save();
-  //   this.setSuccess(`Transaction ${t.id} ${t.flagged ? 'flagged as HIGH value' : 'unflagged'}`);
-
-    // NEW: Only notify when it becomes flagged
-  //   if (t.flagged) {
-  //     this.addNotification({
-  //       type: 'TXN_FLAGGED',
-  //       title: `Transaction flagged HIGH (${t.accountId})`,
-  //       message: `Txn ${t.id} flagged as high value.`,
-  //       meta: { accountId: t.accountId, txnId: t.id, amount: t.amount }
-  //     });
-  //   }
-  // }
-
   // ---------- Notifications (helpers) ----------
   private addNotification(input: Omit<Notification, 'id' | 'time' | 'read'>): void {
     const n: Notification = {

@@ -348,7 +348,7 @@ export class DataService {
     'TXN000035', 'TXN000042', 'TXN000048', 'TXN000055', 'TXN000062'
   ];
 
-  private approvals: Approval[] = [
+  private approvalsData: Approval[] = [
     // PENDING APPROVALS - High-Value Transactions
     { approvalId: 'APR001', transactionId: 'TXN000001', reviewerId: 'REV001', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T10:00:00') },
     { approvalId: 'APR002', transactionId: 'TXN000002', reviewerId: 'REV002', decision: 'Pending', comments: '', approvalDate: new Date('2025-12-30T09:30:00') },
@@ -368,7 +368,7 @@ export class DataService {
     { approvalId: 'APR012', transactionId: 'TXN000042', reviewerId: 'REV001', decision: 'Rejected', comments: 'Rejected - Account has insufficient balance for this transaction', approvalDate: new Date('2025-12-27T09:45:00') }
   ];
 
-  private dataChangeApprovals: DataChangeApproval[] = [
+  private dataChangeApprovalsData: DataChangeApproval[] = [
     // PENDING DATA CHANGES
     { changeId: 'DCH001', accountId: 'ACC1001', changeType: 'Name', oldValue: 'John Smith', newValue: 'John Robert Smith', requestedBy: 'ACC1001', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T08:00:00'), decisionDate: new Date('2025-12-30T08:00:00') },
     { changeId: 'DCH002', accountId: 'ACC1002', changeType: 'Address', oldValue: '123 Main Street, New York, NY 10001', newValue: '456 Oak Avenue, Brooklyn, NY 11201', requestedBy: 'ACC1002', decision: 'Pending', comments: '', requestDate: new Date('2025-12-30T07:30:00'), decisionDate: new Date('2025-12-30T07:30:00') },
@@ -386,6 +386,9 @@ export class DataService {
     { changeId: 'DCH010', accountId: 'ACC1010', changeType: 'Address', oldValue: '555 Beach Avenue, Brooklyn, NY 11218', newValue: 'Invalid Address Format - (incomplete)', requestedBy: 'ACC1010', decision: 'Rejected', comments: 'Rejected - Address format incomplete and could not be verified with postal database', decisionDate: new Date('2025-12-27T14:30:00'), requestDate: new Date('2025-12-27T09:15:00') },
     { changeId: 'DCH011', accountId: 'ACC1011', changeType: 'Email', oldValue: 'robert.johnson@email.com', newValue: 'robert.johnson99999@email.com', requestedBy: 'ACC1011', decision: 'Rejected', comments: 'Rejected - Email format suspicious and OTP verification failed after 3 attempts', decisionDate: new Date('2025-12-26T15:45:00'), requestDate: new Date('2025-12-26T10:30:00') }
   ];
+
+  private approvalsSubject = new BehaviorSubject<Approval[]>(this.approvalsData);
+  private dataChangeApprovalsSubject = new BehaviorSubject<DataChangeApproval[]>(this.dataChangeApprovalsData);
 
   getDashboardStats() {
     return this.dashboardStats;
@@ -530,15 +533,15 @@ export class DataService {
   }
 
   getApprovals(): Observable<Approval[]> {
-    return new BehaviorSubject(this.approvals).asObservable();
+    return this.approvalsSubject.asObservable();
   }
 
   getApprovalsByStatus(status: 'Pending' | 'Approved' | 'Rejected'): Approval[] {
-    return this.approvals.filter(a => a.decision === status);
+    return this.approvalsData.filter(a => a.decision === status);
   }
 
   getHighValueTransactions(): Approval[] {
-    return this.approvals.filter(a => {
+    return this.approvalsData.filter(a => {
       if (a.decision !== 'Pending') { return false; }
       const transaction = this.transactions.find(t => t.id === a.transactionId);
       return transaction && transaction.amount > 100000;
@@ -551,21 +554,21 @@ export class DataService {
    * dedicated methods for that where needed.
    */
   getCombinedApprovalsCount(status: 'Approved' | 'Rejected'): number {
-    const transactionApprovals = this.approvals.filter(a => a.decision === status).length;
-    const dataChangeApprovals = this.dataChangeApprovals.filter(d => d.decision === status).length;
+    const transactionApprovals = this.approvalsData.filter(a => a.decision === status).length;
+    const dataChangeApprovals = this.dataChangeApprovalsData.filter(d => d.decision === status).length;
     return transactionApprovals + dataChangeApprovals;
   }
 
   /** Count pending data-change approvals (used by Pending tab) */
   getPendingDataChangeCount(): number {
-    return this.dataChangeApprovals.filter(d => d.decision === 'Pending').length;
+    return this.dataChangeApprovalsData.filter(d => d.decision === 'Pending').length;
   }
 
   /**
    * Count high-value pending transactions (approvals linked to transactions > 100000 and still pending)
    */
   getHighValuePendingCount(): number {
-    return this.approvals.filter(a => {
+    return this.approvalsData.filter(a => {
       if (a.decision !== 'Pending') { return false; }
       const transaction = this.transactions.find(t => t.id === a.transactionId);
       return !!transaction && transaction.amount > 100000;
@@ -573,20 +576,22 @@ export class DataService {
   }
 
   updateApproval(approvalId: string, decision: 'Approved' | 'Rejected', comments: string): void {
-    const approval = this.approvals.find(a => a.approvalId === approvalId);
+    const approval = this.approvalsData.find(a => a.approvalId === approvalId);
     if (approval) {
       approval.decision = decision;
       approval.comments = comments;
       approval.approvalDate = new Date();
+      this.approvalsSubject.next([...this.approvalsData]);
     }
   }
 
   approveHighValueTransaction(transactionId: string, comments: string): boolean {
-    const approval = this.approvals.find(a => a.transactionId === transactionId);
+    const approval = this.approvalsData.find(a => a.transactionId === transactionId);
     if (approval) {
       approval.decision = 'Approved';
       approval.comments = comments;
       approval.approvalDate = new Date();
+      this.approvalsSubject.next([...this.approvalsData]);
       
       // Update transaction status
       const transaction = this.transactions.find(t => t.id === transactionId);
@@ -605,11 +610,12 @@ export class DataService {
   }
 
   rejectHighValueTransaction(transactionId: string, comments: string): boolean {
-    const approval = this.approvals.find(a => a.transactionId === transactionId);
+    const approval = this.approvalsData.find(a => a.transactionId === transactionId);
     if (approval) {
       approval.decision = 'Rejected';
       approval.comments = comments;
       approval.approvalDate = new Date();
+      this.approvalsSubject.next([...this.approvalsData]);
       
       // Update transaction status
       const transaction = this.transactions.find(t => t.id === transactionId);
@@ -645,7 +651,7 @@ export class DataService {
   }
 
   getApprovalWithTransaction(approvalId: string): { approval: Approval; transaction: Transaction } | undefined {
-    const approval = this.approvals.find(a => a.approvalId === approvalId);
+    const approval = this.approvalsData.find(a => a.approvalId === approvalId);
     if (approval) {
       const transaction = this.transactions.find(t => t.id === approval.transactionId);
       if (transaction) {
@@ -661,11 +667,11 @@ export class DataService {
   }
 
   getApprovalByTransactionId(transactionId: string): Approval | undefined {
-    return this.approvals.find(a => a.transactionId === transactionId);
+    return this.approvalsData.find(a => a.transactionId === transactionId);
   }
 
   getDataChangeApprovalByChangeId(changeId: string): DataChangeApproval | undefined {
-    return this.dataChangeApprovals.find(d => d.changeId === changeId);
+    return this.dataChangeApprovalsData.find(d => d.changeId === changeId);
   }
 
   getNotificationById(notificationId: string): Notification | undefined {
@@ -697,19 +703,20 @@ export class DataService {
 
   // Data Change Approval Methods
   getDataChangeApprovals(): Observable<DataChangeApproval[]> {
-    return new BehaviorSubject(this.dataChangeApprovals).asObservable();
+    return this.dataChangeApprovalsSubject.asObservable();
   }
 
   getDataChangeApprovalsByStatus(status: 'Pending' | 'Approved' | 'Rejected'): DataChangeApproval[] {
-    return this.dataChangeApprovals.filter(d => d.decision === status);
+    return this.dataChangeApprovalsData.filter(d => d.decision === status);
   }
 
   updateDataChangeApproval(changeId: string, decision: 'Approved' | 'Rejected', comments: string): void {
-    const dataChange = this.dataChangeApprovals.find(d => d.changeId === changeId);
+    const dataChange = this.dataChangeApprovalsData.find(d => d.changeId === changeId);
     if (dataChange) {
       dataChange.decision = decision;
       dataChange.comments = comments;
       dataChange.decisionDate = new Date();
+      this.dataChangeApprovalsSubject.next([...this.dataChangeApprovalsData]);
     }
   }
 

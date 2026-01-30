@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataService } from '../../services/data.service';
 import { ProfileService } from '../../services/profile.service';
-import { Subject } from 'rxjs';
+import { Subject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
@@ -42,14 +42,17 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
         this.managerName = `${profile.firstName} ${profile.lastName}`;
       });
 
-    // Get pending approvals count (high-value transactions + data change approvals)
-    this.dataService.getApprovals().pipe(takeUntil(this.destroy$)).subscribe((approvals) => {
-      const pendingTransactionCount = approvals.filter(a => a.decision === 'Pending').length;
-      this.dataService.getDataChangeApprovals().pipe(takeUntil(this.destroy$)).subscribe((dataChanges) => {
+    // Combine approvals and data change approvals streams for real-time updates
+    combineLatest([
+      this.dataService.getApprovals(),
+      this.dataService.getDataChangeApprovals()
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([approvals, dataChanges]) => {
+        const pendingTransactionCount = approvals.filter(a => a.decision === 'Pending').length;
         const pendingDataChangeCount = dataChanges.filter(d => d.decision === 'Pending').length;
         this.pendingApprovalsCount = pendingTransactionCount + pendingDataChangeCount;
       });
-    });
 
     // Load account growth from data service
     this.accountGrowth = this.dataService.getAccountGrowthTrends();
