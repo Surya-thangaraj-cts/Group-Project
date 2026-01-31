@@ -52,7 +52,7 @@ interface ComplianceMetrics {
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   // ----- Page info -----
-  // currentYear = new Date().getFullYear();
+ 
  
   activeView: 'admin' | 'compliance' = 'admin';
   showCompliance(): void { this.activeView = 'compliance'; }
@@ -63,15 +63,14 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
  
   // ----- Data -----
-  users: User[] = [];         // existing = Active/Inactive
-  pendingUsers: User[] = [];  // Pending only
+  users: User[] = [];        
+  pendingUsers: User[] = []; 
  
   // ----- Selection / editing -----
   selectedUser?: User;
   editingUserId?: string;
-  editingUser?: User;  // for modal editing
-  pendingSearchTerm: string = '';  // for pending users search
- 
+  editingUser?: User;  
+  pendingSearchTerm: string = ''; 
   // ----- Forms -----
   editUserForm: FormGroup;
   inviteUserForm: FormGroup;
@@ -94,7 +93,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
  
   // ----- FULL-WIDTH CHART: DOM refs & sizing -----
   @ViewChild('chartWrap') chartWrap?: ElementRef<HTMLElement>;
-  chartWidth = 1200;  // updated at runtime
+  chartWidth = 1400; 
   chartHeight = 220;
   private resizeObs?: ResizeObserver;
   chartLeftMargin = 48;
@@ -157,14 +156,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
  
-  // -------------------------------
-  //  Lifecycle
-  // -------------------------------
+ 
   ngOnInit(): void {
     // Load users from AuthService (split into existing vs pending)
     this.refreshFromAuth();
  
-    // Demo compliance values (you can replace with API)
+    
     this.compliance = {
       totalTransactions: 12845,
       highValueCount: 312,
@@ -173,9 +170,9 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       monthlyLabels:     ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
       monthlySuspicious: [700, 860, 820, 1050, 980, 1200, 1100, 1180, 1250, 1380, 1320, 1460], // demo matching axis scale
       amountBuckets: [
-        { label: '< ₹10k',    count: 450 },
+        { label: '< ₹10k',    count: 40 },
         { label: '₹10k–₹50k', count: 80 },
-        { label: '₹50k–₹1L',  count: 420 },
+        { label: '₹50k–₹1L',  count: 300 },
         { label: '> ₹1L',     count: 150 },
       ],
     };
@@ -369,15 +366,96 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
  
   // Amount bucket helpers for width & max
-  get maxBucket(): number {
-    const counts = this.compliance.amountBuckets?.map(b => b.count) ?? [1];
-    return Math.max(...counts, 1);
+  // get maxBucket(): number {
+  //   const counts = this.compliance.amountBuckets?.map(b => b.count) ?? [1];
+  //   return Math.max(...counts, 1);
+  // }
+  // bucketPercent(count: number): number {
+  //   const max = this.maxBucket || 1;
+  //   return Math.max(2, Math.round((count / max) * 100)); // min 2% so tiny bars stay visible
+  // }
+
+  // Pie chart helpers
+  getTotalBucketCount(): number {
+    return this.compliance.amountBuckets?.reduce((sum, b) => sum + b.count, 0) ?? 1;
   }
-  bucketPercent(count: number): number {
-    const max = this.maxBucket || 1;
-    return Math.max(2, Math.round((count / max) * 100)); // min 2% so tiny bars stay visible
+
+  getPieSlices(): { label: string; count: number; percentage: number; startAngle: number; endAngle: number; color: string }[] {
+    const total = this.getTotalBucketCount();
+    const colors = ['#0d6efd', '#198754', '#ffc107', '#dc3545']; // blue, green, yellow, red
+    let currentAngle = 0;
+    
+    return this.compliance.amountBuckets?.map((bucket, index) => {
+      const percentage = (bucket.count / total) * 100;
+      const sliceAngle = (bucket.count / total) * 360;
+      const startAngle = currentAngle;
+      const endAngle = currentAngle + sliceAngle;
+      currentAngle = endAngle;
+      
+      return {
+        ...bucket,
+        percentage,
+        startAngle,
+        endAngle,
+        color: colors[index % colors.length]
+      };
+    }) ?? [];
   }
+
+  getPiePath(startAngle: number, endAngle: number, radius: number = 80, innerRadius: number = 0): string {
+    const startRad = (startAngle - 90) * (Math.PI / 180);
+    const endRad = (endAngle - 90) * (Math.PI / 180);
+    
+    const x1 = Math.cos(startRad) * radius;
+    const y1 = Math.sin(startRad) * radius;
+    const x2 = Math.cos(endRad) * radius;
+    const y2 = Math.sin(endRad) * radius;
+    
+    const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+    
+    // if (innerRadius === 0) {
+    //   return `M 0 0 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+    // } else {
+    //   const x3 = Math.cos(endRad) * innerRadius;
+    //   const y3 = Math.sin(endRad) * innerRadius;
+    //   const x4 = Math.cos(startRad) * innerRadius;
+    //   const y4 = Math.sin(startRad) * innerRadius;
+    //   return `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} L ${x3} ${y3} A ${innerRadius} ${innerRadius} 0 ${largeArc} 0 ${x4} ${y4} Z`;
+    // }
+    return `M 0 0 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+  }
+
+  // onPieSliceEnter(event: MouseEvent, index: number): void {
+  //   const target = event.target as SVGPathElement;
+  //   if (target && target.style) {
+  //     target.style.opacity = '1';
+  //     target.style.filter = 'drop-shadow(0 0 8px rgba(0, 0, 0, 0.3))';
+  //   }
+  //   this.hoveredSliceIndex = index;
+  // }
+
+  // onPieSliceLeave(event: MouseEvent): void {
+  //   const target = event.target as SVGPathElement;
+  //   if (target && target.style) {
+  //     target.style.opacity = '0.85';
+  //     target.style.filter = 'none';
+  //   }
+  //   this.hoveredSliceIndex = null;
+  // }
+
+  //  onPieSliceEnter(event: MouseEvent): void {
+  //    const target = event.target as SVGPathElement;
+  //    if (target && target.style) {
+  //      target.style.opacity = '1';
+  //    }
+  //  }
  
+  //  onPieSliceLeave(event: MouseEvent): void {
+  //    const target = event.target as SVGPathElement;
+  //    if (target && target.style) {
+  //      target.style.opacity = '0.85';
+  //    }
+  //  }
   // -------------------------------
   //  Pending approvals
   // -------------------------------
@@ -583,7 +661,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   signOut(): void {
     try {
       this.auth.signout();
-      this.router.navigate(['/home']);
+      this.router.navigate(['/landing']);
     } catch (e) {
       console.error('Sign out failed', e);
     }

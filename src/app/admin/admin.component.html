@@ -1,6 +1,6 @@
  
 <!-- Admin Console Page -->
-<div class="py-3 admin-page" >
+<div class=" admin-page" >
   <!-- ===== Header (Profile + toggles) ===== -->
   <div class="mb-3 header">
     <div class="d-flex align-items-center justify-content-between gap-3">
@@ -298,8 +298,8 @@
  
         <!-- Dual line chart -->
         <div class="chart-block mb-3">
-          <div class="container-fluid px-3 px-md-4">
-            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap">
+          <div class="px-0">
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap px-3 px-md-4">
               <h3 class="h6 mb-2 mb-md-0">Monthly Volume vs Suspicious Flags</h3>
               <div class="legend small text-muted d-flex align-items-center gap-3">
                 <span class="d-inline-flex align-items-center gap-1">
@@ -310,9 +310,9 @@
                 </span>
               </div>
             </div>
- 
+
             <!-- Chart wrapper reference -->
-            <div class="svg-wrap" #chartWrap>
+            <div class="svg-wrap chart-svg-background px-3 px-md-4" #chartWrap>
               <svg
                 class="svg-chart"
                 role="img"
@@ -369,16 +369,46 @@
           </div>
         </div>
  
-        <!-- Amount Buckets -->
+        <!-- Amount Buckets Pie Chart -->
         <div class="chart-block mb-3">
-          <h3 class="h6 mb-2">Amount Buckets</h3>
-          <div class="bars">
-            <div class="bar-row" *ngFor="let b of compliance.amountBuckets">
-              <div class="bar-label">{{ b.label }}</div>
-              <div class="bar-track">
-                <div class="bar-fill" [style.width.%]="bucketPercent(b.count)"></div>
+          <h3 class="h6 mb-3 px-3 px-md-4">Amount Buckets Distribution</h3>
+          <div class="pie-chart-wrapper px-3 px-md-4">
+            <!-- Pie Chart on Left -->
+            <div class="pie-chart-container">
+              <svg width="320" height="320" viewBox="-160 -160 320 320" style="width: 100%; height: auto; max-width: 320px;">
+                <rect x="-160" y="-160" width="320" height="320" fill="rgba(106, 100, 226, 0.06)" rx="12" />
+                <g *ngFor="let slice of getPieSlices(); let i = index">
+                  <path
+                    [attr.d]="getPiePath(slice.startAngle, slice.endAngle, 130, 0)"
+                    [attr.fill]="slice.color"
+                    stroke="#1a1a1a"
+                    stroke-width="2"
+                    style="cursor: pointer; opacity: 0.85; transition: opacity 0.2s, filter 0.2s;"
+                    
+                    [attr.data-index]="i"
+                  />
+                 
+                
+                </g>
+                <circle cx="0" cy="0" r="6" fill="#1a1a1a" />
+              </svg>
+            </div>
+            
+            <!-- Legend on Right -->
+            <div class="pie-legend">
+              <div *ngFor="let slice of getPieSlices()" class="legend-item">
+                <div class="legend-item-header">
+                  <div
+                    class="legend-color-box"
+                    [style.background-color]="slice.color"
+                  ></div>
+                  <div class="legend-label">{{ slice.label }}</div>
+                </div>
+                <div class="legend-item-details">
+                  <span class="legend-count">{{ slice.count | number }}</span>
+                  <span class="legend-percentage">{{ slice.percentage | number:'1.1-1' }}%</span>
+                </div>
               </div>
-              <div class="bar-value text-white">{{ b.count | number }}</div>
             </div>
           </div>
         </div>
