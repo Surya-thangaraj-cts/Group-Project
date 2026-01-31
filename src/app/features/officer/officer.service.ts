@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { Account, Transaction, UpdateRequest, TxnType, AlertMsg, Notification } from './model';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Account, Transaction, UpdateRequest, TxnType, AlertMsg, Notification, OfficerProfile } from './model';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class OfficerService {
@@ -20,7 +21,7 @@ export class OfficerService {
   // Config
   readonly highValueThreshold = 100000;
 
-  constructor() {
+  constructor(private auth: AuthService) {
     this.load();
   }
 
@@ -39,12 +40,84 @@ export class OfficerService {
       const u = localStorage.getItem('updateRequests');
       const n = localStorage.getItem('notifications');
 
-      this.accountsSubject.next(a ? JSON.parse(a) : []);
+      // Dummy data to always include
+      const dummyAccounts: Account[] = [
+        {
+          accountId: 'ACC-1001',
+          customerName: 'Priya Sharma',
+          customerId: 'CUST-001',
+          accountType: 'SAVINGS',
+          balance: 150000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACC-1002',
+          customerName: 'Rahul Verma',
+          customerId: 'CUST-002',
+          accountType: 'CURRENT',
+          balance: 500000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACC-1003',
+          customerName: 'Anita Rao',
+          customerId: 'CUST-003',
+          accountType: 'SAVINGS',
+          balance: 250000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+
+      // Parse existing accounts from localStorage
+      const existingAccounts = a ? JSON.parse(a) : [];
+      
+      // Merge: add dummy accounts that don't already exist by accountId
+      const merged = [...dummyAccounts];
+      for (const existing of existingAccounts) {
+        if (!merged.find(m => m.accountId === existing.accountId)) {
+          merged.push(existing);
+        }
+      }
+
+      this.accountsSubject.next(merged);
       this.transactionsSubject.next(t ? JSON.parse(t) : []);
       this.updateReqsSubject.next(u ? JSON.parse(u) : []);
       this.notificationsSubject.next(n ? JSON.parse(n) : []);
     } catch {
-      this.accountsSubject.next([]);
+      // Fallback dummy data on error
+      const dummyAccounts: Account[] = [
+        {
+          accountId: 'ACC-1001',
+          customerName: 'Priya Sharma',
+          customerId: 'CUST-001',
+          accountType: 'SAVINGS',
+          balance: 150000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACC-1002',
+          customerName: 'Rahul Verma',
+          customerId: 'CUST-002',
+          accountType: 'CURRENT',
+          balance: 500000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACC-1003',
+          customerName: 'Anita Rao',
+          customerId: 'CUST-003',
+          accountType: 'SAVINGS',
+          balance: 250000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      this.accountsSubject.next(dummyAccounts);
       this.transactionsSubject.next([]);
       this.updateReqsSubject.next([]);
       this.notificationsSubject.next([]);
@@ -253,6 +326,55 @@ export class OfficerService {
       flagged,
       ...partial
     };
+  }
+
+  // ---------- Officer Profile ----------
+  getOfficerProfile(): Observable<OfficerProfile> {
+    // Prefer authenticated user data; fallback to a minimal empty profile
+    const user = this.auth.getCurrentUser();
+    if (user) {
+      const parts = (user.name || '').trim().split(/\s+/);
+      const firstName = parts.length ? parts[0] : '';
+      const lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
+      const profile: OfficerProfile = {
+        id: user.userId ? `OFF-${user.userId}` : 'OFF-UNKNOWN',
+        firstName,
+        lastName,
+        email: user.email || '',
+        phone: '',
+        designation: user.role === 'bankOfficer' ? 'Banking Officer' : (user.role || ''),
+        role: user.role || '',
+        status: user.status || '',
+        employeeId: user.userId || '',
+        joinDate: '',
+        department: user.branch || '',
+        address: '',
+        city: '',
+        state: '',
+        zipCode: ''
+      };
+      return of(profile);
+    }
+
+    // No authenticated user found; return a safe empty profile rather than a hardcoded demo
+    const empty: OfficerProfile = {
+      id: 'OFF-UNKNOWN',
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      designation: '',
+      role: '',
+      status: '',
+      employeeId: '',
+      joinDate: '',
+      department: '',
+      address: '',
+      city: '',
+      state: '',
+      zipCode: ''
+    };
+    return of(empty);
   }
 }
 

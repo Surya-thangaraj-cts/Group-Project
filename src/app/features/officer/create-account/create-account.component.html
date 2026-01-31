@@ -32,8 +32,8 @@
       <label>
         Account Type
         <select formControlName="accountType">
-          <option value="SAVINGS">Savings</option>
           <option value="CURRENT">Current</option>
+          <option value="SAVINGS">Savings</option>
         </select>
         <div class="error" *ngIf="createForm.get('accountType')?.invalid && (createForm.get('accountType')?.touched || submitted)">
           <small *ngIf="createForm.get('accountType')?.errors?.['required']" class="err-text">Account Type is required!</small>

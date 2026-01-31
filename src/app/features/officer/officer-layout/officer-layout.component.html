@@ -1,7 +1,8 @@
   <!--nav bar starts-->
-<nav class="top-nav" (click)="$event.stopPropagation()" role="navigation" aria-label="Primary">
-  <div class="brand">
-    <a class="navbar-brand d-flex align-items-center" href="" aria-label="MyBank Home">
+<nav class="navbar navbar-expand-lg fixed-top" style="background: linear-gradient(90deg, #7c3aed, #6d28d9); box-shadow: 0 6px 25px rgba(124, 58, 237, 0.35); padding: 0.6rem 1rem;" role="navigation" aria-label="Primary">
+  <div class="container-fluid">
+    <!-- Brand/Logo -->
+    <a class="navbar-brand d-flex align-items-center gap-2" style="cursor: pointer; color: #ffffff; font-weight: 700;">
       <svg xmlns="http://www.w3.org/2000/svg"
         width="40"
         height="40"
@@ -12,152 +13,102 @@
         d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z">
         </path>
       </svg>
-
-      <span class="fw-bold" id="logo-text">MyBank</span>
+      <span style="display: none;" class="d-md-inline">Officer Dashboard</span>
     </a>
-  </div>
- 
-  <!--desktop nav middle-->
-  <ul class="nav-links">
-    <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/create']">Create Bank Account</button></li>
-    <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/update']">Update Bank Account</button></li>
-    <li routerLinkActive="active">
-      <button type="button" class="with-count" [routerLink]="['/officer/alerts']" aria-label="Alerts">
-        Alerts
-        <span *ngIf="(unreadCount$ | async) as u" class="count-badge" [hidden]="!u || u===0">{{ u }}</span>
-      </button>
-    </li>
-    <li routerLinkActive="active"><button type="button" [routerLink]="['/officer/history']">Transaction History</button></li>
-  </ul>
- 
-  <!--hamburger mobile-->
-  <button
-    class="hamburger"
-    type="button"
-    aria-label="Toggle navigation"
-    [attr.aria-expanded]="isMobileNavOpen"
-    aria-controls="mobileMenu"
-    (click)="toggleMobileNav($event)">
-    <span></span><span></span><span></span>
-  </button>
- 
-  <!-- Profile Dropdown (Desktop) -->
-  <div class="position-relative profile-desktop" *ngIf="currentUser">
-    <div class="dropdown">
-      <button
-        class="btn btn-transparent d-flex align-items-center gap-2 p-0"
-        type="button"
-        id="headerProfileDropdown"
-        data-bs-toggle="dropdown"
-        aria-expanded="false">
-        <span
-          class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-          style="width:36px;height:36px;font-size:0.9rem;"
-          aria-hidden="true">
-          {{ initials(currentUser.name) }}
-        </span>
-        <span class="text-white fw-semibold d-none d-md-inline">
-          {{ currentUser.name }}
-        </span>
-      </button>
- 
-      <ul
-        class="dropdown-menu dropdown-menu-end text-sm themed-dropdown"
-        aria-labelledby="headerProfileDropdown"
-        role="menu">
-        <li class="px-3 py-2">
-          <div class="small text-muted mb-1">Signed in as</div>
-          <div class="fw-semibold text-truncate">{{ currentUser.name }}</div>
-          <div class="text-muted text-truncate" style="max-width:220px;">
-            {{ currentUser.email }}
+
+    <!-- Navbar Toggler for Mobile -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Navbar Content -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+    <!-- Nav Items -->
+      <div class="nav-items d-flex gap-3 ms-auto me-4 navbar-nav">
+        <button 
+          class="btn btn-glass nav-button"
+          [class.active]="activeSection === 'dashboard'"
+          routerLink="/officer/dashboard"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          (click)="handleNavigation('dashboard')">
+          Dashboard
+        </button>
+        <button 
+          class="btn btn-glass nav-button"
+          [class.active]="activeSection === 'create'"
+          routerLink="/officer/create"
+          routerLinkActive="active"
+          (click)="handleNavigation('create')">
+          Create
+        </button>
+        <button 
+          class="btn btn-glass nav-button"
+          [class.active]="activeSection === 'update'"
+          routerLink="/officer/update"
+          routerLinkActive="active"
+          (click)="handleNavigation('update')">
+          Update
+        </button>
+        <button 
+          class="btn btn-glass nav-button"
+          [class.active]="activeSection === 'alerts'"
+          routerLink="/officer/alerts"
+          routerLinkActive="active"
+          (click)="handleNavigation('alerts')">
+          Alerts
+          <span *ngIf="(unreadCount$ | async) as u" class="badge badge-gradient" [hidden]="!u || u===0">{{ u }}</span>
+        </button>
+        <button 
+          class="btn btn-glass nav-button"
+          [class.active]="activeSection === 'history'"
+          routerLink="/officer/history"
+          routerLinkActive="active"
+          (click)="handleNavigation('history')">
+          High Value
+        </button>
+      </div>
+
+      <!-- Profile Section -->
+      <div class="profile-section position-relative ms-3" *ngIf="currentUser">
+        <button class="btn btn-light btn-circle profile-btn" style="width: 50px; height: 50px; font-weight: 700; padding: 0;" (click)="toggleProfileMenu()" 
+          title="Profile" type="button" id="headerProfileDropdown" aria-expanded="false">
+          <span class="initials">{{ initials(currentUser.name) }}</span>
+        </button>
+
+        <!-- Profile Dropdown -->
+        <div *ngIf="isProfileMenuOpen" class="dropdown-menu show animate-slideDown p-0 profile-dropdown" style="right: 0; left: auto; width: 320px; top: 70px;">
+          <!-- Profile Header -->
+          <div class="card-gradient-header p-3 d-flex gap-3 border-0">
+            <div class="btn btn-light btn-circle flex-center flex-shrink-0" style="width: 60px; height: 60px; font-weight: 700; padding: 0;">
+              <span class="initials">{{ initials(currentUser.name) }}</span>
+            </div>
+            <div class="flex-grow-1">
+              <div class="profile-name text-white fw-bold mb-1">{{ currentUser.name }}</div>
+              <div class="profile-designation" style="color: rgba(255, 255, 255, 0.85); font-size: 13px;">{{ currentUser.role }}</div>
+            </div>
           </div>
-        </li>
- 
-        <li><hr class="dropdown-divider" /></li>
- 
-        <li class="px-3 py-2">
-          <div class="small text-muted">Role</div>
-          <div class="fw-semibold">{{ currentUser.role }}</div>
-        </li>
- 
-        <li class="px-3 py-2">
-          <div class="small text-muted">Branch</div>
-          <div class="fw-semibold">{{ currentUser.branch }}</div>
-        </li>
- 
-        <li><hr class="dropdown-divider" /></li>
- 
-        <li>
-          <button
-            class="dropdown-item"
-            type="button"
-            data-bs-toggle="offcanvas"
-            data-bs-target="#offcanvasProfile"
-            (click)="selectUser(currentUser!)">
-            View full profile
+
+          <div class="dropdown-divider m-0"></div>
+
+          <!-- Dropdown Items -->
+          <button class="dropdown-item" type="button" (click)="selectUser(currentUser!); openProfile()">
+            <span class="item-icon">👤</span>
+            <span>View Profile</span>
           </button>
-        </li>
- 
-        <li>
-          <button class="dropdown-item text-danger" type="button" (click)="logout($event)">
-            Sign out
+          <button class="dropdown-item border-top" type="button" (click)="logout($event)">
+            <span class="item-icon">🚪</span>
+            <span>Logout</span>
           </button>
-        </li>
-      </ul>
+        </div>
+      </div>
     </div>
   </div>
 </nav>
 <!-- nav-bar ends -->
  
-<!-- Mobile Menu -->
-<div
-  id="mobileMenu"
-  class="mobile-nav"
-  *ngIf="isMobileNavOpen"
-  (click)="$event.stopPropagation()"
-  role="dialog"
-  aria-modal="true"
-  aria-label="Mobile navigation">
-  <div class="mobile-nav-group">
-    <button type="button" class="mobile-link" routerLink="/officer/create" (click)="closeMobileNav()">Create Bank Account</button>
-    <button type="button" class="mobile-link" routerLink="/officer/update" (click)="closeMobileNav()">Update Bank Account</button>
-    <button type="button" class="mobile-link with-count" routerLink="/officer/alerts" (click)="closeMobileNav()">
-      Alerts
-      <span *ngIf="(unreadCount$ | async) as u" class="count-badge" [hidden]="!u || u===0">{{ u }}</span>
-    </button>
-    <button type="button" class="mobile-link" routerLink="/officer/history" (click)="closeMobileNav()">Transaction History</button>
-  </div>
- 
-  <div class="mobile-divider"></div>
- 
-  <div class="mobile-profile" *ngIf="currentUser">
-    <div class="row1">
-      <div
-        class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-        style="width:36px;height:36px;font-size:0.9rem;"
-        aria-hidden="true">
-        {{ initials(currentUser.name) }}
-      </div>
-      <div class="info">
-        <div class="name">{{ currentUser.name }}</div>
-        <div class="email text-truncate">{{ currentUser.email }}</div>
-      </div>
-    </div>
-    <div class="row2">
-      <button
-        class="mobile-link"
-        type="button"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#offcanvasProfile"
-        (click)="selectUser(currentUser!); closeMobileNav()">
-        View full profile
-      </button>
-      <button class="mobile-link danger" type="button" (click)="logout($event)">Sign out</button>
-    </div>
-  </div>
-</div>
- 
-<section class="container">
+<section class="container" [class.officer-main]="!isDashboard">
   <!-- Global Alert -->
   <div *ngIf="(alert$ | async) as alert"
        class="console-alert"
@@ -181,58 +132,13 @@
     <button class="alert-close" (click)="clearAlert()" aria-label="Close alert">✕</button>
     <div class="alert-progress" aria-hidden="true"></div>
   </div>
- 
-  <!-- Routed feature views -->
-  <router-outlet></router-outlet>
+
+  <!-- Routed feature views based on active section -->
+  <div [ngSwitch]="activeSection">
+    <router-outlet></router-outlet>
+  </div>
 </section>
  
-<!-- ===== Offcanvas: Full Profile (Light) ===== -->
-<div
-  class="offcanvas offcanvas-end themed-offcanvas"
-  tabindex="-1"
-  id="offcanvasProfile"
-  aria-labelledby="offcanvasProfileLabel">
-  <div class="offcanvas-header">
-    <h5 class="offcanvas-title" id="offcanvasProfileLabel">My Profile</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-  </div>
- 
-  <div class="offcanvas-body">
-    <!-- Header row -->
-    <div class="d-flex align-items-center gap-3 mb-3">
-      <div
-        class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-        style="width:48px;height:48px;font-size:1rem;">
-        {{ initials(currentUser?.name ?? '') }}
-      </div>
-      <div>
-        <div class="fw-semibold fs-5 profile-name">{{ currentUser?.name || 'Unknown User' }}</div>
-        <div class="profile-email">{{ currentUser?.email || '' }}</div>
-      </div>
-    </div>
- 
-    <!-- Details grid -->
-    <div class="row g-3">
-      <div class="col-12 col-md-6">
-        <div class="text-muted small">User ID</div>
-        <div class="fw-semibold profile-value">{{ currentUser?.userId || '' }}</div>
-      </div>
-      <div class="col-12 col-md-6">
-        <div class="text-muted small">Role</div>
-        <div class="fw-semibold profile-value">{{ currentUser?.role || '' }}</div>
-      </div>
-      <div class="col-12 col-md-6">
-        <div class="text-muted small">Branch</div>
-        <div class="fw-semibold profile-value">{{ currentUser?.branch || '' }}</div>
-      </div>
-      <!-- Status: simple text -->
-      <div class="col-12 col-md-6">
-        <div class="text-muted small">Status</div>
-        <div class="fw-semibold profile-value">
-          {{ currentUser?.status || '' }}
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Use manager-like profile component for officer -->
+<app-profile *ngIf="showProfile" (close)="closeProfile()"></app-profile>
  

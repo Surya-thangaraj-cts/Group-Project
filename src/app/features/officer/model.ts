@@ -57,3 +57,21 @@ export interface Notification {
     toAccountId?: string;
   };
 }
+
+export interface OfficerProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  designation: string;
+  role: string;
+  status: string;
+  employeeId: string;
+  joinDate: string;
+  department?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+}

@@ -179,6 +179,24 @@
   color: var(--text-muted);
 }
 
+/* Emphasized title block: colored background and improved spacing */
+.auth-panel .title {
+  background: linear-gradient(90deg, rgba(124,58,237,0.12), rgba(79,70,229,0.09));
+  padding: 16px 18px;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.auth-panel .title h1 {
+  color: var(--heading);
+  font-size: 1.5rem;
+}
+
+.auth-panel .title p {
+  color: #4b556380; /* slightly transparent muted */
+  margin-bottom: 0;
+}
+
 /* FORM INPUTS */
 .form-control,
 .form-select {

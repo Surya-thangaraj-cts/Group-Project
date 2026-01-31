@@ -1,0 +1,75 @@
+<div class="dashboard-container">
+  <!-- Welcome Section -->
+  <div class="welcome-card card-gradient-header mb-4">
+    <div class="welcome-content">
+      <h1 class="welcome-title">Welcome Officer</h1>
+      <p class="welcome-subtitle">Manage bank accounts and monitor transactions</p>
+    </div>
+  </div>
+
+  <!-- Dashboard Overview Cards -->
+  <div class="overview-cards-container">
+    <!-- Accounts Created Card -->
+    <div class="overview-card card-glass">
+      <div class="card-icon">📊</div>
+      <div class="card-content">
+        <div class="card-label">Accounts Created</div>
+        <div class="card-value">{{ accountsCount }}</div>
+      </div>
+    </div>
+
+    <!-- Pending Requests Card -->
+    <div class="overview-card card-glass">
+      <div class="card-icon">⏳</div>
+      <div class="card-content">
+        <div class="card-label">Pending Requests</div>
+        <div class="card-value">{{ pendingRequestsCount }}</div>
+      </div>
+    </div>
+
+    <!-- Recent Activity Card -->
+    <div class="overview-card card-glass">
+      <div class="card-icon">📋</div>
+      <div class="card-content">
+        <div class="card-label">Recent Transactions</div>
+        <div class="card-value">{{ recentTransactions.length }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Section -->
+  <div class="recent-activity-section mt-5">
+    <h2 class="section-title">Recent Activity</h2>
+    
+    <div *ngIf="recentTransactions.length > 0; else noActivity" class="activity-table-wrapper">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Customer Name</th>
+            <th>Date</th>
+            <th>Account Number</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let transaction of recentTransactions" class="activity-row">
+            <td class="type-cell">
+              <span class="transaction-badge" [ngClass]="'badge-' + transaction.type">
+                {{ transaction.type === 'CURRENT' ? 'Current' : transaction.type === 'SAVINGS' ? 'Savings' : transaction.type }}
+              </span>
+            </td>
+            <td>{{ transaction.customerName || 'N/A' }}</td>
+            <td>{{ transaction.date | date: 'MMM dd, yyyy' }}</td>
+            <td class="account-number">{{ transaction.accountNumber || 'N/A' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #noActivity>
+      <div class="no-activity-message card-glass p-4 text-center">
+        <p class="text-muted">No recent transactions to display</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

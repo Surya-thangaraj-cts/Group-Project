@@ -126,6 +126,7 @@
   background: var(--primary-500);
   border: none;
   box-shadow: 0 4px 16px rgba(124, 58, 237, 0.25);
+  color: white;
 }
 
 .cta-buttons .btn-primary:hover {
