@@ -53,18 +53,61 @@ export class AuthService {
         status: 'active',
         password: 'Officer@123',
       },
+      {
+        name: 'Vikram Singh',
+        userId: 'U2001',
+        email: 'vikram@bank.local',
+        branch: 'Bangalore',
+        role: 'bankOfficer',
+        status: 'pending',
+        password: 'Officer@123',
+      },
+      {
+        name: 'Sneha Kapoor',
+        userId: 'U2002',
+        email: 'sneha@bank.local',
+        branch: 'Pune',
+        role: 'bankManager',
+        status: 'pending',
+        password: 'Manager@123',
+      },
+      {
+        name: 'Arjun Kumar',
+        userId: 'U2003',
+        email: 'arjun@bank.local',
+        branch: 'Chennai',
+        role: 'bankOfficer',
+        status: 'pending',
+        password: 'Officer@123',
+      },
+      {
+        name: 'Divya Reddy',
+        userId: 'U2004',
+        email: 'divya@bank.local',
+        branch: 'Hyderabad',
+        role: 'admin',
+        status: 'pending',
+        password: 'Admin@123',
+      },
+      {
+        name: 'Rohan Verma',
+        userId: 'U2005',
+        email: 'rohan@bank.local',
+        branch: 'Kolkata',
+        role: 'bankOfficer',
+        status: 'pending',
+        password: 'Officer@123',
+      },
     ];
- 
+
     dummyUsers.forEach(u => {
       const exists = this.users.find(x => x.userId === u.userId);
       if (!exists) this.users.push(u);
       else if (!exists.password) exists.password = u.password;
     });
- 
+
     this.saveUsers();
-  }
- 
-  signup(user: User) {
+  }  signup(user: User) {
   if (!user.userId || !user.password) {
     throw new Error('userId and password required');
   }

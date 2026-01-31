@@ -1,225 +1,118 @@
  
 <!-- Admin Console Page -->
-<div class="py-3 admin-page" >
-  <!-- ===== Header (Profile + toggles) ===== -->
-  <div class="mb-3 header">
-    <div class="d-flex align-items-center justify-content-between gap-3">
-      <div>
-        <h1 class="h4 mb-1">
-          <!-- Title changes based on active view -->
-          <ng-container *ngIf="activeView === 'admin'; else complTitle">Admin Console</ng-container>
-          <ng-template #complTitle>Compliance Dashboard</ng-template>
-        </h1>
-        <p class="mb-0">
-          <ng-container *ngIf="activeView === 'admin'; else complSubtitle">
-            User management &amp; compliance metrics
-          </ng-container>
-          <ng-template #complSubtitle>
-            Transactions, flags, and distribution
-          </ng-template>
-        </p>
+<div class="admin-page">
+  <!-- ===== Header (converted to officer-style navbar for visual parity) ===== -->
+  <nav class="navbar navbar-expand-lg fixed-top" role="navigation" aria-label="Admin Primary">
+    <div class="container-fluid d-flex align-items-center justify-content-between">
+       <div class="d-flex align-items-center gap-3">
+        <a class="navbar-brand d-flex align-items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" class="bi bi-bank me-2 bank-logo" viewBox="0 0 16 16" aria-hidden="true">
+            <path fill="#ffffff" d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"></path>
+          </svg>
+          <span class="text-white fw-bold">Admin Console</span>
+        </a>
       </div>
- 
-      <div class="d-flex align-items-center gap-2 flex-wrap">
-        <!-- Toggle Admin/Compliance -->
-        <button
-          *ngIf="activeView === 'admin'; else backToAdminBtn"
-          class="btn btn-outline-light btn-sm"
-          type="button"
-          (click)="showCompliance()"
-          title="Open Compliance Dashboard"
-        >
-          View Compliance Metrics
-        </button>
+
+      <div class="d-flex align-items-center gap-2">
+        <!-- Toggle Admin/Compliance (keeps original behaviour) -->
+        <button *ngIf="activeView === 'admin'; else backToAdminBtn" class="btn btn-glass btn-sm" type="button" (click)="showCompliance()" title="Open Compliance Dashboard">Dashboard</button>
         <ng-template #backToAdminBtn>
-          <button
-            class="btn btn-outline-light btn-sm"
-            type="button"
-            (click)="showAdmin()"
-            title="Back to Admin Console"
-          >
-            Back to Admin Console
-          </button>
+          <button class="btn btn-glass btn-sm" type="button" (click)="showAdmin()" title="Back to Admin Console">Back to Admin</button>
         </ng-template>
- 
-        <!-- Existing Users button visible on both Admin & Compliance -->
-        <button
-          *ngIf="!(activeView === 'admin' && showExistingOnly); else backToFull"
-          class="btn btn-warning btn-sm"
-          type="button"
-          (click)="openExistingUsers()"
-          title="Show only Existing Users"
-        >
-          Existing Users
-        </button>
+
+        <!-- Existing Users button -->
+        <button *ngIf="!(activeView === 'admin' && showExistingOnly); else backToFull" class="btn btn-glass btn-sm" type="button" (click)="openExistingUsers()" title="Show only Existing Users">Existing Users</button>
         <ng-template #backToFull>
-          <button
-            class="btn btn-outline-warning btn-sm"
-            type="button"
-            (click)="showFullAdmin()"
-            title="Back to full Admin"
-          >
-            Back to Admin
-          </button>
+          <button class="btn btn-glass btn-sm" type="button" (click)="showFullAdmin()" title="Back to full Admin">Back to Admin</button>
         </ng-template>
- 
-        <!-- Profile dropdown -->
-        <div class="position-relative ms-1">
-          <button
-            class="btn btn-transparent d-flex align-items-center gap-2 p-0"
-            type="button"
-            id="headerProfileDropdown"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-          >
-            <span
-              class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-              style="width:36px;height:36px;font-size:0.9rem;"
-            >
-              {{ initials(currentUser?.name ?? '') }}
-            </span>
-            <span class="d-none d-md-inline text-white fw-semibold">{{ currentUser?.name || 'User' }}</span>
+
+        <!-- Profile Section (solid white avatar matching officer) -->
+        <div class="profile-section position-relative ms-3" *ngIf="currentUser">
+          <button class="btn btn-light btn-circle profile-btn" type="button" id="headerProfileDropdown" aria-expanded="false" (click)="toggleProfileMenu()" style="width: 50px; height: 50px; font-weight: 700; padding: 0;">
+            <span class="initials">{{ initials(currentUser.name) }}</span>
           </button>
- 
-          <ul class="dropdown-menu dropdown-menu-end text-sm" aria-labelledby="headerProfileDropdown">
-            <li class="px-3 py-2">
-              <div class="small text-muted mb-1">Signed in as</div>
-              <div class="fw-semibold">{{ currentUser?.name || 'Unknown User' }}</div>
-              <div class="text-muted text-truncate" style="max-width:220px;">
-                {{ currentUser?.email || '' }}
+
+          <!-- Profile Dropdown -->
+          <div *ngIf="isProfileMenuOpen" class="dropdown-menu show animate-slideDown p-0 profile-dropdown" style="right: 0; left: auto; width: 320px; top: 70px;">
+            <!-- Profile Header -->
+            <div class="card-gradient-header p-3 d-flex gap-3 border-0">
+              <div class="btn btn-light btn-circle flex-center flex-shrink-0" style="width: 60px; height: 60px; font-weight: 700; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <span class="initials">{{ initials(currentUser.name) }}</span>
               </div>
-            </li>
-            <li><hr class="dropdown-divider" /></li>
-            <li class="px-3 py-2">
-              <div class="small text-muted">Role</div>
-              <div class="fw-semibold">{{ currentUser?.role || '' }}</div>
-            </li>
-            <li class="px-3 py-2">
-              <div class="small text-muted">Branch</div>
-              <div class="fw-semibold">{{ currentUser?.branch || '' }}</div>
-            </li>
-            <li><hr class="dropdown-divider" /></li>
-            <li>
-              <button
-                class="dropdown-item"
-                type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasProfile"
-                (click)="selectUser(currentUser!)"
-              >
-                View full profile
-              </button>
-            </li>
-            <li>
-              <button class="dropdown-item" type="button" (click)="signOut()">Sign out</button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
- 
-  <!-- ===== Offcanvas: Full Profile ===== -->
-  <div
-    class="offcanvas offcanvas-end text-bg-dark"
-    tabindex="-1"
-    id="offcanvasProfile"
-    aria-labelledby="offcanvasProfileLabel"
-  >
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title" id="offcanvasProfileLabel">My Profile</h5>
-      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-      <div class="d-flex align-items-center gap-3 mb-3">
-        <div
-          class="avatar-initials bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center"
-          style="width:48px;height:48px;font-size:1rem;"
-        >
-          {{ initials(currentUser?.name ?? '') }}
-        </div>
-        <div>
-          <div class="fw-semibold fs-5">{{ currentUser?.name || 'Unknown User' }}</div>
-          <div class="text-muted">{{ currentUser?.email || '' }}</div>
-        </div>
-      </div>
- 
-      <div class="row g-3">
-        <div class="col-12 col-md-6">
-          <div class="text-muted small">User ID</div>
-          <div class="fw-semibold">{{ currentUser?.userId || '' }}</div>
-        </div>
-        <div class="col-12 col-md-6">
-          <div class="text-muted small">Role</div>
-          <div class="fw-semibold">{{ currentUser?.role || '' }}</div>
-        </div>
-        <div class="col-12 col-md-6">
-          <div class="text-muted small">Branch</div>
-          <div class="fw-semibold">{{ currentUser?.branch || '' }}</div>
-        </div>
-        <div class="col-12 col-md-6">
-          <div class="text-muted small">Status</div>
-          <span
-            class="badge"
-            [ngClass]="{
-              'bg-success-subtle text-success border border-success': currentUser?.status === 'Active',
-              'bg-danger-subtle text-danger border border-danger': currentUser?.status === 'Inactive',
-              'bg-warning-subtle text-warning border border-warning': currentUser?.status === 'Pending'
-            }"
-          >
-            {{ currentUser?.status || '' }}
-          </span>
-        </div>
-      </div>
- 
-      <div class="mt-4 d-flex gap-2">
-        <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#editMyDetailsModal" data-bs-dismiss="offcanvas">
-          Edit My Details
-        </button>
-        <button class="btn btn-primary btn-sm" (click)="goToSettings()" data-bs-dismiss="offcanvas">
-          Settings
-        </button>
-      </div>
-    </div>
-  </div>
- 
-  <!-- ===== ADMIN VIEW ===== -->
-  <div *ngIf="activeView === 'admin'">
-    <!-- Normal Admin layout (hidden in Existing-only mode) -->
-    <ng-container *ngIf="!showExistingOnly; else existingOnlyBlock">
- 
- 
-      <!-- Pending Approvals -->
-      <div class="card mb-3">
-        <div class="card-header">
-          <div class="d-flex align-items-center justify-content-between mb-3">
-            <h2 class="h6 mb-0">Pending Approvals</h2>
-            <div class="small text-white">
-              Showing {{ getFilteredPendingUsers().length | number }} of {{ pendingUsers.length | number }} pending
+              <div class="flex-grow-1">
+                <div class="profile-name text-white fw-bold mb-1">{{ currentUser.name }}</div>
+                <div class="profile-designation" style="color: rgba(255, 255, 255, 0.85); font-size: 13px;">{{ currentUser.role }}</div>
+              </div>
             </div>
-          </div>
-          <div class="search-container">
-            <input
-              type="text"
-              class="form-control form-control-sm"
-              placeholder="Search by User ID, Name, Email, Role, or Branch..."
-              [(ngModel)]="pendingSearchTerm"
-            />
-            <button
-              *ngIf="pendingSearchTerm"
-              type="button"
-              class="btn btn-sm btn-outline-light"
-              (click)="clearPendingSearch()"
-              title="Clear search"
-            >
-              ✕
+
+            <div class="dropdown-divider m-0"></div>
+
+            <!-- Dropdown Items -->
+            <button class="dropdown-item" type="button" (click)="openProfile(); toggleProfileMenu()">
+              <span class="item-icon">👤</span>
+              <span>View Profile</span>
+            </button>
+            <button class="dropdown-item border-top" type="button" (click)="signOut(); toggleProfileMenu()">
+              <span class="item-icon">🚪</span>
+              <span>Sign out</span>
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- spacer to offset fixed navbar height so content is not hidden behind it -->
+  <div class="navbar-spacer"></div>
+
+  <!-- Profile Sidebar Component -->
+  <app-admin-profile *ngIf="showProfile" (close)="closeProfile()"></app-admin-profile>
+ 
+  <!-- ===== ADMIN VIEW ===== -->
+  <div *ngIf="activeView === 'admin'" class="dashboard-container">
+    <!-- Normal Admin layout (hidden in Existing-only mode) -->
+    <ng-container *ngIf="!showExistingOnly; else existingOnlyBlock">
+ 
+      <!-- Welcome / Summary Card (shows logged-in user) - matches officer/manager styling -->
+      <div class="welcome-card card-gradient-header mb-4">
+        <div class="welcome-content">
+          <h1 class="welcome-title">Welcome, {{ currentUser?.name || 'Admin' }}</h1>
+          <p class="welcome-subtitle">{{ currentUser?.role || 'Administrator' }} • {{ currentUser?.branch || 'Headquarters' }}</p>
+        </div>
+      </div>
+
+ 
+      <!-- Pending Approvals -->
+      <div class="card mb-3 pending-approvals-card">
+        <div class="card-header pending-header">
+          <div class="d-flex align-items-center justify-content-between">
+            <h2 class="h6 mb-0 pending-title">Pending Approvals</h2>
+            <div class="small pending-count">
+              Showing {{ getFilteredPendingUsers().length | number }} of {{ pendingUsers.length | number }} pending
+            </div>
+          </div>
+        </div>
+        <div class="search-container">
+          <input
+            type="text"
+            class="form-control form-control-sm"
+            placeholder="Search by User ID, Name, Email, Role, or Branch..."
+            [(ngModel)]="pendingSearchTerm"
+          />
+          <button
+            *ngIf="pendingSearchTerm"
+            type="button"
+            class="btn btn-sm btn-outline-light"
+            (click)="clearPendingSearch()"
+            title="Clear search"
+          >
+            ✕
+          </button>
+        </div>
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-sm table-hover mb-0 align-middle">
-              <thead class="table-light">
+            <table class="table table-sm table-hover mb-0 align-middle pending-table">
+              <thead class="pending-table-head">
                 <tr>
                   <th>User ID</th>
                   <th>Name</th>
@@ -237,10 +130,10 @@
                   <td class="text-truncate" style="max-width: 280px;">{{ u.email }}</td>
                   <td>{{ u.branch }}</td>
                   <td class="text-end">
-                    <!-- Single Proceed button to open modal -->
+                    <!-- Glass button to open modal -->
                     <button
                       type="button"
-                      class="btn btn-primary btn-sm"
+                      class="btn btn-glass btn-sm"
                       (click)="openProceed(u)"
                       data-bs-toggle="modal"
                       data-bs-target="#proceedModal"

@@ -10,6 +10,7 @@ import {
   ExistingUsersTableComponent,
   User as ExistingUser
 } from './existing-users-table/existing-users-table.component';
+import { AdminProfileComponent } from './profile/profile.component';
 import { AuthService } from '../../auth/auth.service';
 import { CommonModule } from '@angular/common';
 import {
@@ -48,7 +49,7 @@ interface ComplianceMetrics {
   standalone: true,
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.css'],
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, ExistingUsersTableComponent]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ExistingUsersTableComponent, AdminProfileComponent]
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   activeView: 'admin' | 'compliance' = 'admin';
@@ -124,6 +125,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
  
   // ====== Current user for Profile UI ======
   currentUser: User | null = null;
+
+  // ====== Profile sidebar state ======
+  showProfile: boolean = false;
+
+  // ====== Profile dropdown menu state ======
+  isProfileMenuOpen: boolean = false;
  
   constructor(
     private fb: FormBuilder,
@@ -241,22 +248,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           { userId: 'U1002', name: 'Rahul Mehta', role: 'Manager', email: 'rahul@bank.local', branch: 'Delhi', status: 'Active' },
           { userId: 'U1003', name: 'Priya Nair', role: 'Officer', email: 'priya@bank.local', branch: 'Mumbai', status: 'Inactive' }
         ];
-      }
-     
-      // Always add dummy pending users for demonstration (they won't duplicate)
-      const dummyPendingUsers = [
-        { userId: 'U2001', name: 'Vikram Singh', role: 'Officer' as const, email: 'vikram@bank.local', branch: 'Bangalore', status: 'Pending' as const },
-        { userId: 'U2002', name: 'Sneha Kapoor', role: 'Manager' as const, email: 'sneha@bank.local', branch: 'Pune', status: 'Pending' as const },
-        { userId: 'U2003', name: 'Arjun Kumar', role: 'Officer' as const, email: 'arjun@bank.local', branch: 'Chennai', status: 'Pending' as const },
-        { userId: 'U2004', name: 'Divya Reddy', role: 'Admin' as const, email: 'divya@bank.local', branch: 'Hyderabad', status: 'Pending' as const },
-        { userId: 'U2005', name: 'Rohan Verma', role: 'Officer' as const, email: 'rohan@bank.local', branch: 'Kolkata', status: 'Pending' as const }
-      ];
-     
-      // Add dummy users that don't already exist (by userId)
-      for (const dummy of dummyPendingUsers) {
-        if (!this.pendingUsers.find(p => p.userId === dummy.userId)) {
-          this.pendingUsers.push(dummy);
-        }
       }
     } catch (e) {
       console.error('[Admin] Failed to load users from AuthService', e);
@@ -563,20 +554,18 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return initials || 'U';
   }
  
-  viewMyProfile(): void {
-    if (this.currentUser) {
-      this.selectUser(this.currentUser);
-    }
-    const el = document.getElementById('offcanvasProfile');
-    const bs = (window as any).bootstrap;
-    try {
-      if (el && bs?.Offcanvas) {
-        const offcanvas = new bs.Offcanvas(el);
-        offcanvas.show();
-      }
-    } catch { /* no-op */ }
+  openProfile(): void {
+    this.showProfile = true;
   }
- 
+
+  closeProfile(): void {
+    this.showProfile = false;
+  }
+
+  toggleProfileMenu(): void {
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  }
+
   signOut(): void {
     try {
       this.auth.signout();
@@ -584,9 +573,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (e) {
       console.error('Sign out failed', e);
     }
-  }
- 
-  goToSettings(): void {
+  }  goToSettings(): void {
     console.log('Go to settings...');
     // this.router.navigate(['/settings']);
   }
