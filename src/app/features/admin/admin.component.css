@@ -811,6 +811,55 @@
 .animate-slideDown {
   animation: slideInDown 0.3s ease;
 }
- 
- 
- 
+
+/* ===== Profile Avatar Sizes ===== */
+.profile-avatar-sm {
+  width: 50px;
+  height: 50px;
+  font-weight: 700;
+  padding: 0;
+}
+
+.profile-avatar-lg {
+  width: 60px;
+  height: 60px;
+  font-weight: 700;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===== Profile Dropdown Positioning ===== */
+.profile-dropdown-menu {
+  right: 0 !important;
+  left: auto !important;
+  width: 320px;
+  top: 70px;
+}
+
+/* ===== Profile Designation Text ===== */
+.profile-designation-text {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+}
+
+/* ===== Table & Email Truncation ===== */
+.email-cell-truncate {
+  max-width: 280px;
+}
+
+/* ===== Chart Legend Colors ===== */
+.swatch-primary {
+  background: #1976d2;
+}
+
+.swatch-danger {
+  background: #d32f2f;
+}
+
+/* ===== Modal Header Gradient ===== */
+.modal-header-gradient {
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+}

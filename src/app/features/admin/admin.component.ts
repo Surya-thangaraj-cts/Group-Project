@@ -24,7 +24,11 @@ import { Router } from '@angular/router';
  
 type Role = 'Officer' | 'Manager' | 'Admin';
 type Status = 'Active' | 'Inactive' | 'Pending';
- 
+
+/**
+ * User interface for Admin console
+ * Represents both existing and pending users in the system
+ */
 interface User {
   userId: string;
   name: string;
@@ -32,9 +36,7 @@ interface User {
   email: string;
   branch: string;
   status: Status;
-}
- 
-interface ComplianceMetrics {
+}interface ComplianceMetrics {
   totalTransactions: number;
   highValueCount: number;
   accountGrowthRate: number;
@@ -44,6 +46,25 @@ interface ComplianceMetrics {
   amountBuckets: { label: string; count: number }[];
 }
  
+/**
+ * Admin Console Component
+ * 
+ * Manages user administration, approval workflows, and compliance monitoring.
+ * Provides dual views:
+ * - Admin View: User management, pending approvals, existing users table
+ * - Compliance View: KPIs, monthly volume charts, transaction analysis
+ * 
+ * Features:
+ * - User approval/rejection workflow
+ * - User data editing and management
+ * - Real-time compliance metrics
+ * - Advanced search and filtering
+ * - Profile management
+ * 
+ * @component
+ * @standalone
+ * @selector app-admin
+ */
 @Component({
   selector: 'app-admin',
   standalone: true,

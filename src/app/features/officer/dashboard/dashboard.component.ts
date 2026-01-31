@@ -59,7 +59,7 @@ export class OfficerDashboardComponent implements OnInit, OnDestroy {
         // Combine with latest accounts snapshot to present friendly rows
         const accounts = (this.officerSvc as any).accountsSubject?.value || [];
 
-        const mapped = transactions.slice(0, 10).map(tx => {
+        const mapped = transactions.slice(0, 4).map(tx => {
           const accountId = tx.accountId || tx.toAccountId || 'N/A';
           const acc = accounts.find((a: any) => a.accountId === accountId) || null;
           const customerName = acc ? acc.customerName : 'N/A';
@@ -77,16 +77,7 @@ export class OfficerDashboardComponent implements OnInit, OnDestroy {
           };
         });
 
-        // If there are no transactions at all, provide a small demo dataset for visual purposes
-        if (!mapped.length) {
-          this.recentTransactions = [
-            { id: 'demo1', type: 'SAVINGS', customerName: 'Priya Sharma', date: new Date().toISOString(), accountNumber: 'ACC-1001', narrative: 'Initial deposit' },
-            { id: 'demo2', type: 'CURRENT', customerName: 'Rahul Verma', date: new Date(Date.now() - 86400000).toISOString(), accountNumber: 'ACC-1002', narrative: 'Transfer to savings' },
-            { id: 'demo3', type: 'SAVINGS', customerName: 'Anita Rao', date: new Date(Date.now() - 2 * 86400000).toISOString(), accountNumber: 'ACC-1003', narrative: 'Cash withdrawal' }
-          ];
-        } else {
-          this.recentTransactions = mapped;
-        }
+        this.recentTransactions = mapped;
         
       });
 

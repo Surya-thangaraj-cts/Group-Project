@@ -1,5 +1,18 @@
 import { Injectable } from '@angular/core';
- 
+
+/**
+ * User authentication model
+ * Represents user data across the application
+ * 
+ * @interface User
+ * @property {string} name - Full name of the user
+ * @property {string} [userId] - Unique identifier for the user
+ * @property {string} [email] - User email address
+ * @property {string} [branch] - Branch/location assignment
+ * @property {string} role - User role (admin, bankManager, bankOfficer)
+ * @property {string} [status] - User status (active, inactive, pending)
+ * @property {string} password - User password (stored in localStorage for demo)
+ */
 export interface User {
   name: string;
   userId?: string;
@@ -12,6 +25,23 @@ export interface User {
   password: string;
 }
  
+/**
+ * Authentication Service
+ * 
+ * Manages user authentication, registration, and authorization.
+ * Handles user sessions, role-based access control, and admin operations.
+ * 
+ * Features:
+ * - User sign-in/sign-up functionality
+ * - Role-based authorization (admin, bankManager, bankOfficer)
+ * - User status management (active, inactive, pending)
+ * - Admin approval/rejection workflows
+ * - Session management with localStorage
+ * 
+ * @class AuthService
+ * @injectable
+ * @providedIn root
+ */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private users: User[] = [];

@@ -28,20 +28,20 @@
 
         <!-- Profile Section (solid white avatar matching officer) -->
         <div class="profile-section position-relative ms-3" *ngIf="currentUser">
-          <button class="btn btn-light btn-circle profile-btn" type="button" id="headerProfileDropdown" aria-expanded="false" (click)="toggleProfileMenu()" style="width: 50px; height: 50px; font-weight: 700; padding: 0;">
+          <button class="btn btn-light btn-circle profile-btn profile-avatar-sm" type="button" id="headerProfileDropdown" aria-expanded="false" (click)="toggleProfileMenu()">
             <span class="initials">{{ initials(currentUser.name) }}</span>
           </button>
 
           <!-- Profile Dropdown -->
-          <div *ngIf="isProfileMenuOpen" class="dropdown-menu show animate-slideDown p-0 profile-dropdown" style="right: 0; left: auto; width: 320px; top: 70px;">
+          <div *ngIf="isProfileMenuOpen" class="dropdown-menu show animate-slideDown p-0 profile-dropdown profile-dropdown-menu">
             <!-- Profile Header -->
             <div class="card-gradient-header p-3 d-flex gap-3 border-0">
-              <div class="btn btn-light btn-circle flex-center flex-shrink-0" style="width: 60px; height: 60px; font-weight: 700; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <div class="btn btn-light btn-circle flex-center flex-shrink-0 profile-avatar-lg">
                 <span class="initials">{{ initials(currentUser.name) }}</span>
               </div>
               <div class="flex-grow-1">
                 <div class="profile-name text-white fw-bold mb-1">{{ currentUser.name }}</div>
-                <div class="profile-designation" style="color: rgba(255, 255, 255, 0.85); font-size: 13px;">{{ currentUser.role }}</div>
+                <div class="profile-designation profile-designation-text">{{ currentUser.role }}</div>
               </div>
             </div>
 
@@ -127,7 +127,7 @@
                   <td>{{ u.userId }}</td>
                   <td>{{ u.name }}</td>
                   <td>{{ u.role }}</td>
-                  <td class="text-truncate" style="max-width: 280px;">{{ u.email }}</td>
+                  <td class="text-truncate email-cell-truncate">{{ u.email }}</td>
                   <td>{{ u.branch }}</td>
                   <td class="text-end">
                     <!-- Glass button to open modal -->
@@ -196,10 +196,10 @@
               <h3 class="h6 mb-2 mb-md-0">Monthly Volume vs Suspicious Flags</h3>
               <div class="legend small text-muted d-flex align-items-center gap-3">
                 <span class="d-inline-flex align-items-center gap-1">
-                  <span class="swatch" style="background:#1976d2;"></span> Transactions
+                  <span class="swatch swatch-primary"></span> Transactions
                 </span>
                 <span class="d-inline-flex align-items-center gap-1">
-                  <span class="swatch" style="background:#d32f2f;"></span> Suspicious
+                  <span class="swatch swatch-danger"></span> Suspicious
                 </span>
               </div>
             </div>
@@ -423,7 +423,7 @@
   <div class="modal fade" id="editMyDetailsModal" tabindex="-1" aria-labelledby="editMyDetailsLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-header" style="background: linear-gradient(90deg, var(--primary), var(--primary-2));">
+        <div class="modal-header modal-header-gradient">
           <h1 class="modal-title fs-5 text-white" id="editMyDetailsLabel">Edit My Details</h1>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>

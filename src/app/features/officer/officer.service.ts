@@ -68,6 +68,33 @@ export class OfficerService {
           balance: 250000,
           status: 'ACTIVE',
           openedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACCT2001',
+          customerName: 'Vikram Kumar',
+          customerId: 'CUST-004',
+          accountType: 'CURRENT',
+          balance: 350000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACCT2002',
+          customerName: 'Neha Singh',
+          customerId: 'CUST-005',
+          accountType: 'SAVINGS',
+          balance: 200000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACCT2003',
+          customerName: 'Rohan Patel',
+          customerId: 'CUST-006',
+          accountType: 'CURRENT',
+          balance: 450000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
         }
       ];
 
@@ -82,8 +109,74 @@ export class OfficerService {
         }
       }
 
+      // Create initial dummy transactions for recent activity display
+      const dummyTransactions: Transaction[] = [
+        {
+          id: 'a7f3c2e1b9d4f5a8',
+          time: new Date(2026, 0, 30, 23, 45, 0).toISOString(),
+          type: 'DEPOSIT',
+          amount: 50000,
+          accountId: 'ACC-1001',
+          flagged: false,
+          narrative: 'Initial deposit'
+        },
+        {
+          id: '6b8e2c9f1d7a4e3f',
+          time: new Date(2026, 0, 30, 22, 30, 0).toISOString(),
+          type: 'TRANSFER',
+          amount: 75000,
+          accountId: 'ACC-1002',
+          toAccountId: 'ACC-1003',
+          flagged: false,
+          narrative: 'Transfer to savings'
+        },
+        {
+          id: 'c4d7b1e9a3f2c6d8',
+          time: new Date(2026, 0, 30, 20, 15, 0).toISOString(),
+          type: 'WITHDRAWAL',
+          amount: 25000,
+          accountId: 'ACC-1003',
+          flagged: false,
+          narrative: 'Cash withdrawal'
+        },
+        {
+          id: '9f2a5b8c1e3d7a4c',
+          time: new Date(2026, 0, 30, 18, 0, 0).toISOString(),
+          type: 'DEPOSIT',
+          amount: 120000,
+          accountId: 'ACCT2001',
+          flagged: true,
+          narrative: 'High-value deposit'
+        },
+        {
+          id: 'e2f8a3d1b6c4e9a7',
+          time: new Date(2026, 0, 30, 15, 25, 0).toISOString(),
+          type: 'TRANSFER',
+          amount: 95000,
+          accountId: 'ACCT2002',
+          toAccountId: 'ACCT2003',
+          flagged: true,
+          narrative: 'Inter-account transfer'
+        },
+        {
+          id: 'd5b9c7e2a1f3d8c6',
+          time: new Date(2026, 0, 29, 22, 0, 0).toISOString(),
+          type: 'WITHDRAWAL',
+          amount: 150000,
+          accountId: 'ACCT2001',
+          flagged: true,
+          narrative: 'Large withdrawal'
+        }
+      ];
+
       this.accountsSubject.next(merged);
-      this.transactionsSubject.next(t ? JSON.parse(t) : []);
+      let existingTransactions = t ? JSON.parse(t) : [];
+      // Filter out unwanted test transactions by amount
+      const amountsToRemove = [1500, 200, 320.50, 125, 980.75, 25000, 45, 600, 750, 150, 40, 5000];
+      existingTransactions = existingTransactions.filter((tx: any) => !amountsToRemove.includes(tx.amount));
+      // Put existing (real) transactions first so they appear at the top (newest)
+      const allTransactions = [...existingTransactions, ...dummyTransactions];
+      this.transactionsSubject.next(allTransactions);
       this.updateReqsSubject.next(u ? JSON.parse(u) : []);
       this.notificationsSubject.next(n ? JSON.parse(n) : []);
     } catch {
@@ -115,10 +208,96 @@ export class OfficerService {
           balance: 250000,
           status: 'ACTIVE',
           openedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACCT2001',
+          customerName: 'Vikram Kumar',
+          customerId: 'CUST-004',
+          accountType: 'CURRENT',
+          balance: 350000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACCT2002',
+          customerName: 'Neha Singh',
+          customerId: 'CUST-005',
+          accountType: 'SAVINGS',
+          balance: 200000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
+        },
+        {
+          accountId: 'ACCT2003',
+          customerName: 'Rohan Patel',
+          customerId: 'CUST-006',
+          accountType: 'CURRENT',
+          balance: 450000,
+          status: 'ACTIVE',
+          openedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ];
+      // Create initial dummy transactions for recent activity display
+      const dummyTransactions: Transaction[] = [
+        {
+          id: 'a7f3c2e1b9d4f5a8',
+          time: new Date(2026, 0, 30, 23, 45, 0).toISOString(),
+          type: 'DEPOSIT',
+          amount: 50000,
+          accountId: 'ACC-1001',
+          flagged: false,
+          narrative: 'Initial deposit'
+        },
+        {
+          id: '6b8e2c9f1d7a4e3f',
+          time: new Date(2026, 0, 30, 22, 30, 0).toISOString(),
+          type: 'TRANSFER',
+          amount: 75000,
+          accountId: 'ACC-1002',
+          toAccountId: 'ACC-1003',
+          flagged: false,
+          narrative: 'Transfer to savings'
+        },
+        {
+          id: 'c4d7b1e9a3f2c6d8',
+          time: new Date(2026, 0, 30, 20, 15, 0).toISOString(),
+          type: 'WITHDRAWAL',
+          amount: 25000,
+          accountId: 'ACC-1003',
+          flagged: false,
+          narrative: 'Cash withdrawal'
+        },
+        {
+          id: '9f2a5b8c1e3d7a4c',
+          time: new Date(2026, 0, 30, 18, 0, 0).toISOString(),
+          type: 'DEPOSIT',
+          amount: 120000,
+          accountId: 'ACCT2001',
+          flagged: true,
+          narrative: 'High-value deposit'
+        },
+        {
+          id: 'e2f8a3d1b6c4e9a7',
+          time: new Date(2026, 0, 30, 15, 25, 0).toISOString(),
+          type: 'TRANSFER',
+          amount: 95000,
+          accountId: 'ACCT2002',
+          toAccountId: 'ACCT2003',
+          flagged: true,
+          narrative: 'Inter-account transfer'
+        },
+        {
+          id: 'd5b9c7e2a1f3d8c6',
+          time: new Date(2026, 0, 29, 22, 0, 0).toISOString(),
+          type: 'WITHDRAWAL',
+          amount: 150000,
+          accountId: 'ACCT2001',
+          flagged: true,
+          narrative: 'Large withdrawal'
         }
       ];
       this.accountsSubject.next(dummyAccounts);
-      this.transactionsSubject.next([]);
+      this.transactionsSubject.next(dummyTransactions);
       this.updateReqsSubject.next([]);
       this.notificationsSubject.next([]);
     }

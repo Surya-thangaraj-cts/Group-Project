@@ -10,6 +10,23 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { ReportsComponent } from './components/reports/reports.component';
 import { ProfileService } from './services/profile.service';
 
+/**
+ * Manager Dashboard Component
+ * 
+ * Central hub for bank managers to monitor transactions, approvals, and reports.
+ * Provides navigation between dashboard, approvals, and reports views.
+ * 
+ * Features:
+ * - Transaction oversight
+ * - Pending approval management
+ * - Financial reporting
+ * - Notifications and alerts
+ * - Profile management
+ * 
+ * @component
+ * @standalone
+ * @selector app-manager
+ */
 @Component({
   selector: 'app-manager',
   standalone: true,
