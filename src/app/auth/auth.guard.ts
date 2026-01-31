@@ -41,14 +41,14 @@ function checkAccess(
 
   const user = auth.getCurrentUser();
   if (!user) {
-    return router.createUrlTree(['/landing'], {
+    return router.createUrlTree(['/signin'], {
       queryParams: { returnUrl: stateUrlWhenKnown ?? '/' }
     });
   }
 
   const status = (user.status ?? 'inactive').toString().toLowerCase();
   if (status !== 'active') {
-    return router.createUrlTree(['/landing'], {
+    return router.createUrlTree(['/signin'], {
       queryParams: { reason: 'inactive', returnUrl: stateUrlWhenKnown ?? '/' }
     });
   }
@@ -59,7 +59,7 @@ function checkAccess(
 
   if (userRole && allowed.includes(userRole)) return true;
 
-  return router.createUrlTree(['/landing'], {
+  return router.createUrlTree(['/signin'], {
     queryParams: { reason: 'forbidden', returnUrl: stateUrlWhenKnown ?? '/' }
   });
 }
