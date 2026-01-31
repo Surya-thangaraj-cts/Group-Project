@@ -1,5 +1,3 @@
-
-// src/app/features/officer/officer.routes.ts
 import { Routes } from '@angular/router';
 import { OfficerLayoutComponent } from './officer-layout/officer-layout.component';
 import { CreateAccountComponent } from './create-account/create-account.component';
@@ -15,7 +13,7 @@ export const OFFICER_ROUTES: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'create' },
       { path: 'create', component: CreateAccountComponent },
       { path: 'update', component: UpdateAccountComponent },
-      { path: 'alerts', component: AlertsComponent }, // NEW
+      { path: 'alerts', component: AlertsComponent },
       { path: 'history', component: TransactionsComponent },
     ]
   }

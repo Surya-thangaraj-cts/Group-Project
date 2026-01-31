@@ -22,7 +22,8 @@ function normalizeRole(role: any): CanonicalRole | null {
   return null;
 }
 
-/** Read expected roles from route data; accepts string or string[] */
+/** It reads data.role (string or string array), converts it into an array, 
+ * normalizes each role into canonical values, removes invalid ones, and returns a clean CanonicalRole[].*/
 function expectedRolesFromData(data: any): CanonicalRole[] {
   const dataRole = data?.['role'];
   const roles: string[] = Array.isArray(dataRole) ? dataRole : (dataRole ? [dataRole] : []);
@@ -32,25 +33,19 @@ function expectedRolesFromData(data: any): CanonicalRole[] {
 }
 
 /** Shared check for both canActivate and canMatch */
-function checkAccess(
-  expected: CanonicalRole[] | undefined,
-  stateUrlWhenKnown?: string
-): boolean | UrlTree {
+function checkAccess(expected: CanonicalRole[] | undefined,stateUrlWhenKnown?: string): boolean | UrlTree 
+{
   const auth = inject(AuthService);
   const router = inject(Router);
 
   const user = auth.getCurrentUser();
   if (!user) {
-    return router.createUrlTree(['/landing'], {
-      queryParams: { returnUrl: stateUrlWhenKnown ?? '/' }
-    });
+    return router.createUrlTree(['/restricted']);
   }
 
   const status = (user.status ?? 'inactive').toString().toLowerCase();
   if (status !== 'active') {
-    return router.createUrlTree(['/landing'], {
-      queryParams: { reason: 'inactive', returnUrl: stateUrlWhenKnown ?? '/' }
-    });
+    return router.createUrlTree(['/restricted']);
   }
 
   const userRole = normalizeRole(user.role);
@@ -59,9 +54,7 @@ function checkAccess(
 
   if (userRole && allowed.includes(userRole)) return true;
 
-  return router.createUrlTree(['/landing'], {
-    queryParams: { reason: 'forbidden', returnUrl: stateUrlWhenKnown ?? '/' }
-  });
+  return router.createUrlTree(['/restricted']);
 }
 
 /** Use on eager routes (your /admin, /manager) */

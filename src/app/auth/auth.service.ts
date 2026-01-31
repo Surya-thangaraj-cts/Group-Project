@@ -23,7 +23,6 @@ export class AuthService {
     this.loadCurrentUser();
   }
  
-  /** Seed initial demo users */
   private addDummyUsers() {
     const dummyUsers: User[] = [
       {
@@ -55,20 +54,24 @@ export class AuthService {
       },
     ];
  
+    // checking whether any user exixts in users
     dummyUsers.forEach(u => {
       const exists = this.users.find(x => x.userId === u.userId);
       if (!exists) this.users.push(u);
-      else if (!exists.password) exists.password = u.password;
+      // else if (!exists.password) exists.password = u.password;
     });
  
     this.saveUsers();
   }
  
+
+  //register new user
   signup(user: User) {
   if (!user.userId || !user.password) {
     throw new Error('userId and password required');
   }
  
+  // normalazing the userId and checking if email is null or undefined use empty string and trim 
   const userId = user.userId.trim();
   const email  = (user.email ?? '').trim();
  
@@ -88,25 +91,22 @@ export class AuthService {
   // Force all new signups to pending
   user.status = 'pending';
  
-  // Normalize before persisting
+  // passing the normalized UserId and email before persisting
   const normalized: User = { ...user, userId, email };
   this.users.push(normalized);
   this.saveUsers();
 }
  
-  /** ✅ Sign in with status check */
+  // logging in
   signin(
     userId: string,
-    password: string
-  ): { ok: true; user: User } | { ok: false; reason: 'invalid' | 'pending' | 'inactive' } {
+    password: string): { ok: true; user: User } | { ok: false; reason: 'invalid' | 'pending' | 'inactive' } {
  
     const found = this.users.find(u => u.userId === userId);
     if (!found) return { ok: false, reason: 'invalid' };
     if (found.status === 'pending') return { ok: false, reason: 'pending' };
     if (found.status !== 'active') return { ok: false, reason: 'inactive' };
-    if (!found.password || found.password !== password) {
-      return { ok: false, reason: 'invalid' };
-    }
+    if (!found.password || found.password !== password) return { ok: false, reason: 'invalid' };
  
     found.lastLogin = new Date().toISOString();
     this.currentUser = found;
@@ -146,7 +146,6 @@ export class AuthService {
     if (!user) return;
     user.status = 'inactive';
     this.saveUsers();
-   
     // If the current user is being set to inactive, log them out
     if (this.currentUser?.userId === userId) {
       this.signout();
@@ -170,10 +169,6 @@ export class AuthService {
     localStorage.setItem('users', JSON.stringify(this.users));
   }
  
-  // private loadUsers() {
-  //   const stored = localStorage.getItem('users');
-  //   this.users = stored ? JSON.parse(stored) : [];
-  // }
   private loadUsers() {
   const stored = localStorage.getItem('users');
   const arr: User[] = stored ? JSON.parse(stored) : [];
