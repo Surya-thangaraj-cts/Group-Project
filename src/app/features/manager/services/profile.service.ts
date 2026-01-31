@@ -80,7 +80,7 @@ export class ProfileService {
    */
   private getRoleDesignation(role: string): string {
     const designations: { [key: string]: string } = {
-      'bankManager': 'Senior Operations Manager',
+      'bankManager': 'Manager',
       'bankOfficer': 'Banking Officer',
       'admin': 'System Administrator'
     };

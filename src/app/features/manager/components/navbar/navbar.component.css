@@ -10,10 +10,6 @@
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%) !important;
 }
 
-.card-gradient-header .profile-name {
-
-}
-
 .card-gradient-header .profile-designation {
   color: white !important;
 }
@@ -24,10 +20,11 @@
   top: 0;
   left: 0;
   right: 0;
+  height: 70px;
   z-index: 1030;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
-  padding: 0.75rem 2rem;
+  padding: 0.6rem 2rem; /* slightly reduced vertical padding for a more compact navbar */
 }
 
 .navbar-brand {
@@ -41,6 +38,8 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  line-height: 1.2;
+  display: block;
 }
 
 .nav-items {

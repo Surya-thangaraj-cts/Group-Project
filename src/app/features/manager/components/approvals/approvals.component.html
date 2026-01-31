@@ -119,14 +119,6 @@
         (ngModelChange)="filterApprovals()">
       <span class="search-icon"></span>
     </div>
-    
-    <div *ngIf="activeTab !== 'pending'" class="filter-select">
-      <select [(ngModel)]="selectedDecision" (ngModelChange)="filterApprovals()" class="decision-filter">
-        <option value="">All Decisions</option>
-        <option value="Approved">Approved</option>
-        <option value="Rejected">Rejected</option>
-      </select>
-    </div>
   </div>
 
   <!-- Approval Items Table -->
@@ -137,9 +129,9 @@
         <tr>
           <th>ID</th>
           <th>Type</th>
-          <th>Account/Details</th>
+          <th>Account</th>
           <th>Information</th>
-          <th>Amount/Value</th>
+          <th>Amount</th>
           <th>Date</th>
           <th>Action</th>
         </tr>

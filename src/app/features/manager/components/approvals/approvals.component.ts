@@ -35,7 +35,6 @@ export class ApprovalsComponent implements OnInit {
   alertType: 'success' | 'error' | 'info' = 'info';
   
   searchQuery = '';
-  selectedDecision = '';
 
 
   constructor(

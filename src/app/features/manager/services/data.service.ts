@@ -117,13 +117,16 @@ export class DataService {
         }
       }
 
+      // Set status to Approved for transactions less than 100000
+      const finalStatus = amount < 100000 ? 'Approved' : status;
+
       this.transactions.push({
         id: txnId,
         accountId: accountId,
         user: customerName,
         date: date,
         amount: amount,
-        status: status,
+        status: finalStatus,
         type: transactionType,
         recipientName: customerName,
         recipientAmount: amount
