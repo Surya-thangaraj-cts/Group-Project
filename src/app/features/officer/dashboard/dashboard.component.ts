@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OfficerService } from '../officer.service';
+import { AuthService } from '../../../auth/auth.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -13,6 +14,7 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class OfficerDashboardComponent implements OnInit, OnDestroy {
   private officerSvc = inject(OfficerService);
+  private auth = inject(AuthService);
   private destroy$ = new Subject<void>();
 
   accountsCount = 0;
@@ -22,6 +24,9 @@ export class OfficerDashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadDashboardData();
+    // populate officer name from auth context
+    const user = this.auth.getCurrentUser();
+    if (user) this.officerName = user.name || '';
   }
 
   ngOnDestroy(): void {

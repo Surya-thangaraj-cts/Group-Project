@@ -517,9 +517,15 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       this.pendingUsers = this.pendingUsers.filter(p => p.userId !== u.userId);
     }
    
-    // Update auth service to handle inactive user logout
+    // Update auth service with full user details
     const authStatus = u.status === 'Active' ? 'active' : u.status === 'Inactive' ? 'inactive' : 'pending';
-    this.auth.updateUserStatus(u.userId, authStatus as any);
+    this.auth.updateUser(u.userId, {
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      branch: u.branch,
+      status: authStatus as any
+    });
   }
  
   onExistingUserSelected(u: ExistingUser): void {

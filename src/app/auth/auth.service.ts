@@ -238,6 +238,24 @@ export class AuthService {
       this.signout();
     }
   }
+
+  updateUser(userId: string, updates: Partial<User>): void {
+    const user = this.users.find(u => u.userId === userId);
+    if (!user) return;
+    
+    if (updates.name !== undefined) user.name = updates.name;
+    if (updates.email !== undefined) user.email = updates.email;
+    if (updates.role !== undefined) user.role = updates.role;
+    if (updates.branch !== undefined) user.branch = updates.branch;
+    if (updates.status !== undefined) user.status = updates.status;
+    
+    this.saveUsers();
+    
+    // If the current user is being set to inactive, log them out
+    if (this.currentUser?.userId === userId && updates.status === 'inactive') {
+      this.signout();
+    }
+  }
  
   private saveUsers() {
     localStorage.setItem('users', JSON.stringify(this.users));
