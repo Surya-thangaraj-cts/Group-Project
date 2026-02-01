@@ -658,17 +658,21 @@ private dedupeUsers(arr: User[]): User[] {
  
   /** Filter pending users by search term */
   getFilteredPendingUsers(): User[] {
-    if (!this.pendingSearchTerm.trim()) {
-      return this.pendingUsers;
+    let filtered = this.pendingUsers;
+    
+    if (this.pendingSearchTerm.trim()) {
+      const term = this.pendingSearchTerm.toLowerCase();
+      filtered = this.pendingUsers.filter(u =>
+        u.userId.toLowerCase().includes(term) ||
+        u.name.toLowerCase().includes(term) ||
+        u.email.toLowerCase().includes(term) ||
+        u.role.toLowerCase().includes(term) ||
+        u.branch.toLowerCase().includes(term)
+      );
     }
-    const term = this.pendingSearchTerm.toLowerCase();
-    return this.pendingUsers.filter(u =>
-      u.userId.toLowerCase().includes(term) ||
-      u.name.toLowerCase().includes(term) ||
-      u.email.toLowerCase().includes(term) ||
-      u.role.toLowerCase().includes(term) ||
-      u.branch.toLowerCase().includes(term)
-    );
+    
+    // Return in reverse order so newest requests appear at the top
+    return filtered.slice().reverse();
   }
  
   /** Clear pending users search */

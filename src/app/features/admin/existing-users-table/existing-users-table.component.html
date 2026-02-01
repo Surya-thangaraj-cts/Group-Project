@@ -1,12 +1,19 @@
  
-<div class="card m-3">
-  <div class="card-header">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h2 class="h6 mb-0 text-dark">Existing Users</h2>
-      <div class="small text-white">
-        Showing {{ getFilteredRows().length | number }} of {{ rows.length | number }} {{ rows.length === 1 ? 'user' : 'users' }}
+<div class="card m-3 existing-users-card">
+  <div class="card-header existing-users-header">
+    <div class="d-flex align-items-center justify-content-between">
+      <div>
+        <h2 class="existing-users-title">Existing Users</h2>
+        <p class="existing-users-subtitle">Manage and view all registered users</p>
+      </div>
+      <div class="existing-users-count">
+        <span class="count-number">{{ getFilteredRows().length }}</span>
+        <span class="count-label">of {{ rows.length }}</span>
       </div>
     </div>
+  </div>
+
+  <div class="card-search-section">
     <div class="search-container">
       <input
         type="text"
@@ -25,19 +32,19 @@
       </button>
     </div>
   </div>
- 
+
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-sm table-hover mb-0 align-middle">
-        <thead class="table-light">
+      <table class="table table-sm table-hover mb-0 align-middle existing-users-table">
+        <thead class="existing-users-thead">
           <tr>
-            <th>User ID</th>
-            <th>Name</th>
-            <th>Role</th>
-            <th>Email</th>
-            <th>Branch</th>
-            <th>Status</th>
-            <th class="text-end">Actions</th>
+            <th class="col-user-id">User ID</th>
+            <th class="col-name">Name</th>
+            <th class="col-role">Role</th>
+            <th class="col-email">Email</th>
+            <th class="col-branch">Branch</th>
+            <th class="col-status">Status</th>
+            <th class="text-end col-actions">Actions</th>
           </tr>
         </thead>
  
@@ -65,7 +72,10 @@
                 </span>
               </td>
               <td class="text-end">
-                <button type="button" class="btn btn-outline-dark btn-sm text-black bg-primary px-3 py-2" (click)="startEdit(u)">Edit</button>
+                <button type="button" class="btn btn-edit btn-sm" (click)="startEdit(u)" title="Edit user">
+                  <span class="edit-icon">✎</span>
+                  <span class="edit-text">Edit</span>
+                </button>
               </td>
             </ng-container>
  
@@ -104,10 +114,16 @@
                       </select>
                     </div>
                   </div>
- 
-                  <div class="mt-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary btn-sm" [disabled]="editForm.invalid">Save</button>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="cancelEdit()">Cancel</button>
+
+                  <div class="mt-3 d-flex gap-2 edit-actions">
+                    <button type="submit" class="btn btn-save btn-sm" [disabled]="editForm.invalid">
+                      <span class="save-icon">✓</span>
+                      Save
+                    </button>
+                    <button type="button" class="btn btn-cancel btn-sm" (click)="cancelEdit()">
+                      <span class="cancel-icon">✕</span>
+                      Cancel
+                    </button>
                   </div>
                 </form>
               </td>

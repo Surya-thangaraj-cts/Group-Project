@@ -233,6 +233,7 @@
   background: var(--primary-500);
   border: 1px solid var(--primary-500);
   padding: .72rem 1.03rem; /* balance between compact and touchable */
+  color: white;
 }
 
 .btn-primary:hover {
