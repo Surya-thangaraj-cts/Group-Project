@@ -1,5 +1,3 @@
- 
-// src/app/features/officer/alerts/alerts.component.ts
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OfficerService } from '../officer.service';

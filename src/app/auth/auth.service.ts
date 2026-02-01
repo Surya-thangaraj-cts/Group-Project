@@ -137,7 +137,9 @@ export class AuthService {
     });
 
     this.saveUsers();
-  }  signup(user: User) {
+  }  
+  //register new user
+  signup(user: User) {
   if (!user.userId || !user.password) {
     throw new Error('userId and password required');
   }
@@ -261,10 +263,7 @@ export class AuthService {
     localStorage.setItem('users', JSON.stringify(this.users));
   }
  
-  // private loadUsers() {
-  //   const stored = localStorage.getItem('users');
-  //   this.users = stored ? JSON.parse(stored) : [];
-  // }
+
   private loadUsers() {
   const stored = localStorage.getItem('users');
   const arr: User[] = stored ? JSON.parse(stored) : [];

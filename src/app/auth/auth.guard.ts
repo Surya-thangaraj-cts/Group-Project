@@ -41,16 +41,12 @@ function checkAccess(
 
   const user = auth.getCurrentUser();
   if (!user) {
-    return router.createUrlTree(['/signin'], {
-      queryParams: { returnUrl: stateUrlWhenKnown ?? '/' }
-    });
+    return router.createUrlTree(['/unauthorized']);
   }
 
   const status = (user.status ?? 'inactive').toString().toLowerCase();
   if (status !== 'active') {
-    return router.createUrlTree(['/signin'], {
-      queryParams: { reason: 'inactive', returnUrl: stateUrlWhenKnown ?? '/' }
-    });
+    return router.createUrlTree(['/unauthorized']);
   }
 
   const userRole = normalizeRole(user.role);
@@ -59,9 +55,7 @@ function checkAccess(
 
   if (userRole && allowed.includes(userRole)) return true;
 
-  return router.createUrlTree(['/signin'], {
-    queryParams: { reason: 'forbidden', returnUrl: stateUrlWhenKnown ?? '/' }
-  });
+  return router.createUrlTree(['/unauthorized']);
 }
 
 /** Use on eager routes (your /admin, /manager) */

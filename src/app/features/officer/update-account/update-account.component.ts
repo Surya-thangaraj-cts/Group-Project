@@ -1,5 +1,3 @@
- 
-// src/app/features/officer/update-account/update-account.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -45,6 +43,7 @@ export class UpdateAccountComponent implements OnInit {
   // ---------- Status filter for Updation Status ----------
   statusFilter: StatusFilter = 'ALL';
   private statusFilter$ = new BehaviorSubject<StatusFilter>('ALL');
+
   onStatusFilterChange(val: StatusFilter | string) {
     const v = (val as StatusFilter) ?? 'ALL';
     this.statusFilter = v;

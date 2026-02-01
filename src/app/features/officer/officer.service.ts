@@ -358,7 +358,7 @@ export class OfficerService {
     const updateReqs = [req, ...this.updateReqsSubject.value];
     this.updateReqsSubject.next(updateReqs);
 
-    // NEW: Add notification for update request
+    // Add notification for update request
     this.addNotification({
       type: 'UPDATE_REQUEST',
       title: `Update request for ${req.accountId}`,
@@ -398,6 +398,7 @@ export class OfficerService {
           message: `₹${amount.toFixed(2)} deposited.`,
           meta: { accountId: source.accountId, txnId: tx.id, amount }
         });
+        this.setError(`🚨 Suspicious Transaction Alert: High-value deposit of ₹${amount.toFixed(2)} detected on account ${source.accountId}. Please verify this transaction.`);
       }
       this.setSuccess(`Deposited ₹${amount.toFixed(2)} to ${source.accountId}.`);
     } else if (type === 'WITHDRAWAL') {
@@ -412,6 +413,7 @@ export class OfficerService {
           message: `₹${amount.toFixed(2)} withdrawn.`,
           meta: { accountId: source.accountId, txnId: tx.id, amount }
         });
+        this.setError(`🚨 Suspicious Transaction Alert: High-value withdrawal of ₹${amount.toFixed(2)} detected on account ${source.accountId}. Please verify this transaction.`);
       }
       this.setSuccess(`Withdrew ₹${amount.toFixed(2)} from ${source.accountId}.`);
     } else {
@@ -443,6 +445,7 @@ export class OfficerService {
           message: `₹${amount.toFixed(2)} → ${dest.accountId}`,
           meta: { accountId: source.accountId, toAccountId: dest.accountId, txnId: txOut.id, amount }
         });
+        this.setError(`🚨 Suspicious Transaction Alert: High-value transfer of ₹${amount.toFixed(2)} from ${source.accountId} to ${dest.accountId} detected. Please verify this transaction.`);
       }
 
       this.setSuccess(`Transferred ₹${amount.toFixed(2)} from ${source.accountId} to ${dest.accountId}.`);

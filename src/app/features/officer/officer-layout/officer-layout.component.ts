@@ -1,5 +1,5 @@
-  import { Component, HostListener, OnInit, OnDestroy, inject } from '@angular/core';
-  import { CommonModule } from '@angular/common';
+import { Component, HostListener, OnInit, OnDestroy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule, Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { OfficerService } from '../officer.service';
 import { Observable, Subscription } from 'rxjs';
@@ -114,7 +114,7 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     event.stopPropagation();
     this.auth.signout();
     this.currentUser = null;
-    this.router.navigate(['/landing']);
+    this.router.navigate(['/home']);
   }
  
   clearAlert(): void {

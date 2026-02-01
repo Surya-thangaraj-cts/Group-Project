@@ -52,7 +52,7 @@ export class OfficerDashboardComponent implements OnInit, OnDestroy {
         }
       });
 
-    // Get recent transactions (last 10)
+    // Get recent transactions (last 4)
     this.officerSvc.transactions$
       .pipe(takeUntil(this.destroy$))
       .subscribe(transactions => {
@@ -87,11 +87,11 @@ export class OfficerDashboardComponent implements OnInit, OnDestroy {
       });
 
     // Get officer name from notifications or use default
-    this.officerSvc.notifications$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        // Officer name would be available from auth context if needed
-        // For now, using a placeholder that can be populated from user context
-      });
+    // this.officerSvc.notifications$
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe(() => {
+    //     // Officer name would be available from auth context if needed
+    //     // For now, using a placeholder that can be populated from user context
+    //   });
   }
 }

@@ -85,7 +85,7 @@ export class CreateAccountComponent {
     total: number;
     totalPages: number;
     currentPage: number;
-    pageSize: number;
+    pageSize: number; 
     pageData: any[];
     from: number;
     to: number;
