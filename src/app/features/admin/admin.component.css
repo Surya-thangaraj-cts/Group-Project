@@ -327,7 +327,7 @@
 .bar-row:hover .bar-value {
   color: var(--primary);
 }
- 
+
 /* Optional: compact variant for smaller widths */
 @media (max-width: 768px) {
   .bar-row {
@@ -338,7 +338,74 @@
     justify-self: end;
   }
 }
- 
+
+/* ===== Pie Chart Styling ===== */
+.pie-chart-container {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pie-chart {
+  filter: drop-shadow(0 8px 24px rgba(124, 58, 237, 0.15));
+  transition: filter 0.3s ease;
+}
+
+.pie-chart:hover {
+  filter: drop-shadow(0 12px 32px rgba(124, 58, 237, 0.25));
+}
+
+.pie-label {
+  font-size: 12px;
+  font-weight: 700;
+  fill: white;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.pie-legend-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+}
+
+.pie-legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e6e9f2;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.legend-label {
+  font-size: 0.9rem;
+  color: #1f2937;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ===== Modal Styling ===== */
 .modal-content {
   background: var(--panel);

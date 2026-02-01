@@ -200,7 +200,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       amountBuckets: [
         { label: '< ₹10k',    count: 450 },
         { label: '₹10k–₹50k', count: 80 },
-        { label: '₹50k–₹1L',  count: 420 },
+        { label: '₹50k–₹1L',  count: 250 },
         { label: '> ₹1L',     count: 150 },
       ],
     };
@@ -377,14 +377,62 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'M ' + pts.map(p => p.replace(',', ' ')).join(' L ');
   }
  
-  // Amount bucket helpers for width & max
-  get maxBucket(): number {
-    const counts = this.compliance.amountBuckets?.map(b => b.count) ?? [1];
-    return Math.max(...counts, 1);
+  // Pie chart colors
+  private pieColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'];
+
+  getPieColors(): string[] {
+    return this.pieColors;
   }
-  bucketPercent(count: number): number {
-    const max = this.maxBucket || 1;
-    return Math.max(2, Math.round((count / max) * 100)); // min 2% so tiny bars stay visible
+
+  // Calculate pie chart slices
+  getPieSlices(): any[] {
+    const buckets = this.compliance.amountBuckets || [];
+    if (buckets.length === 0) return [];
+
+    const total = buckets.reduce((sum, b) => sum + b.count, 0);
+    const slices: any[] = [];
+    let currentAngle = -90; // Start at top
+
+    buckets.forEach((bucket, i) => {
+      const percent = Math.round((bucket.count / total) * 100);
+      const sliceAngle = (bucket.count / total) * 360;
+      const startAngle = currentAngle;
+      const endAngle = currentAngle + sliceAngle;
+
+      // Convert angles to radians
+      const startRad = (startAngle * Math.PI) / 180;
+      const endRad = (endAngle * Math.PI) / 180;
+
+      // Calculate start and end points
+      const x1 = 125 + 100 * Math.cos(startRad);
+      const y1 = 125 + 100 * Math.sin(startRad);
+      const x2 = 125 + 100 * Math.cos(endRad);
+      const y2 = 125 + 100 * Math.sin(endRad);
+
+      // Large arc flag (1 if angle > 180)
+      const largeArc = sliceAngle > 180 ? 1 : 0;
+
+      // SVG path for the slice
+      const path = `M 125 125 L ${x1} ${y1} A 100 100 0 ${largeArc} 1 ${x2} ${y2} Z`;
+
+      // Calculate label position (at midpoint of arc, 70% radius)
+      const midAngle = (startRad + endRad) / 2;
+      const labelRadius = 70;
+      const labelX = 125 + labelRadius * Math.cos(midAngle);
+      const labelY = 125 + labelRadius * Math.sin(midAngle);
+
+      slices.push({
+        path,
+        color: this.pieColors[i % this.pieColors.length],
+        percent,
+        labelX,
+        labelY
+      });
+
+      currentAngle = endAngle;
+    });
+
+    return slices;
   }
  
   // -------------------------------
