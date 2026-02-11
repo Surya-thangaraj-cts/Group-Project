@@ -109,47 +109,59 @@ export class RegisterComponent implements OnInit {
 
     const { confirmPassword, ...payload } = this.signupForm.value;
 
-    const serviceRole = this.normalizeRoleToService(payload.role);
+    const apiRole = this.normalizeRoleToApi(payload.role);
 
-    const user: User = {
-      ...payload,
-      role: serviceRole,
-    } as User;
+    // Call API register endpoint
+    const registerRequest = {
+      userId: payload.userId,
+      name: payload.name,
+      email: payload.email,
+      branch: payload.branch,
+      role: apiRole,
+      password: payload.password
+    };
 
-    try {
-      this.auth.signup(user);
-      console.log('All registered users:', this.auth.getAllUsers());
-      this.displayMessage('Registration submitted ✅', 'success');
+    console.log('Sending registration request:', registerRequest);
 
-      setTimeout(() => {
-        this.router.navigate(['/signin']);
-        this.clearMessage();
-      }, 2000);
-    } catch (e: any) {
-      const errorMsg = (typeof e?.message === 'string') ? e.message : 'Registration failed';
+    this.auth.register(registerRequest).subscribe({
+      next: (response) => {
+        console.log('Registration successful:', response);
+        this.displayMessage(response.message || 'Registration submitted ✅', 'success');
 
-      let displayMsg = errorMsg;
-      if (errorMsg.includes('User ID') || errorMsg.includes('userId')) {
-        displayMsg = '❌ User ID already exists. Please choose a different ID.';
-      } else if (errorMsg.includes('Email') || errorMsg.includes('email')) {
-        displayMsg = '❌ Email already exists. Please use a different email.';
-      } else if (errorMsg.includes('Name') || errorMsg.includes('name')) {
-        displayMsg = '❌ Name is required.';
-      } else if (errorMsg.includes('Branch') || errorMsg.includes('branch')) {
-        displayMsg = '❌ Branch is required.';
-      } else {
-        displayMsg = `❌ Registration failed: ${errorMsg}`;
+        setTimeout(() => {
+          this.router.navigate(['/signin']);
+          this.clearMessage();
+        }, 2000);
+      },
+      error: (error) => {
+        const errorMsg = error.message || 'Registration failed';
+
+        let displayMsg = errorMsg;
+        if (errorMsg.includes('UserId') || errorMsg.includes('User ID') || errorMsg.includes('userId')) {
+          displayMsg = '❌ User ID already exists. Please choose a different ID.';
+        } else if (errorMsg.includes('Email') || errorMsg.includes('email')) {
+          displayMsg = '❌ Email already exists. Please use a different email.';
+        } else if (errorMsg.includes('exists')) {
+          displayMsg = '❌ User ID or Email already exists.';
+        } else {
+          displayMsg = `❌ ${errorMsg}`;
+        }
+
+        this.displayMessage(displayMsg, 'error');
+        console.error('Signup error:', error);
       }
-
-      this.displayMessage(displayMsg, 'error');
-      console.error('Signup error:', e);
-    }
+    });
   }
 
-  private normalizeRoleToService(role: any): 'admin' | 'bankManager' | 'bankOfficer' {
+  /**
+   * Normalize role from form to API format
+   * API expects: "Admin", "Manager", "Officer"
+   */
+  private normalizeRoleToApi(role: any): string {
     const r = (role ?? '').toString().toLowerCase();
-    if (r === 'admin') return 'admin';
-    if (r === 'manager' || r === 'bankmanager') return 'bankManager';
-    return 'bankOfficer';
+    if (r === 'admin') return 'Admin';
+    if (r === 'manager' || r === 'bankmanager') return 'Manager';
+    if (r === 'officer' || r === 'bankofficer') return 'Officer';
+    return 'Officer';
   }
 }

@@ -59,7 +59,10 @@
             </div>
 
             <!-- Sign In Form -->
-            <form [formGroup]="signinForm" (ngSubmit)="signin()" novalidate>
+            <form [formGroup]="signinForm" (ngSubmit)="signin()" novalidate autocomplete="off">
+              <!-- Hidden dummy fields to discourage browser autofill -->
+              <!-- <input type="text" name="fake-username" autocomplete="username" style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; opacity:0;" /> -->
+              <!-- <input type="password" name="fake-password" autocomplete="current-password" style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; opacity:0;" /> -->
               <div class="mb-3">
                 <label class="form-label">User ID</label>
                 <input
@@ -80,7 +83,7 @@
                     class="form-control form-control-lg"
                     formControlName="password"
                     placeholder="Enter your password"
-                    autocomplete="off"
+                    autocomplete="new-password"
                   />
                   <button
                     type="button"

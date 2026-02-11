@@ -68,28 +68,34 @@ export class SigninComponent implements OnInit {
     if (this.signinForm.invalid) return;
 
     const { userId, password } = this.signinForm.value;
-    const result = this.auth.signin(userId, password);
-
-    if ((result as any)?.ok) {
-      const user = (result as any).user as User;
-      const norm = this.normalizeRole(user.role);
-      this.displayMessage(`Login successful! 🎉 Welcome ${norm}`, 'success');
-      this.signinForm.reset();
-      this.redirect(norm);
-      return;
-    }
-
-    const reason = (result as any)?.reason;
-    switch (reason) {
-      case 'pending':
-        this.displayMessage('Your account is awaiting admin approval.', 'warning');
-        break;
-      case 'inactive':
-        this.displayMessage('Your account is inactive. Please contact the admin for assistance.', 'error');
-        break;
-      default:
-        this.displayMessage('Invalid credentials.', 'error');
-    }
+    
+    // Call API login endpoint
+    this.auth.login({ userId, password }).subscribe({
+      next: (response) => {
+        const user = response.user;
+        const norm = this.normalizeRole(user.role);
+        this.displayMessage(`Login successful! 🎉 Welcome ${norm}`, 'success');
+        this.signinForm.reset();
+        this.redirect(norm);
+      },
+      error: (error) => {
+        const errorMsg = error.message || 'Login failed';
+        
+        if (errorMsg.includes('Cannot connect to API')) {
+          this.displayMessage('❌ Cannot connect to server. Please ensure the API is running.', 'error');
+        } else if (errorMsg.toLowerCase().includes('not approved') || errorMsg.toLowerCase().includes('pending')) {
+          this.displayMessage('Your account is awaiting admin approval.', 'warning');
+        } else if (errorMsg.toLowerCase().includes('inactive')) {
+          this.displayMessage('Your account is inactive. Please contact the admin for assistance.', 'error');
+        } else if (errorMsg.toLowerCase().includes('credentials') || error.status === 401) {
+          this.displayMessage('Invalid credentials.', 'error');
+        } else {
+          this.displayMessage(errorMsg, 'error');
+        }
+        
+        console.error('Login error:', error);
+      }
+    });
   }
 
   private normalizeRole(role: any): string {

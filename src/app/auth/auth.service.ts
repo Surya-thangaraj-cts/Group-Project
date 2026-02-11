@@ -1,4 +1,43 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+
+/**
+ * API Request/Response DTOs matching ASP.NET Core backend
+ */
+export interface RegisterRequest {
+  userId: string;
+  name: string;
+  email: string;
+  branch: string;
+  role: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  userId: string;
+  password: string;
+}
+
+export interface UserResponse {
+  userId: string;
+  name: string;
+  email: string;
+  branch: string;
+  role: string;
+  status: string;
+}
+
+export interface LoginResponse {
+  token: string;
+  user: UserResponse;
+}
+
+export interface ApiResponse {
+  message: string;
+}
 
 /**
  * User authentication model
@@ -44,10 +83,14 @@ export interface User {
  */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private apiUrl = `${environment.apiUrl}/auth`;
   private users: User[] = [];
   public currentUser: User | null = null;
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
+  private tokenKey = 'auth_token';
  
-  constructor() {
+  constructor(private http: HttpClient) {
     this.loadUsers();
     this.addDummyUsers();
     this.loadCurrentUser();
@@ -137,42 +180,84 @@ export class AuthService {
     });
 
     this.saveUsers();
-  }  signup(user: User) {
-  if (!user.userId || !user.password) {
-    throw new Error('userId and password required');
+  }  
+  /**
+   * Register a new user via API
+   */
+  register(userData: RegisterRequest): Observable<ApiResponse> {
+    return this.http.post<ApiResponse>(`${this.apiUrl}/register`, userData)
+      .pipe(
+        catchError(this.handleError)
+      );
   }
- 
-  const userId = user.userId.trim();
-  const email  = (user.email ?? '').trim();
- 
-  // CASE-INSENSITIVE duplicate checks
-  const idExists = this.users.some(
-    u => (u.userId ?? '').trim().toLowerCase() === userId.toLowerCase()
-  );
-  if (idExists) throw new Error('User ID already exists');
- 
-  if (email) {
-    const emailExists = this.users.some(
-      u => (u.email ?? '').trim().toLowerCase() === email.toLowerCase()
+
+  // Legacy method for backward compatibility with existing code
+  signup(user: User) {
+    if (!user.userId || !user.password) {
+      throw new Error('userId and password required');
+    }
+   
+    const userId = user.userId.trim();
+    const email  = (user.email ?? '').trim();
+   
+    // CASE-INSENSITIVE duplicate checks
+    const idExists = this.users.some(
+      u => (u.userId ?? '').trim().toLowerCase() === userId.toLowerCase()
     );
-    if (emailExists) throw new Error('Email already in use');
+    if (idExists) throw new Error('User ID already exists');
+   
+    if (email) {
+      const emailExists = this.users.some(
+        u => (u.email ?? '').trim().toLowerCase() === email.toLowerCase()
+      );
+      if (emailExists) throw new Error('Email already in use');
+    }
+   
+    // Force all new signups to pending
+    user.status = 'pending';
+   
+    // Normalize before persisting
+    const normalized: User = { ...user, userId, email };
+    this.users.push(normalized);
+    this.saveUsers();
   }
  
-  // Force all new signups to pending
-  user.status = 'pending';
- 
-  // Normalize before persisting
-  const normalized: User = { ...user, userId, email };
-  this.users.push(normalized);
-  this.saveUsers();
-}
- 
-  /** ✅ Sign in with status check */
+  /**
+   * Login user via API
+   */
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials)
+      .pipe(
+        tap(response => {
+          // Store token
+          localStorage.setItem(this.tokenKey, response.token);
+          
+          // Convert UserResponse to User format
+          const user: User = {
+            userId: response.user.userId,
+            name: response.user.name,
+            email: response.user.email,
+            branch: response.user.branch,
+            role: this.normalizeRole(response.user.role),
+            status: response.user.status as 'active' | 'inactive' | 'pending',
+            lastLogin: new Date().toISOString(),
+            password: '' // Don't store password
+          };
+          
+          this.currentUser = user;
+          this.currentUserSubject.next(user);
+          localStorage.setItem('currentUser', JSON.stringify(user));
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  /** ✅ Sign in with status check (Legacy method) */
   signin(
     userId: string,
     password: string
   ): { ok: true; user: User } | { ok: false; reason: 'invalid' | 'pending' | 'inactive' } {
- 
+   
     const found = this.users.find(u => u.userId === userId);
     if (!found) return { ok: false, reason: 'invalid' };
     if (found.status === 'pending') return { ok: false, reason: 'pending' };
@@ -180,7 +265,7 @@ export class AuthService {
     if (!found.password || found.password !== password) {
       return { ok: false, reason: 'invalid' };
     }
- 
+   
     found.lastLogin = new Date().toISOString();
     this.currentUser = found;
     localStorage.setItem('currentUser', JSON.stringify(found));
@@ -189,7 +274,76 @@ export class AuthService {
  
   signout() {
     this.currentUser = null;
+    this.currentUserSubject.next(null);
     localStorage.removeItem('currentUser');
+    localStorage.removeItem(this.tokenKey);
+  }
+
+  /**
+   * Get stored JWT token
+   */
+  getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  /**
+   * Check if user is authenticated
+   */
+  isAuthenticated(): boolean {
+    return !!this.getToken() && !!this.getCurrentUser();
+  }
+
+  /**
+   * Normalize role from API to frontend format
+   */
+  private normalizeRole(role: string): 'admin' | 'bankManager' | 'bankOfficer' {
+    const r = role.toLowerCase();
+    if (r === 'admin') return 'admin';
+    if (r === 'bankmanager' || r === 'manager') return 'bankManager';
+    return 'bankOfficer';
+  }
+
+  /**
+   * Handle HTTP errors
+   */
+  private handleError(error: HttpErrorResponse) {
+    let errorMessage = 'An error occurred';
+    
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = error.error.message;
+    } else if (error.status === 0) {
+      // Status 0 means network error or CORS issue
+      errorMessage = 'Cannot connect to API. Please check:\n' +
+                     '1. API is running at ' + environment.apiUrl + '\n' +
+                     '2. CORS is configured in API\n' +
+                     '3. API URL is correct';
+      console.error('API Connection Error:', {
+        url: error.url,
+        message: 'Could not connect to server',
+        possibleCauses: [
+          'API server is not running',
+          'CORS is not configured',
+          'Firewall blocking connection',
+          'Wrong API URL in environment.ts'
+        ]
+      });
+    } else {
+      // Server-side error
+      if (error.error?.message) {
+        errorMessage = error.error.message;
+      } else if (error.status === 401) {
+        errorMessage = 'Invalid credentials';
+      } else if (error.status === 403) {
+        errorMessage = 'Account not approved or inactive';
+      } else if (error.status === 409) {
+        errorMessage = 'UserId or Email already exists';
+      } else {
+        errorMessage = `Server error: ${error.status}`;
+      }
+    }
+    
+    return throwError(() => new Error(errorMessage));
   }
  
   getCurrentUser(): User | null {
@@ -261,10 +415,7 @@ export class AuthService {
     localStorage.setItem('users', JSON.stringify(this.users));
   }
  
-  // private loadUsers() {
-  //   const stored = localStorage.getItem('users');
-  //   this.users = stored ? JSON.parse(stored) : [];
-  // }
+   
   private loadUsers() {
   const stored = localStorage.getItem('users');
   const arr: User[] = stored ? JSON.parse(stored) : [];
