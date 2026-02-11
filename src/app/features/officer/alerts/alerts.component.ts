@@ -170,6 +170,3 @@ export class AlertsComponent {
     return null; // no status for others
   }
 }
- 
- 
- 

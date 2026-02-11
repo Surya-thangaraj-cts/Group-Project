@@ -16,9 +16,12 @@ import { ProfileComponent } from '../profile/profile.component';
   styleUrls: ['../officer-theme.css'],
 })
 export class OfficerLayoutComponent implements OnInit, OnDestroy {
+export class OfficerLayoutComponent implements OnInit, OnDestroy {
   private officerSvc = inject(OfficerService);
  
+ 
   currentUser: User | null = null;
+ 
  
   isMobileNavOpen = false;
   isProfileMenuOpen = false;
@@ -28,6 +31,8 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
  
   // Global alert stream
   alert$: Observable<AlertMsg | null> = this.officerSvc.alert$;
+ 
+  // Notifications count
  
   // Notifications count
   unreadCount$: Observable<number> = this.officerSvc.notifications$.pipe(
@@ -45,6 +50,7 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     private router: Router,
     private activatedRoute: ActivatedRoute
   ) {}
+ 
  
   ngOnInit(): void {
     this.currentUser = this.auth.currentUser;
@@ -94,9 +100,11 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     if (this.alertTimer) clearTimeout(this.alertTimer);
   }
  
+ 
   initials(name: string): string {
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : 'U';
   }
+ 
  
   toggleMobileNav(ev?: Event) {
     if (ev) ev.stopPropagation();
@@ -106,9 +114,11 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     this.isMobileNavOpen = false;
   }
  
+ 
   toggleProfileMenu() {
     this.isProfileMenuOpen = !this.isProfileMenuOpen;
   }
+ 
  
   logout(event: Event): void {
     event.stopPropagation();
@@ -116,6 +126,7 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     this.currentUser = null;
     this.router.navigate(['/landing']);
   }
+ 
  
   clearAlert(): void {
     this.officerSvc.clearAlert();
@@ -135,10 +146,12 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     this.isMobileNavOpen = false;
   }
  
+ 
   @HostListener('window:resize')
   onResize() {
     if (window.innerWidth > 900 && this.isMobileNavOpen) this.isMobileNavOpen = false;
   }
+ 
  
   selectUser(user: User): void {
     if (user) this.currentUser = user;

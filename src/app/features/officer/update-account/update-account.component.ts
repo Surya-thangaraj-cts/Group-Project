@@ -1,4 +1,5 @@
  
+ 
 // src/app/features/officer/update-account/update-account.component.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -10,7 +11,9 @@ import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { map, take } from 'rxjs/operators';
  
+ 
 type StatusFilter = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED';
+ 
  
 @Component({
   selector: 'update-account',
@@ -24,8 +27,10 @@ export class UpdateAccountComponent implements OnInit {
   private officerSvc = inject(OfficerService);
   private route = inject(ActivatedRoute);
  
+ 
   // Lookup input (two-way bound via ngModel)
   lookupAccountId = '';
+ 
  
   // Form
   updateFormLoaded = false;
@@ -38,9 +43,11 @@ export class UpdateAccountComponent implements OnInit {
     status: ['ACTIVE' as AccountStatus, [Validators.required]],
   });
  
+ 
   // Streams
   accounts$ = this.officerSvc.accounts$;
   updateRequests$: Observable<UpdateRequest[]> = this.officerSvc.updateRequests$;
+ 
  
   // ---------- Status filter for Updation Status ----------
   statusFilter: StatusFilter = 'ALL';
@@ -52,10 +59,12 @@ export class UpdateAccountComponent implements OnInit {
     this.urPageIndex$.next(1);
   }
  
+ 
   // ---------- Pagination (Updation Status) ----------
   urPageSizeOptions = [5, 10, 20];
   private urPageIndex$ = new BehaviorSubject<number>(1);  // 1-based
   private urPageSize$ = new BehaviorSubject<number>(10);  // default 10
+ 
  
   urVm$: Observable<{
     total: number;
@@ -70,6 +79,7 @@ export class UpdateAccountComponent implements OnInit {
     map(([list, sFilter, pageIndex, pageSize]) => {
       const data = Array.isArray(list) ? [...list] : [];
  
+ 
       // Filter by status first
       const filtered = data.filter(u => {
         if (sFilter === 'PENDING' && u.status !== 'PENDING') return false;
@@ -78,8 +88,10 @@ export class UpdateAccountComponent implements OnInit {
         return true;
       });
  
+ 
       // latest first (by time)
       filtered.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+ 
  
       const total = filtered.length;
       const totalPages = Math.max(1, Math.ceil(total / pageSize));
@@ -94,6 +106,7 @@ export class UpdateAccountComponent implements OnInit {
     })
   );
  
+ 
   ngOnInit(): void {
     // Optional: auto-load if query param present
     const qpId = this.route.snapshot.queryParamMap.get('accountId');
@@ -103,10 +116,12 @@ export class UpdateAccountComponent implements OnInit {
     }
   }
  
+ 
   // ---------- Load account into form ----------
   prefillUpdate(accountId: string): void {
     const id = (accountId || '').trim();
     if (!id) return;
+ 
  
     this.accounts$.pipe(take(1)).subscribe({
       next: (accounts: Account[] = []) => {
@@ -135,6 +150,7 @@ export class UpdateAccountComponent implements OnInit {
     });
   }
  
+ 
   // ---------- Submit Update Request ----------
   submitUpdateRequest(): void {
     if (!this.updateFormLoaded) return;
@@ -154,6 +170,7 @@ export class UpdateAccountComponent implements OnInit {
     }
   }
  
+ 
   cancel(): void {
     this.updateFormLoaded = false;
     this.updateForm.reset({
@@ -166,6 +183,7 @@ export class UpdateAccountComponent implements OnInit {
     });
   }
  
+ 
   // ---------- Pagination handlers (Updation Status) ----------
   urSetPage(page: number): void { this.urPageIndex$.next(page); }
   urPrevPage(): void { this.urPageIndex$.next(Math.max(1, this.urPageIndex$.getValue() - 1)); }
@@ -175,6 +193,7 @@ export class UpdateAccountComponent implements OnInit {
     this.urPageSize$.next(size);
     this.urPageIndex$.next(1);
   }
+ 
  
   // TrackBy for performance
   trackByUpdateId(index: number, u: UpdateRequest) {

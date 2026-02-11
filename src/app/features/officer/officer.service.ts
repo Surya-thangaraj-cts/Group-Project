@@ -11,28 +11,27 @@ export class OfficerService {
   private updateReqsSubject = new BehaviorSubject<UpdateRequest[]>([]);
   private alertSubject = new BehaviorSubject<AlertMsg | null>(null);
   private notificationsSubject = new BehaviorSubject<Notification[]>([]);
-
+ 
   accounts$ = this.accountsSubject.asObservable();
   transactions$ = this.transactionsSubject.asObservable();
   updateRequests$ = this.updateReqsSubject.asObservable();
   alert$ = this.alertSubject.asObservable();
   notifications$ = this.notificationsSubject.asObservable();
-
-  // Config
+ 
   readonly highValueThreshold = 100000;
 
   constructor(private auth: AuthService) {
     this.load();
   }
-
-  // ---------- Persistence ----------
+ 
+ 
   private save(): void {
     localStorage.setItem('accounts', JSON.stringify(this.accountsSubject.value));
     localStorage.setItem('transactions', JSON.stringify(this.transactionsSubject.value));
     localStorage.setItem('updateRequests', JSON.stringify(this.updateReqsSubject.value));
     localStorage.setItem('notifications', JSON.stringify(this.notificationsSubject.value));
   }
-
+ 
   private load(): void {
     try {
       const a = localStorage.getItem('accounts');
@@ -302,35 +301,35 @@ export class OfficerService {
       this.notificationsSubject.next([]);
     }
   }
-
-  // ---------- Alerts (banner) ----------
+ 
+  // for alerts subject
   clearAlert() { this.alertSubject.next(null); }
   setSuccess(message: string) { this.alertSubject.next({ type: 'success', message }); }
   setError(message: string) { this.alertSubject.next({ type: 'error', message }); }
-
-  // ---------- Accounts ----------
+ 
+ 
   getAccountById(accountId: string): Account | undefined {
     return this.accountsSubject.value.find(a => a.accountId === accountId);
   }
-
+ 
   createAccount(input: Omit<Account, 'openedAt'>): void {
     const accounts = [...this.accountsSubject.value];
     const exists = accounts.some(a => a.accountId === input.accountId);
     if (exists) throw new Error(`Account ID ${input.accountId} already exists.`);
-
+ 
     const newAcc: Account = { ...input, openedAt: new Date().toISOString() };
     accounts.unshift(newAcc);
     this.accountsSubject.next(accounts);
     this.save();
     this.setSuccess(`Account ${newAcc.accountId} created successfully.`);
   }
-
+ 
   // ---------- Update Requests ----------
   submitUpdateRequest(newValues: Account): void {
     const accounts = this.accountsSubject.value;
     const existing = accounts.find(a => a.accountId === newValues.accountId);
     if (!existing) throw new Error('Account not found.');
-
+ 
     // Build change summary
     const changes: string[] = [];
     if (existing.customerName !== newValues.customerName)
@@ -343,7 +342,7 @@ export class OfficerService {
       changes.push(`Balance: ₹${existing.balance} → ₹${newValues.balance}`);
     if (existing.status !== newValues.status)
       changes.push(`Status: ${existing.status} → ${newValues.status}`);
-
+ 
     const req: UpdateRequest = {
       updateId: cryptoRandomId(),
       accountId: newValues.accountId,
@@ -354,39 +353,39 @@ export class OfficerService {
       status: 'PENDING',
       time: new Date().toISOString()
     };
-
+ 
     const updateReqs = [req, ...this.updateReqsSubject.value];
     this.updateReqsSubject.next(updateReqs);
-
-    // NEW: Add notification for update request
+ 
+    //notification for update request
     this.addNotification({
       type: 'UPDATE_REQUEST',
       title: `Update request for ${req.accountId}`,
       message: req.changeSummary,
       meta: { accountId: req.accountId, updateId: req.updateId }
     });
-
+ 
     this.save();
     this.setSuccess(`Update request created for Account ${newValues.accountId}.`);
   }
-
-  // ---------- Transactions ----------
+ 
+ 
   recordTransaction(
     sourceAccountId: string,
     form: { type: TxnType; amount: number; toAccountId?: string; narrative?: string }
   ): void {
     const { type, amount, toAccountId, narrative } = form;
     if (!sourceAccountId) throw new Error('Select an account to record transactions.');
-
+ 
     const accounts = [...this.accountsSubject.value];
     const source = accounts.find(a => a.accountId === sourceAccountId);
     if (!source) throw new Error('Account not found.');
     if (source.status === 'CLOSED') throw new Error('Cannot record transactions on CLOSED accounts.');
     if (amount <= 0) throw new Error('Amount must be greater than zero.');
-
+ 
     const txns = [...this.transactionsSubject.value];
     const isHigh = amount >= this.highValueThreshold;
-
+ 
     if (type === 'DEPOSIT') {
       source.balance = round2(source.balance + amount);
       const tx = this.makeTxn({ type, amount, accountId: source.accountId, narrative });
@@ -421,11 +420,11 @@ export class OfficerService {
       if (!dest) throw new Error('Destination account not found.');
       if (dest.status === 'CLOSED') throw new Error('Cannot transfer to a CLOSED destination.');
       if (source.balance < amount) throw new Error('Insufficient balance for transfer.');
-
+ 
       // Perform transfer
       source.balance = round2(source.balance - amount);
       dest.balance = round2(dest.balance + amount);
-
+ 
       // Record two transactions (outgoing & incoming)
       const txOut = this.makeTxn({
         type, amount, accountId: source.accountId, toAccountId, narrative: narrative || 'Transfer out'
@@ -435,7 +434,7 @@ export class OfficerService {
       });
       txns.unshift(txOut);
       txns.unshift(txIn);
-
+      //adding notification for high value transfer
       if (isHigh) {
         this.addNotification({
           type: 'HIGH_VALUE_TXN',
@@ -444,10 +443,10 @@ export class OfficerService {
           meta: { accountId: source.accountId, toAccountId: dest.accountId, txnId: txOut.id, amount }
         });
       }
-
+ 
       this.setSuccess(`Transferred ₹${amount.toFixed(2)} from ${source.accountId} to ${dest.accountId}.`);
     }
-
+ 
     // Commit
     this.accountsSubject.next(accounts);
     this.transactionsSubject.next(txns);
@@ -466,36 +465,36 @@ export class OfficerService {
     this.notificationsSubject.next(list);
     this.save();
   }
-
+ 
   markAsRead(id: string): void {
     const list = this.notificationsSubject.value.map(n => n.id === id ? { ...n, read: true } : n);
     this.notificationsSubject.next(list);
     this.save();
   }
-
+ 
   markAsUnread(id: string): void {
     const list = this.notificationsSubject.value.map(n => n.id === id ? { ...n, read: false } : n);
     this.notificationsSubject.next(list);
     this.save();
   }
-
+ 
   deleteNotification(id: string): void {
     const list = this.notificationsSubject.value.filter(n => n.id !== id);
     this.notificationsSubject.next(list);
     this.save();
   }
-
+ 
   markAllAsRead(): void {
     const list = this.notificationsSubject.value.map(n => ({ ...n, read: true }));
     this.notificationsSubject.next(list);
     this.save();
   }
-
+ 
   clearAllNotifications(): void {
     this.notificationsSubject.next([]);
     this.save();
   }
-
+ 
   // helper
   private makeTxn(partial: Omit<Transaction, 'id' | 'time' | 'flagged'>): Transaction {
     const flagged = partial.amount >= this.highValueThreshold;
@@ -556,7 +555,7 @@ export class OfficerService {
     return of(empty);
   }
 }
-
+ 
 // Utilities
 function cryptoRandomId(): string {
   try {
@@ -570,3 +569,5 @@ function cryptoRandomId(): string {
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
+ 
+ 

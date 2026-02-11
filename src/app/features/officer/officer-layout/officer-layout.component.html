@@ -114,8 +114,25 @@
        class="console-alert"
        [class.is-success]="alert.type === 'success'"
        [class.is-error]="alert.type === 'error'"
+       [class.is-success]="alert.type === 'success'"
+       [class.is-error]="alert.type === 'error'"
        role="alert"
        aria-live="assertive">
+    <div class="alert-left">
+      <span class="alert-icon" aria-hidden="true">
+        <!-- Success icon -->
+        <svg *ngIf="alert.type === 'success'" viewBox="0 0 24 24" width="18" height="18">
+          <path fill="currentColor" d="M9 16.2l-3.5-3.6L4 14l5 5 11-11-1.5-1.6z"></path>
+        </svg>
+        <!-- Error icon -->
+        <svg *ngIf="alert.type === 'error'" viewBox="0 0 24 24" width="18" height="18">
+          <path fill="currentColor" d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V8h2v5z"/>
+        </svg>
+      </span>
+      <span class="alert-text">{{ alert.message }}</span>
+    </div>
+    <button class="alert-close" (click)="clearAlert()" aria-label="Close alert">✕</button>
+    <div class="alert-progress" aria-hidden="true"></div>
     <div class="alert-left">
       <span class="alert-icon" aria-hidden="true">
         <!-- Success icon -->

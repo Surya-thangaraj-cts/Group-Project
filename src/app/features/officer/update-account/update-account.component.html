@@ -1,6 +1,7 @@
 <div class="card">
   <h2>Update Bank Account</h2>
  
+ 
   <div class="inline">
     <input
       class="inline-input"
@@ -15,6 +16,7 @@
     </button>
   </div>
  
+ 
   <form
     [formGroup]="updateForm"
     (ngSubmit)="submitUpdateRequest()"
@@ -27,15 +29,18 @@
         <input type="text" formControlName="accountId" readonly />
       </label>
  
+ 
       <label>
         Customer Name
         <input type="text" formControlName="customerName" />
       </label>
  
+ 
       <label>
         Customer ID
         <input type="text" formControlName="customerId" />
       </label>
+ 
  
       <label>
         Account Type
@@ -45,10 +50,12 @@
         </select>
       </label>
  
+ 
       <label>
         Balance (admin adjustment)
         <input type="number" formControlName="balance" min="0" step="0.01" />
       </label>
+ 
  
       <label>
         Status
@@ -59,7 +66,9 @@
       </label>
     </div>
  
+ 
     <br />
+ 
  
     <div class="actions">
       <button class="primary" type="submit" [disabled]="updateForm.invalid">Submit Update Request</button>
@@ -67,17 +76,24 @@
     </div>
   </form>
  
+ 
   <hr />
+ 
  
   <!-- Updation Status (status filter + pagination) -->
   <ng-container *ngIf="urVm$ | async as vm">
     <div class="inline inline-justify">
       <h3 class="m-0">Updation Status</h3>
  
+    <div class="inline inline-justify">
+      <h3 class="m-0">Updation Status</h3>
+ 
       <!-- Status Filter -->
+      <label class="m-0">
       <label class="m-0">
         Filter Status
         <select
+          class="select-compact"
           class="select-compact"
           [ngModel]="statusFilter"
           (ngModelChange)="onStatusFilterChange($event)"
@@ -90,7 +106,9 @@
       </label>
     </div>
  
+ 
     <br />
+ 
  
     <div class="table-wrap" *ngIf="vm.total > 0; else noUpdates">
       <table>
@@ -106,6 +124,7 @@
           </tr>
         </thead>
  
+ 
         <tbody>
           <tr *ngFor="let u of vm.pageData; trackBy: trackByUpdateId">
             <td [attr.data-label]="'Update ID'">{{ u.updateId }}</td>
@@ -116,11 +135,21 @@
  
             <!-- Full changes summary -->
             <td [attr.data-label]="'Changes Summary'" class="wrap-normal">
+ 
+            <!-- Full changes summary -->
+            <td [attr.data-label]="'Changes Summary'" class="wrap-normal">
               {{ u.changeSummary }}
             </td>
  
+ 
             <td [attr.data-label]="'Status'">
               <span
+                class="status"
+                [ngClass]="{
+                  'status--approved': u.status === 'APPROVED',
+                  'status--rejected': u.status === 'REJECTED',
+                  'status--pending' : u.status === 'PENDING'
+                }">
                 class="status"
                 [ngClass]="{
                   'status--approved': u.status === 'APPROVED',
@@ -134,26 +163,38 @@
         </tbody>
       </table>
  
+ 
       <!-- Pagination controls -->
       <div class="actions table-actions">
+      <div class="actions table-actions">
         <!-- Rows per page -->
+        <div class="inline">
         <div class="inline">
           <span class="muted">Rows per page</span>
           <select
             class="select-compact"
+            class="select-compact"
             [value]="vm.pageSize"
             (change)="onUrPageSizeChange($event)"
+            aria-label="Rows per page">
             aria-label="Rows per page">
             <option *ngFor="let size of urPageSizeOptions" [value]="size">{{ size }}</option>
           </select>
         </div>
  
+ 
         <!-- Range & total -->
+        <div class="muted range-text">
         <div class="muted range-text">
           {{ vm.from }}–{{ vm.to }} of {{ vm.total }}
         </div>
  
+ 
         <!-- Pager -->
+        <div class="pager">
+          <button type="button" class="pager-btn" (click)="urSetPage(1)" [disabled]="vm.currentPage===1" aria-label="First page">First</button>
+          <button type="button" class="pager-btn" (click)="urPrevPage()" [disabled]="vm.currentPage===1" aria-label="Previous page">Prev</button>
+ 
         <div class="pager">
           <button type="button" class="pager-btn" (click)="urSetPage(1)" [disabled]="vm.currentPage===1" aria-label="First page">First</button>
           <button type="button" class="pager-btn" (click)="urPrevPage()" [disabled]="vm.currentPage===1" aria-label="Previous page">Prev</button>
@@ -162,9 +203,12 @@
             <button
               type="button"
               class="pager-btn"
+              class="pager-btn"
               (click)="urSetPage(p)"
               [class.active]="p===vm.currentPage"
+              [class.active]="p===vm.currentPage"
               [attr.aria-current]="p===vm.currentPage ? 'page' : null"
+              [attr.aria-label]="'Go to page ' + p">
               [attr.aria-label]="'Go to page ' + p">
               {{ p }}
             </button>
@@ -172,10 +216,14 @@
  
           <button type="button" class="pager-btn" (click)="urNextPage()" [disabled]="vm.currentPage===vm.totalPages" aria-label="Next page">Next</button>
           <button type="button" class="pager-btn" (click)="urSetPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages" aria-label="Last page">Last</button>
+ 
+          <button type="button" class="pager-btn" (click)="urNextPage()" [disabled]="vm.currentPage===vm.totalPages" aria-label="Next page">Next</button>
+          <button type="button" class="pager-btn" (click)="urSetPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages" aria-label="Last page">Last</button>
         </div>
       </div>
     </div>
   </ng-container>
+ 
  
   <ng-template #noUpdates>
     <p class="muted">No update requests submitted yet.</p>
