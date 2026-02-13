@@ -1,0 +1,39 @@
+@UserApi_HostAddress = https://localhost:7021
+
+### Step 1: Login (click Send Request, then copy the token from the response)
+POST {{UserApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userId": "admin",
+  "password": "Admin@123!"
+}
+
+### Step 2: Debug Auth (paste token below after 'Bearer ', then click Send Request)
+GET {{UserApi_HostAddress}}/api/admin/debug-auth
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsIm5hbWVpZCI6ImFkbWluIiwibmFtZSI6IlN5c3RlbSBBZG1pbiIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4iLCJzdGF0dXMiOiJBY3RpdmUiLCJleHAiOjE3NzA1NTkwMDAsImlzcyI6IllvdXJDb21wYW55IiwiYXVkIjoiWW91ckZyb250ZW5kQXBwIn0.yc8W-DW8SjKGvw8FkqA2JH5xN64nWLKsup1w43CAPTQ
+
+### Step 3: Get Pending Users (paste token below after 'Bearer ')
+GET {{UserApi_HostAddress}}/api/admin/pending-users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsIm5hbWVpZCI6ImFkbWluIiwibmFtZSI6IlN5c3RlbSBBZG1pbiIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4iLCJzdGF0dXMiOiJBY3RpdmUiLCJleHAiOjE3NzA1NTkwMDAsImlzcyI6IllvdXJDb21wYW55IiwiYXVkIjoiWW91ckZyb250ZW5kQXBwIn0.yc8W-DW8SjKGvw8FkqA2JH5xN64nWLKsup1w43CAPTQ
+
+### Register a new user
+POST {{UserApi_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "userId": "officer1",
+  "name": "Test Officer",
+  "email": "officer1@example.com",
+  "branch": "Branch1",
+  "role": "Officer",
+  "password": "Officer@123!"
+}
+
+### Approve a user (paste token below after 'Bearer ')
+PUT {{UserApi_HostAddress}}/api/admin/approve/officer1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsIm5hbWVpZCI6ImFkbWluIiwibmFtZSI6IlN5c3RlbSBBZG1pbiIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4iLCJzdGF0dXMiOiJBY3RpdmUiLCJleHAiOjE3NzA1NTkwMDAsImlzcyI6IllvdXJDb21wYW55IiwiYXVkIjoiWW91ckZyb250ZW5kQXBwIn0.yc8W-DW8SjKGvw8FkqA2JH5xN64nWLKsup1w43CAPTQ
+
+### Deactivate a user (paste token below after 'Bearer ')
+PUT {{UserApi_HostAddress}}/api/admin/deactivate/officer1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsIm5hbWVpZCI6ImFkbWluIiwibmFtZSI6IlN5c3RlbSBBZG1pbiIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJyb2xlIjoiQWRtaW4iLCJzdGF0dXMiOiJBY3RpdmUiLCJleHAiOjE3NzA1NTkwMDAsImlzcyI6IllvdXJDb21wYW55IiwiYXVkIjoiWW91ckZyb250ZW5kQXBwIn0.yc8W-DW8SjKGvw8FkqA2JH5xN64nWLKsup1w43CAPTQ

@@ -1,0 +1,35 @@
+@UserApi_HostAddress = http://localhost:5251
+
+### Step 1: Login as Admin
+POST {{UserApi_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "userId": "admin",
+  "password": "Admin@123!"
+}
+
+### Step 2: Get Pending Users (paste your token after "Bearer ")
+GET {{UserApi_HostAddress}}/api/admin/pending-users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiU3lzdGVtIEFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsInN0YXR1cyI6IkFjdGl2ZSIsImV4cCI6MTc3MDU1NTIyOSwiaXNzIjoiWW91ckNvbXBhbnkiLCJhdWQiOiJZb3VyRnJvbnRlbmRBcHAifQ.9i64tdxBMRWXoxanE4rLZVGKoAB6xKKg3tSmRhynKDA
+
+### Register a new user
+POST {{UserApi_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "userId": "officer1",
+  "name": "Test Officer",
+  "email": "officer1@example.com",
+  "branch": "Branch1",
+  "role": "Officer",
+  "password": "Officer@123!"
+}
+
+### Approve a user
+PUT {{UserApi_HostAddress}}/api/admin/approve/officer1
+Authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiU3lzdGVtIEFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsInN0YXR1cyI6IkFjdGl2ZSIsImV4cCI6MTc3MDU1NTIyOSwiaXNzIjoiWW91ckNvbXBhbnkiLCJhdWQiOiJZb3VyRnJvbnRlbmRBcHAifQ.9i64tdxBMRWXoxanE4rLZVGKoAB6xKKg3tSmRhynKDA
+
+### Deactivate a user
+PUT {{UserApi_HostAddress}}/api/admin/deactivate/officer1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWVpZGVudGlmaWVyIjoiYWRtaW4iLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiU3lzdGVtIEFkbWluIiwiaHR0cDovL3NjaGVtYXMueG1sc29hcC5vcmcvd3MvMjAwNS8wNS9pZGVudGl0eS9jbGFpbXMvZW1haWxhZGRyZXNzIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJBZG1pbiIsInN0YXR1cyI6IkFjdGl2ZSIsImV4cCI6MTc3MDU1NTIyOSwiaXNzIjoiWW91ckNvbXBhbnkiLCJhdWQiOiJZb3VyRnJvbnRlbmRBcHAifQ.9i64tdxBMRWXoxanE4rLZVGKoAB6xKKg3tSmRhynKDA

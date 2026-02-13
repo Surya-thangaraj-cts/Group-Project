@@ -1,0 +1,21 @@
+﻿{
+  "ConnectionStrings": {
+    "Default": "Server=LTIN656494\\SQLEXPRESS;Database=UserApprovalDb;Trusted_Connection=True;TrustServerCertificate=True"
+  },
+
+  "Jwt": {
+    "Issuer": "YourCompany",
+    "Audience": "YourFrontendApp",
+    "Key": "a-very-long-strong-secret-key-change-me",
+    "ExpiresMinutes": 120
+  },
+
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+
+  "AllowedHosts": "*"
+}

@@ -1,0 +1,44 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.OpenApi;
+using Swashbuckle.AspNetCore.SwaggerGen;
+
+namespace UserApprovalApi.Filters
+{
+    public class SecurityRequirementsOperationFilter : IOperationFilter
+    {
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        {
+            // Check if the endpoint has [Authorize] (or the controller does)
+            var hasAuthorize = context.MethodInfo.DeclaringType?
+                .GetCustomAttributes(true)
+                .OfType<AuthorizeAttribute>().Any() == true
+                || context.MethodInfo
+                .GetCustomAttributes(true)
+                .OfType<AuthorizeAttribute>().Any();
+
+            // Check if the endpoint has [AllowAnonymous]
+            var hasAllowAnonymous = context.MethodInfo
+                .GetCustomAttributes(true)
+                .OfType<AllowAnonymousAttribute>().Any();
+
+            if (!hasAuthorize || hasAllowAnonymous)
+                return;
+
+            // Add lock icon and require Bearer token
+            operation.Security = new List<OpenApiSecurityRequirement>
+            {
+                new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            UnresolvedReference = true,
+                            Id = "Bearer"
+                        },
+                        new List<string>()
+                    }
+                }
+            };
+        }
+    }
+}
