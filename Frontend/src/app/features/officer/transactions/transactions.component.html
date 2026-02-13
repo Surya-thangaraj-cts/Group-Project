@@ -1,0 +1,239 @@
+<div class="card">
+  <h2>Transaction Management</h2><br />
+ 
+  <!-- Record Transaction -->
+  <div class="card subtle">
+    <h3>Record Transaction</h3>
+ 
+    <form [formGroup]="txnForm" (ngSubmit)="recordTransaction()" class="responsive-form" novalidate>
+      <div class="grid-narrow">
+        <!-- Account Select -->
+        <label>
+          Account ID
+          <select [(ngModel)]="selectedHistoryAccountId" [ngModelOptions]="{ standalone: true }" name="txnAcc">
+            <option [ngValue]="undefined">— Select Account —</option>
+            <ng-container *ngIf="(accounts$ | async) as accounts">
+              <option *ngFor="let a of accounts" [ngValue]="a.accountId">
+                {{ a.accountId }} — {{ a.customerName }}
+              </option>
+            </ng-container>
+          </select>
+        </label>
+ 
+        <!-- Threshold -->
+        <label>
+          High Value Threshold (₹)
+          <input type="number" [value]="highValueThreshold" disabled />
+        </label>
+ 
+        <!-- Type -->
+        <label>
+          Transaction Type
+          <select formControlName="type" (change)="onTxnTypeChange()">
+            <option value="DEPOSIT">Deposit</option>
+            <option value="WITHDRAWAL">Withdrawal</option>
+            <option value="TRANSFER">Transfer</option>
+          </select>
+        </label>
+ 
+        <!-- Amount -->
+        <label>
+          Amount
+          <input type="number" formControlName="amount" min="0.01" />
+        </label>
+ 
+        <!-- Transfer Account -->
+        <label *ngIf="txnForm.value.type==='TRANSFER'">
+          To Account ID
+          <select formControlName="toAccountId">
+            <option [ngValue]="undefined">— Select —</option>
+            <ng-container *ngIf="(accounts$ | async) as accounts">
+              <option *ngFor="let a of accounts"
+                      [ngValue]="a.accountId"
+                      [disabled]="a.accountId===selectedHistoryAccountId">
+                {{ a.accountId }} — {{ a.customerName }}
+              </option>
+            </ng-container>
+          </select>
+        </label>
+ 
+        <!-- Narrative -->
+        <label>
+          Narrative
+          <input type="text" formControlName="narrative" placeholder="Optional note" />
+        </label>
+      </div>
+ 
+      <br />
+ 
+      <div class="actions">
+        <button class="primary" type="submit" [disabled]="txnForm.invalid || !selectedHistoryAccountId">Record Transaction</button>
+        <button class="secondary" type="button" (click)="resetTxnForm()">Reset</button>
+      </div>
+    </form>
+  </div>
+ 
+  <br />
+ 
+  <!-- Transaction History -->
+  <div class="card">
+    <h3>Transaction History</h3>
+ 
+    <!-- Filters -->
+    <div class="grid-narrow">
+      <label>
+        Account ID
+        <select
+          [(ngModel)]="historyFilterAccountId"
+          (ngModelChange)="onFilterAccountChange($event)"
+          [ngModelOptions]="{ standalone: true }">
+          <option [ngValue]="undefined">— All Accounts —</option>
+          <ng-container *ngIf="(accounts$ | async) as accounts">
+            <option *ngFor="let a of accounts" [ngValue]="a.accountId">
+              {{ a.accountId }} — {{ a.customerName }}
+            </option>
+          </ng-container>
+        </select>
+      </label>
+ 
+      <label>
+        From Date
+        <input type="date"
+               [(ngModel)]="fromDate"
+               (ngModelChange)="onFromDateChange($event)"
+               [ngModelOptions]="{ standalone: true }"/>
+      </label>
+ 
+      <label>
+        To Date
+        <input type="date"
+               [(ngModel)]="toDate"
+               (ngModelChange)="onToDateChange($event)"
+               [ngModelOptions]="{ standalone: true }"/>
+      </label>
+    </div>
+ 
+    <br />
+ 
+    <!-- Table + Pagination (driven by txVm$) -->
+    <ng-container *ngIf="txVm$ | async as vm">
+      <div class="table-wrap" *ngIf="vm.total > 0; else noTx">
+        <!-- Plain table so pagination controls the rows -->
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Transaction ID</th>
+              <th scope="col">Account ID</th>
+              <th scope="col">Type</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Date</th>
+              <th scope="col">Status</th>
+              <th scope="col">Flag</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let t of vm.pageData; trackBy: trackByTxnId">
+              <td [attr.data-label]="'Transaction ID'">{{ t.id }}</td>
+              <td [attr.data-label]="'Account ID'">{{ t.accountId }}</td>
+              <td [attr.data-label]="'Type'">{{ t.type }}</td>
+              <td [attr.data-label]="'Amount'">₹{{ t.amount | number:'1.2-2' }}</td>
+              <td [attr.data-label]="'Date'">{{ t.time | date:'medium' }}</td>
+              <td [attr.data-label]="'Status'">
+                <span
+                  class="status"
+                  [ngClass]="t.amount < highValueThreshold ? 'status--completed' : 'status--pending'">
+                  {{ t.amount < highValueThreshold ? 'Completed' : 'Pending' }}
+                </span>
+              </td>
+              <td [attr.data-label]="'Flag'">
+                <span
+                  class="status"
+                  [ngClass]="t.flagged ? 'status--flag-high' : 'status--flag-normal'">
+                  {{ t.flagged ? 'High' : 'Normal' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+ 
+        <!-- Pagination controls (inline white style) -->
+        <div class="actions" style="justify-content: space-between; align-items: center; gap: .5rem; padding-top: .5rem;">
+          <!-- Rows per page -->
+          <div class="inline">
+            <span class="muted">Rows per page</span>
+            <select
+              class="select-compact"
+              [value]="vm.pageSize"
+              (change)="onTxPageSizeChange($event)"
+              aria-label="Rows per page">
+              <option *ngFor="let size of txPageSizeOptions" [value]="size">{{ size }}</option>
+            </select>
+          </div>
+ 
+          <!-- Range & total -->
+          <div class="muted range-text">
+            {{ vm.from }}–{{ vm.to }} of {{ vm.total }}
+          </div>
+ 
+          <!-- Page buttons -->
+          <div class="actions" style="gap:.35rem;">
+            <button
+              type="button"
+              (click)="txSetPage(1)"
+              [disabled]="vm.currentPage===1"
+              aria-label="First page"
+              style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
+              [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null"
+            >First</button>
+ 
+            <button
+              type="button"
+              (click)="txPrevPage()
+              "
+              [disabled]="vm.currentPage===1"
+              aria-label="Previous page"
+              style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
+              [ngStyle]="vm.currentPage===1 ? {'opacity': .5, 'cursor':'not-allowed'} : null"
+            >Prev</button>
+ 
+            <ng-container *ngFor="let p of vm.pages">
+              <button
+                type="button"
+                class="pager-btn"
+                (click)="txSetPage(p)"
+                [class.active]="p===vm.currentPage"
+                [attr.aria-current]="p===vm.currentPage ? 'page' : null"
+                [attr.aria-label]="'Go to page ' + p">
+                {{ p }}
+              </button>
+            </ng-container>
+ 
+            <button
+              type="button"
+              (click)="txNextPage()"
+              [disabled]="vm.currentPage===vm.totalPages"
+              aria-label="Next page"
+              style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
+              [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null"
+            >Next</button>
+ 
+            <button
+              type="button"
+              (click)="txSetPage(vm.totalPages)"
+              [disabled]="vm.currentPage===vm.totalPages"
+              aria-label="Last page"
+              style="background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:.4rem .7rem;box-shadow:0 1px 2px rgba(15,23,42,.06);cursor:pointer;opacity:1;"
+              [ngStyle]="vm.currentPage===vm.totalPages ? {'opacity': .5, 'cursor':'not-allowed'} : null"
+            >Last</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+ 
+    <ng-template #noTx>
+      <p class="muted">No transactions found for selected filters.</p>
+    </ng-template>
+  </div>
+</div>
+ 
+ 

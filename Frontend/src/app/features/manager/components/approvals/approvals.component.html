@@ -1,0 +1,455 @@
+<div class="approvals-container">
+  <!-- Success/Error Alert -->
+  <div class="alert-container" *ngIf="showAlert" [ngClass]="'alert-' + alertType">
+    <div class="alert-content">
+      <span class="alert-message">{{ alertMessage }}</span>
+      <button class="alert-close" (click)="closeAlert()">×</button>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs-container">
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'pending'"
+      (click)="selectTab('pending')">
+      Pending 
+      <span class="tab-count">{{ dataService.getApprovalsByStatus('Pending').length + dataService.getDataChangeApprovalsByStatus('Pending').length }}</span>
+    </button>
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'approved'"
+      (click)="selectTab('approved')">
+      Approved
+      <span class="tab-count">{{ dataService.getCombinedApprovalsCount('Approved') }}</span>
+    </button>
+    <button 
+      class="tab-button"
+      [class.active]="activeTab === 'rejected'"
+      (click)="selectTab('rejected')">
+      Rejected
+      <span class="tab-count">{{ dataService.getCombinedApprovalsCount('Rejected') }}</span>
+    </button>
+    <!-- High-Value tab removed -->
+  </div>
+
+  <!-- Pending Tab Filters -->
+  <div class="pending-filters" *ngIf="activeTab === 'pending'">
+    <button 
+      class="filter-button"
+      [class.active]="pendingFilter === 'all'"
+      (click)="setPendingFilter('all')">
+      All Pending
+      <span class="filter-count">{{ getPendingCountAll() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="pendingFilter === 'accountchanges'"
+      (click)="setPendingFilter('accountchanges')">
+      Account Changes
+      <span class="filter-count">{{ getPendingCountAccountChanges() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="pendingFilter === 'highvalue'"
+      (click)="setPendingFilter('highvalue')">
+      High Value
+      <span class="filter-count">{{ getPendingCountHighValue() }}</span>
+    </button>
+  </div>
+
+  <!-- Approved Tab Filters -->
+  <div class="approved-filters" *ngIf="activeTab === 'approved'">
+    <button 
+      class="filter-button"
+      [class.active]="approvedFilter === 'all'"
+      (click)="setApprovedFilter('all')">
+      All Approved
+      <span class="filter-count">{{ getApprovedCountAll() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="approvedFilter === 'accountchanges'"
+      (click)="setApprovedFilter('accountchanges')">
+      Account Changes
+      <span class="filter-count">{{ getApprovedCountAccountChanges() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="approvedFilter === 'highvalue'"
+      (click)="setApprovedFilter('highvalue')">
+      High Value
+      <span class="filter-count">{{ getApprovedCountHighValue() }}</span>
+    </button>
+  </div>
+
+  <!-- Rejected Tab Filters -->
+  <div class="rejected-filters" *ngIf="activeTab === 'rejected'">
+    <button 
+      class="filter-button"
+      [class.active]="rejectedFilter === 'all'"
+      (click)="setRejectedFilter('all')">
+      All Rejected
+      <span class="filter-count">{{ getRejectedCountAll() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="rejectedFilter === 'accountchanges'"
+      (click)="setRejectedFilter('accountchanges')">
+      Account Changes
+      <span class="filter-count">{{ getRejectedCountAccountChanges() }}</span>
+    </button>
+    <button 
+      class="filter-button"
+      [class.active]="rejectedFilter === 'highvalue'"
+      (click)="setRejectedFilter('highvalue')">
+      High Value
+      <span class="filter-count">{{ getRejectedCountHighValue() }}</span>
+    </button>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-container">
+    <div class="search-box">
+      <input 
+        type="text" 
+        class="search-input"
+        placeholder="Search by transaction ID, approval ID, or user..."
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="filterApprovals()">
+      <span class="search-icon"></span>
+    </div>
+  </div>
+
+  <!-- Approval Items Table -->
+  <div class="approvals-table-wrapper" *ngIf="filteredItems.length > 0; else noApprovals">
+    <!-- Combined Table for Pending Tab (shows both transactions and data changes) -->
+    <table class="approvals-table" *ngIf="activeTab === 'pending'">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Account</th>
+          <th>Information</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of filteredItems" class="approval-row" [ngClass]="'row-pending'">
+          <!-- Transaction Row -->
+          <ng-container *ngIf="item.transactionId">
+            <td class="approval-id-cell">{{ item.approvalId }}</td>
+            <td class="type-badge">Transaction</td>
+            <td>{{ getTransaction(item.transactionId)?.accountId || 'N/A' }}</td>
+            <td>
+              <div class="details-content">
+                <div><strong>{{ getTransaction(item.transactionId)?.user || 'N/A' }}</strong></div>
+                <div class="details-sub">{{ getTransaction(item.transactionId)?.type || 'N/A' }}</div>
+              </div>
+            </td>
+            <td class="amount-cell">₹{{ getTransaction(item.transactionId)?.amount | number:'1.2-2' }}</td>
+            <td class="date-cell">{{ getNullableDate(getTransaction(item.transactionId)?.date) }}</td>
+            <td class="action-cell">
+              <button class="btn-review" (click)="approvalType = 'transaction'; openApprovalModal(item.approvalId)">Review</button>
+            </td>
+          </ng-container>
+
+          <!-- Data Change Row -->
+          <ng-container *ngIf="item.changeId">
+            <td class="approval-id-cell">{{ item.changeId }}</td>
+            <td class="type-badge">Data Change</td>
+            <td>{{ item.accountId }}</td>
+            <td>
+              <div class="details-content">
+                <div><strong>{{ item.changeType }}</strong></div>
+                <div class="details-sub">{{ item.oldValue }}</div>
+              </div>
+            </td>
+            <td class="amount-cell">{{ item.newValue }}</td>
+            <td class="date-cell">{{ getNullableDate(item.requestDate) }}</td>
+            <td class="action-cell">
+              <button class="btn-review" (click)="approvalType = 'datachange'; openApprovalModal(item.changeId)">Review</button>
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Data Change Approvals Table for non-pending tabs -->
+    <table class="approvals-table" *ngIf="activeTab !== 'pending' && approvalType === 'datachange'">
+      <thead>
+        <tr>
+          <th>Change ID</th>
+          <th>Account ID</th>
+          <th>Change Type</th>
+          <th>Requested By</th>
+          <th>Requested On</th>
+          <th>Current Value</th>
+          <th>New Value</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let change of filteredItems" class="approval-row" [ngClass]="{
+            'row-pending': change.decision === 'Pending',
+            'row-approved': change.decision === 'Approved',
+            'row-rejected': change.decision === 'Rejected'
+          }">
+          <td class="approval-id-cell">{{ change.changeId }}</td>
+          <td>{{ change.accountId }}</td>
+          <td>{{ change.changeType }}</td>
+          <td>{{ change.requestedBy }}</td>
+          <td class="date-cell">{{ getNullableDate(change.requestDate) }}</td>
+          <td class="value-cell">{{ change.oldValue }}</td>
+          <td class="value-cell">{{ change.newValue }}</td>
+          <td class="action-cell">
+            <button *ngIf="change.decision === 'Pending'" class="btn-review" (click)="approvalType = 'datachange'; openApprovalModal(change.changeId)">Review</button>
+            <span *ngIf="change.decision !== 'Pending'" class="status-text">Completed</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Transaction Approvals Table -->
+    <table class="approvals-table" *ngIf="activeTab !== 'pending' && approvalType === 'transaction'">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Type</th>
+          <th>Account ID</th>
+          <th>Details</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Decision</th>
+          <th *ngIf="activeTab === 'approved' || activeTab === 'rejected'">Comments</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Transaction Approval Rows -->
+        <tr *ngFor="let approval of filteredItems" class="approval-row" [ngClass]="{
+            'row-pending': approval.decision === 'Pending',
+            'row-approved': approval.decision === 'Approved',
+            'row-rejected': approval.decision === 'Rejected'
+          }">
+          <!-- Transaction Row -->
+          <ng-container *ngIf="approval.transactionId">
+            <td class="approval-id-cell">{{ approval.approvalId }}</td>
+            <td class="type-badge">Transaction</td>
+            <td>{{ getTransaction(approval.transactionId)?.accountId || 'N/A' }}</td>
+            <td>
+              <div class="details-content">
+                <div><strong>{{ getTransaction(approval.transactionId)?.user || 'N/A' }}</strong></div>
+                <div class="details-sub">{{ getTransaction(approval.transactionId)?.type || 'N/A' }} - {{ getTransaction(approval.transactionId)?.recipientName || 'N/A' }}</div>
+              </div>
+            </td>
+            <td class="amount-cell">₹{{ getTransaction(approval.transactionId)?.amount | number:'1.2-2' }}</td>
+            <td class="date-cell">{{ getNullableDate(getTransaction(approval.transactionId)?.date) }}</td>
+            <td>
+              <span class="decision-badge" [ngClass]="'decision-' + approval.decision.toLowerCase()">{{ approval.decision }}</span>
+            </td>
+            <td class="comments-cell" *ngIf="activeTab === 'approved' || activeTab === 'rejected'" [title]="approval.comments || 'No comments'">{{ approval.comments || '-' }}</td>
+            <td class="action-cell">
+              <button *ngIf="approval.decision === 'Pending'" class="btn-review" (click)="approvalType = 'transaction'; openApprovalModal(approval.approvalId)">Review</button>
+              <span *ngIf="approval.decision !== 'Pending'" class="status-text">Completed</span>
+            </td>
+          </ng-container>
+
+          <!-- Data Change Approval Row -->
+          <ng-container *ngIf="approval.changeId">
+            <td class="approval-id-cell">{{ approval.changeId }}</td>
+            <td class="type-badge">Data Change</td>
+            <td>{{ approval.accountId }}</td>
+            <td>
+              <div class="details-content">
+                <div><strong>{{ approval.changeType }}</strong></div>
+                <div class="details-sub">{{ approval.oldValue }} → {{ approval.newValue }}</div>
+              </div>
+            </td>
+            <td>-</td>
+            <td class="date-cell">{{ getNullableDate(approval.decisionDate) }}</td>
+            <td>
+              <span class="decision-badge" [ngClass]="'decision-' + approval.decision.toLowerCase()">{{ approval.decision }}</span>
+            </td>
+            <td class="comments-cell" *ngIf="activeTab === 'approved' || activeTab === 'rejected'" [title]="approval.comments || 'No comments'">{{ approval.comments || '-' }}</td>
+            <td class="action-cell">
+              <button *ngIf="approval.decision === 'Pending'" class="btn-review" (click)="approvalType = 'datachange'; openApprovalModal(approval.changeId)">Review</button>
+              <span *ngIf="approval.decision !== 'Pending'" class="status-text">Completed</span>
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ng-template #noApprovals>
+    <div class="no-approvals">
+      <p>No approvals found</p>
+      <p class="subtext">Check back later for pending approvals</p>
+    </div>
+  </ng-template>
+
+  <!-- Approval Modal -->
+  <div class="modal-overlay" *ngIf="showApprovalModal" (click)="closeApprovalModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Review & Approve/Reject</h3>
+        <button class="btn-close" (click)="closeApprovalModal()">×</button>
+      </div>
+
+      <!-- Transaction approval modal -->
+      <div *ngIf="approvalType === 'transaction' && getApprovalDetails(selectedItemId || '')" class="modal-body">
+        <div class="transaction-details-section">
+          <h4>Transaction Details</h4>
+          <div class="detail-row">
+            <span class="label">Transaction ID:</span>
+            <span class="value">{{ getApprovalDetailsWithDefaults(selectedItemId || '').approval.transactionId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">User:</span>
+            <span class="value">{{ getApprovalDetailsWithDefaults(selectedItemId || '').transaction.user }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Send to Whom:</span>
+            <span class="value">{{ getApprovalDetailsWithDefaults(selectedItemId || '').transaction.recipientName || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Amount:</span>
+            <span class="value amount">₹{{ getApprovalDetailsWithDefaults(selectedItemId || '').transaction.amount | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Send Amount:</span>
+            <span class="value amount">₹{{ getApprovalDetailsWithDefaults(selectedItemId || '').transaction.recipientAmount | number:'1.2-2' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Type:</span>
+            <span class="value">{{ getApprovalDetailsWithDefaults(selectedItemId || '').transaction.type }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Account ID:</span>
+            <span class="value">{{ getApprovalDetailsWithDefaults(selectedItemId || '').transaction.accountId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Transaction Date:</span>
+            <span class="value">{{ getNullableDate(getApprovalDetailsWithDefaults(selectedItemId || '').transaction.date) }}</span>
+          </div>
+        </div>
+
+        <div class="decision-buttons-section">
+          <h4>Make Your Decision</h4>
+          <div class="decision-buttons">
+            <button 
+              class="btn-approve"
+              [class.selected]="approvalDecision === 'Approved'"
+              (click)="setDecision('Approved')">
+              APPROVE
+            </button>
+            <button 
+              class="btn-reject"
+              [class.selected]="approvalDecision === 'Rejected'"
+              (click)="setDecision('Rejected')">
+              REJECT
+            </button>
+          </div>
+        </div>
+
+        <div class="comments-section">
+          <label class="comments-label">Comments <span class="required">*</span></label>
+          <textarea 
+            class="comments-textarea"
+            [(ngModel)]="approvalComments"
+            placeholder="Enter your comments for this decision (mandatory)"
+            rows="5"></textarea>
+          <div *ngIf="commentError" class="error-message">{{ commentError }}</div>
+          <span class="char-count">{{ approvalComments.length }} / 500 characters</span>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeApprovalModal()">Cancel</button>
+          <button 
+            class="btn-submit"
+            [disabled]="!approvalDecision || !approvalComments.trim()"
+            (click)="submitApproval()">
+            Submit Decision
+          </button>
+        </div>
+      </div>
+
+      <!-- Data-change approval modal -->
+      <div *ngIf="approvalType === 'datachange' && getSelectedDataChange()" class="modal-body">
+        <div class="transaction-details-section">
+          <h4>Data Change Request</h4>
+          <div class="detail-row">
+            <span class="label">Change ID:</span>
+            <span class="value">{{ getSelectedDataChange()?.changeId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Account ID:</span>
+            <span class="value">{{ getSelectedDataChange()?.accountId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Change Type:</span>
+            <span class="value">{{ getSelectedDataChange()?.changeType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Requested By:</span>
+            <span class="value">{{ getSelectedDataChange()?.requestedBy }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Requested On:</span>
+            <span class="value">{{ getDataChangeDate() }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Current Value:</span>
+            <span class="value">{{ getSelectedDataChange()?.oldValue }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">New Value:</span>
+            <span class="value">{{ getSelectedDataChange()?.newValue }}</span>
+          </div>
+        </div>
+
+        <div class="decision-buttons-section">
+          <h4>Make Your Decision</h4>
+          <div class="decision-buttons">
+            <button 
+              class="btn-approve"
+              [class.selected]="approvalDecision === 'Approved'"
+              (click)="setDecision('Approved')">
+              APPROVE
+            </button>
+            <button 
+              class="btn-reject"
+              [class.selected]="approvalDecision === 'Rejected'"
+              (click)="setDecision('Rejected')">
+              REJECT
+            </button>
+          </div>
+        </div>
+
+        <div class="comments-section">
+          <label class="comments-label">Comments <span class="required">*</span></label>
+          <textarea 
+            class="comments-textarea"
+            [(ngModel)]="approvalComments"
+            placeholder="Enter your comments for this decision (mandatory)"
+            rows="5"></textarea>
+          <div *ngIf="commentError" class="error-message">{{ commentError }}</div>
+          <span class="char-count">{{ approvalComments.length }} / 500 characters</span>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-cancel" (click)="closeApprovalModal()">Cancel</button>
+          <button 
+            class="btn-submit"
+            [disabled]="!approvalDecision || !approvalComments.trim()"
+            (click)="submitApproval()">
+            Submit Decision
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
