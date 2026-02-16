@@ -290,8 +290,10 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
    * Load compliance metrics from API
    */
   private loadComplianceMetrics(): void {
+    console.log('Loading compliance metrics from API...');
     this.adminService.getComplianceMetrics().subscribe({
       next: (metrics) => {
+        console.log('Compliance metrics received from API:', metrics);
         this.compliance = {
           totalTransactions: metrics.totalTransactions,
           highValueCount: metrics.highValueCount,
@@ -301,10 +303,16 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           monthlySuspicious: metrics.monthlySuspicious,
           amountBuckets: metrics.amountBuckets
         };
+        console.log('Compliance metrics updated:', this.compliance);
       },
       error: (error) => {
-        console.error('Failed to load compliance metrics');
-        // Keep default empty values if API fails
+        console.error('Failed to load compliance metrics:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.status,
+          url: 'https://localhost:7021/api/admin/compliance-metrics'
+        });
+        alert(`Failed to load compliance metrics: ${error.message}\n\nPlease ensure:\n1. Backend API is running on port 7021\n2. You are logged in as Admin\n3. JWT token is valid`);
       }
     });
   }
@@ -392,11 +400,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'M ' + points.map(p => p.replace(',', ' ')).join(' L ');
   }
  
-  // Generic line path for any series
+  // Generic line path for any series - uses shared Y-axis scale
   linePath(values: number[], width = 600, height = 120): string {
     if (!values?.length) return '';
-    const max = Math.max(...values) || 1;
-    const stepX = width / (values.length - 1);
+    const max = this.getYMax(); // Use shared max for both lines
+    const stepX = values.length > 1 ? width / (values.length - 1) : 0;
     const pts = values.map((v, i) => {
       const x = i * stepX;
       const y = height - (v / max) * height;
@@ -777,9 +785,27 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch (e) {
       console.error('Sign out failed', e);
     }
-  }  goToSettings(): void {
+  }
+
+  goToSettings(): void {
     console.log('Go to settings...');
     // this.router.navigate(['/settings']);
+  }
+
+  submitDetailsChangeRequest(): void {
+    if (this.myDetailsForm.invalid) {
+      alert('Please fill in all required fields correctly.');
+      return;
+    }
+
+    const formValue = this.myDetailsForm.value;
+    console.log('Details change request submitted:', formValue);
+    
+    // TODO: Implement API call to submit profile change request
+    alert('Profile update request submitted successfully!');
+    
+    // Close the profile sidebar
+    this.closeProfile();
   }
  
   // -------------------------------
