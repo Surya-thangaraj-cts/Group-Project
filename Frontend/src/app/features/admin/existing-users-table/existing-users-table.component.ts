@@ -30,6 +30,7 @@ export class ExistingUsersTableComponent implements OnInit {
   /** Emit events back to parent */
   @Output() selectUser = new EventEmitter<User>();
   @Output() updateUser = new EventEmitter<User>();
+  @Output() searchChange = new EventEmitter<string>(); // New: emit search queries
  
   editingUserId?: string;
   editForm!: FormGroup;
@@ -91,23 +92,19 @@ export class ExistingUsersTableComponent implements OnInit {
  
   /** Get filtered rows based on search term */
   getFilteredRows(): User[] {
-    if (!this.searchTerm.trim()) {
-      return this.rows;
-    }
-    const term = this.searchTerm.toLowerCase();
-    return this.rows.filter(u =>
-      u.userId.toLowerCase().includes(term) ||
-      u.name.toLowerCase().includes(term) ||
-      u.email.toLowerCase().includes(term) ||
-      u.role.toLowerCase().includes(term) ||
-      u.branch.toLowerCase().includes(term) ||
-      u.status.toLowerCase().includes(term)
-    );
+    // Just return all rows - filtering is now done at parent level via API
+    return this.rows;
   }
  
+  /** Handle search input changes */
+  onSearchInput(): void {
+    this.searchChange.emit(this.searchTerm);
+  }
+
   /** Clear search */
   clearSearch(): void {
     this.searchTerm = '';
+    this.searchChange.emit('');
   }
 }
  

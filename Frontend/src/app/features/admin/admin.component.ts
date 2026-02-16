@@ -93,6 +93,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   editingUserId?: string;
   editingUser?: User;  // for modal editing
   pendingSearchTerm: string = '';  // for pending users search
+  existingSearchTerm: string = '';  // for existing users search
  
   // ----- Forms -----
   editUserForm: FormGroup;
@@ -196,16 +197,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     // Load pending users from API
     this.loadPendingUsersFromApi();
 
-    // Initialize empty compliance data - will be populated from API
-    this.compliance = {
-      totalTransactions: 0,
-      highValueCount: 0,
-      accountGrowthRate: 0,
-      monthlyTxnVolume:  [],
-      monthlyLabels:     [],
-      monthlySuspicious: [],
-      amountBuckets: [],
-    };
+    // Load compliance metrics from API
+    this.loadComplianceMetrics();
  
     // Populate currentUser for Profile UI
     this.currentUser = this.tryGetCurrentUserFromAuth() ?? this.deriveCurrentUser();
@@ -263,34 +256,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           role: u.role as Role,
           status: u.status as Status
         }));
-        console.log('Loaded pending users from API:', this.pendingUsers);
       },
       error: (error) => {
-        console.error('Failed to load pending users from API:', error);
-        // Fallback to local storage if API fails
-        this.loadPendingUsersFromAuth();
+        console.error('Failed to load pending users from API');
+        alert('Failed to load pending users. Please refresh the page.');
       }
     });
-  }
-
-  /**
-   * Load pending users from local AuthService (fallback)
-   */
-  private loadPendingUsersFromAuth(): void {
-    try {
-      const authUsers = this.auth.getAllUsers();
-      const mapped: User[] = (authUsers || []).map(u => ({
-        userId: (u.userId ?? '').toString(),
-        name: u.name ?? '',
-        email: u.email ?? '',
-        branch: u.branch ?? '',
-        role: this.mapRole(u.role ?? 'bankOfficer'),
-        status: this.mapStatus(u.status ?? 'active'),
-      }));
-      this.pendingUsers = mapped.filter(u => u.status === 'Pending');
-    } catch (e) {
-      console.error('[Admin] Failed to load pending users from AuthService', e);
-    }
   }
 
   /**
@@ -307,47 +278,37 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           role: u.role as Role,
           status: u.status as Status
         }));
-        console.log('Loaded approved users from API:', this.users);
       },
       error: (error) => {
-        console.warn('⚠️ GET /api/admin/approved-users failed');
-        console.warn('✅ Using manually updated user list until endpoint is ready');
-        // Keep existing users array (contains approved/rejected users from UI actions)
-        // Don't clear it - this preserves users added via approve/reject buttons
+        console.error('Failed to load approved users from API');
+        alert('Failed to load users. Please refresh the page.');
       }
     });
   }
 
-  private refreshFromAuth(): void {
-    try {
-      const authUsers = this.auth.getAllUsers();
-      const mapped: User[] = (authUsers || []).map(u => ({
-        userId: (u.userId ?? '').toString(),
-        name: u.name ?? '',
-        email: u.email ?? '',
-        branch: u.branch ?? '',
-        role: this.mapRole(u.role ?? 'bankOfficer'),
-        status: this.mapStatus(u.status ?? 'active'),
-      }));
- 
-      // Only load existing (non-pending) users from local storage
-      // Pending users are loaded from API
-      this.users = mapped.filter(u => u.status !== 'Pending');
- 
-      // Ensure there is at least something for first render (optional demo)
-      if (!mapped.length) {
-        // If no users in storage (rare), seed demo existing users
-        this.users = [
-          { userId: 'U1001', name: 'Anita Sharma', role: 'Officer', email: 'anita@bank.local', branch: 'Gurgaon', status: 'Active' },
-          { userId: 'U1002', name: 'Rahul Mehta', role: 'Manager', email: 'rahul@bank.local', branch: 'Delhi', status: 'Active' },
-          { userId: 'U1003', name: 'Priya Nair', role: 'Officer', email: 'priya@bank.local', branch: 'Mumbai', status: 'Inactive' }
-        ];
+  /**
+   * Load compliance metrics from API
+   */
+  private loadComplianceMetrics(): void {
+    this.adminService.getComplianceMetrics().subscribe({
+      next: (metrics) => {
+        this.compliance = {
+          totalTransactions: metrics.totalTransactions,
+          highValueCount: metrics.highValueCount,
+          accountGrowthRate: metrics.accountGrowthRate,
+          monthlyTxnVolume: metrics.monthlyTxnVolume,
+          monthlyLabels: metrics.monthlyLabels,
+          monthlySuspicious: metrics.monthlySuspicious,
+          amountBuckets: metrics.amountBuckets
+        };
+      },
+      error: (error) => {
+        console.error('Failed to load compliance metrics');
+        // Keep default empty values if API fails
       }
-    } catch (e) {
-      console.error('[Admin] Failed to load users from AuthService', e);
-    }
+    });
   }
- 
+
   /** Attempt to read current/logged-in user from AuthService and map to UI model */
   private tryGetCurrentUserFromAuth(): User | null {
     try {
@@ -372,14 +333,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       const u = this.users.find(x => x.status === 'Active') ?? this.users[0];
       return u ? { ...u } : null;
     }
-    return {
-      userId: 'U-1029',
-      name: 'Thangaraj, Surya',
-      email: 'surya.thangaraj@cognizant.com',
-      role: 'Officer',
-      branch: 'Pune',
-      status: 'Active'
-    };
+    // Return null if no users - will be populated when API loads
+    return null;
   }
  
   /** Map auth roles to UI roles */
@@ -514,30 +469,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   approveUser(u: User): void {
     this.adminService.approveUser(u.userId).subscribe({
       next: (response) => {
-        console.log('User approved:', response.message);
-        
-        // Remove from pending list
-        this.pendingUsers = this.pendingUsers.filter(user => user.userId !== u.userId);
-        
-        // Immediately add to existing users with Active status
-        const approvedUser: User = {
-          ...u,
-          status: 'Active'
-        };
-        // Add to beginning of array for visibility
-        this.users.unshift(approvedUser);
-        
-        // Also update in AuthService for login functionality
-        this.auth.approveUser(u.userId);
-        
-        // Refresh pending list from API
+        // Refresh both lists from API
         this.loadPendingUsersFromApi();
-        
-        // Try to refresh existing users from API (will update when endpoint is ready)
         this.loadExistingUsersFromApi();
       },
       error: (error) => {
-        console.error('Failed to approve user:', error);
+        console.error('Failed to approve user');
         alert(`Failed to approve user: ${error.message}`);
       }
     });
@@ -546,30 +483,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   rejectUser(u: User): void {
     this.adminService.deactivateUser(u.userId).subscribe({
       next: (response) => {
-        console.log('User rejected/deactivated:', response.message);
-        
-        // Remove from pending list
-        this.pendingUsers = this.pendingUsers.filter(user => user.userId !== u.userId);
-        
-        // Immediately add to existing users with Inactive status
-        const rejectedUser: User = {
-          ...u,
-          status: 'Inactive'
-        };
-        // Add to beginning of array for visibility
-        this.users.unshift(rejectedUser);
-        
-        // Also update in AuthService for login functionality
-        this.auth.rejectUser(u.userId);
-        
-        // Refresh pending list from API
+        // Refresh both lists from API
         this.loadPendingUsersFromApi();
-        
-        // Try to refresh existing users from API (will update when endpoint is ready)
         this.loadExistingUsersFromApi();
       },
       error: (error) => {
-        console.error('Failed to reject user:', error);
+        console.error('Failed to reject user');
         alert(`Failed to reject user: ${error.message}`);
       }
     });
@@ -623,18 +542,9 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       role: formValue.role
     };
     
-    console.log('🔄 Sending edit request:', {
-      userId,
-      request: editRequest,
-      endpoint: `PUT /api/admin/edit/${userId}`
-    });
-    
     // Call API to update user
     this.adminService.editUser(userId, editRequest).subscribe({
       next: (response) => {
-        console.log('✅ User updated successfully:', response.message);
-        console.log('Updated user data from API:', response.user);
-        
         // Refresh the existing users table from API
         this.loadExistingUsersFromApi();
         
@@ -657,12 +567,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         alert('User updated successfully!');
       },
       error: (error) => {
-        console.error('❌ Failed to update user:', error);
-        console.error('Error details:', {
-          message: error.message,
-          status: error.status,
-          fullError: error
-        });
+        console.error('Failed to update user');
         alert(`Failed to update user: ${error.message}`);
       }
     });
@@ -675,19 +580,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
  
   /** Move a user to pending and remove from existing users list (UI-only action) */
   private moveToPending(updated: User): void {
-    // Remove from existing users
-    this.users = this.users.filter(u => u.userId !== updated.userId);
- 
-    // Upsert into pending
-    const idx = this.pendingUsers.findIndex(p => p.userId === updated.userId);
-    const pendingVersion: User = { ...updated, status: 'Pending' };
-    if (idx === -1) this.pendingUsers.unshift(pendingVersion);
-    else this.pendingUsers[idx] = pendingVersion;
- 
-    if (this.selectedUser?.userId === updated.userId) this.selectedUser = undefined;
-  }
-  private saveUsers() {
-    localStorage.setItem('users', JSON.stringify(this.users));
+    // Removed - no longer needed as we fetch from API
   }
  
   updateUser(): void {
@@ -710,18 +603,9 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       role: formValue.role
     };
     
-    console.log('🔄 Sending inline edit request:', {
-      userId,
-      request: editRequest,
-      endpoint: `PUT /api/admin/edit/${userId}`
-    });
-    
     // Call API to update user
     this.adminService.editUser(userId, editRequest).subscribe({
       next: (response) => {
-        console.log('✅ User updated successfully:', response.message);
-        console.log('Updated user data from API:', response.user);
-        
         // Refresh the existing users table from API
         this.loadExistingUsersFromApi();
         
@@ -739,12 +623,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         alert('User updated successfully!');
       },
       error: (error) => {
-        console.error('❌ Failed to update user:', error);
-        console.error('Error details:', {
-          message: error.message,
-          status: error.status,
-          fullError: error
-        });
+        console.error('Failed to update user');
         alert(`Failed to update user: ${error.message}`);
       }
     });
@@ -755,8 +634,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   // -------------------------------
   onExistingUserUpdated(updated: ExistingUser): void {
     const u = updated as User;
- 
-    console.log('🔄 User updated from table:', u);
     
     // Check if status changed
     const originalUser = this.users.find(user => user.userId === u.userId);
@@ -767,12 +644,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       if (u.status === 'Inactive') {
         this.adminService.deactivateUser(u.userId).subscribe({
           next: (response) => {
-            console.log('✅ User deactivated:', response.message);
             this.loadExistingUsersFromApi();
             alert('User status updated to Inactive!');
           },
           error: (error) => {
-            console.error('❌ Failed to deactivate user:', error);
+            console.error('Failed to deactivate user');
             alert(`Failed to update status: ${error.message}`);
             this.loadExistingUsersFromApi();
           }
@@ -781,12 +657,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       } else if (u.status === 'Active') {
         this.adminService.approveUser(u.userId).subscribe({
           next: (response) => {
-            console.log('✅ User activated:', response.message);
             this.loadExistingUsersFromApi();
             alert('User status updated to Active!');
           },
           error: (error) => {
-            console.error('❌ Failed to activate user:', error);
+            console.error('Failed to activate user');
             alert(`Failed to update status: ${error.message}`);
             this.loadExistingUsersFromApi();
           }
@@ -803,8 +678,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       role: u.role
     }).subscribe({
       next: (response) => {
-        console.log('✅ User updated successfully in database:', response.message);
-        
         // Refresh the existing users table from API
         this.loadExistingUsersFromApi();
         
@@ -823,7 +696,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         alert('User updated successfully!');
       },
       error: (error) => {
-        console.error('❌ Failed to update user in database:', error);
+        console.error('Failed to update user in database');
         alert(`Failed to update user: ${error.message}`);
         
         // Reload from API to revert any UI changes
@@ -909,41 +782,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     // this.router.navigate(['/settings']);
   }
  
-  /** Submit a request to change user details */
-  submitDetailsChangeRequest(): void {
-    if (!this.myDetailsForm.valid || !this.currentUser) return;
- 
-    const detailsRequest = {
-      userId: this.currentUser.userId,
-      requestedChanges: this.myDetailsForm.value,
-      requestedAt: new Date().toISOString(),
-      status: 'pending'
-    };
- 
-    // Store the request in localStorage
-    const existingRequests = JSON.parse(localStorage.getItem('detailChangeRequests') || '[]');
-    existingRequests.push(detailsRequest);
-    localStorage.setItem('detailChangeRequests', JSON.stringify(existingRequests));
- 
-    // Show success message
-    alert('Your details change request has been submitted for admin approval!');
- 
-    // Close the modal
-    const modal = document.getElementById('editMyDetailsModal');
-    if (modal) {
-      const bootstrapModal = (window as any).bootstrap.Modal.getInstance(modal);
-      bootstrapModal?.hide();
-    }
- 
-    // Reset form
-    this.myDetailsForm.reset({
-      name: this.currentUser.name,
-      email: this.currentUser.email,
-      phone: '',
-      address: ''
-    });
-  }
- 
   // -------------------------------
   //  Tracking helpers
   // -------------------------------
@@ -968,26 +806,65 @@ private dedupeUsers(arr: User[]): User[] {
  
   /** Filter pending users by search term */
   getFilteredPendingUsers(): User[] {
-    let filtered = this.pendingUsers;
-    
-    if (this.pendingSearchTerm.trim()) {
-      const term = this.pendingSearchTerm.toLowerCase();
-      filtered = this.pendingUsers.filter(u =>
-        u.userId.toLowerCase().includes(term) ||
-        u.name.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term) ||
-        u.role.toLowerCase().includes(term) ||
-        u.branch.toLowerCase().includes(term)
-      );
-    }
-    
     // Return in reverse order so newest requests appear at the top
-    return filtered.slice().reverse();
+    return this.pendingUsers.slice().reverse();
   }
  
   /** Clear pending users search */
   clearPendingSearch(): void {
     this.pendingSearchTerm = '';
+    this.loadPendingUsersFromApi(); // Reload all pending users
+  }
+
+  /** Search pending users via API */
+  onPendingSearchChange(): void {
+    const query = this.pendingSearchTerm.trim();
+    
+    this.adminService.searchPendingUsers(query).subscribe({
+      next: (users) => {
+        this.pendingUsers = users.map(u => ({
+          userId: u.userId,
+          name: u.name,
+          email: u.email,
+          branch: u.branch,
+          role: u.role as Role,
+          status: u.status as Status
+        }));
+      },
+      error: (error) => {
+        console.error('Failed to search pending users');
+        alert(`Search failed: ${error.message}`);
+      }
+    });
+  }
+
+  /** Search existing users via API */
+  onExistingSearchChange(query?: string): void {
+    // If query is provided (from child component), use it; otherwise use existingSearchTerm
+    const searchQuery = query !== undefined ? query : this.existingSearchTerm.trim();
+    
+    this.adminService.searchApprovedUsers(searchQuery).subscribe({
+      next: (users) => {
+        this.users = users.map(u => ({
+          userId: u.userId,
+          name: u.name,
+          email: u.email,
+          branch: u.branch,
+          role: u.role as Role,
+          status: u.status as Status
+        }));
+      },
+      error: (error) => {
+        console.error('Failed to search approved users');
+        alert(`Search failed: ${error.message}`);
+      }
+    });
+  }
+
+  /** Clear existing users search */
+  clearExistingSearch(): void {
+    this.existingSearchTerm = '';
+    this.loadExistingUsersFromApi(); // Reload all existing users
   }
 }
  

@@ -51,6 +51,19 @@ export interface DebugAuthResponse {
 }
 
 /**
+ * Compliance Metrics Response from API
+ */
+export interface ComplianceMetricsResponse {
+  totalTransactions: number;
+  highValueCount: number;
+  accountGrowthRate: number;
+  monthlyTxnVolume: number[];
+  monthlyLabels: string[];
+  monthlySuspicious: number[];
+  amountBuckets: Array<{ label: string; count: number }>;
+}
+
+/**
  * Admin Service
  * 
  * Handles admin operations:
@@ -112,6 +125,38 @@ export class AdminService {
    */
   editUser(userId: string, request: EditUserRequest): Observable<EditUserResponse> {
     return this.http.put<EditUserResponse>(`${this.apiUrl}/edit/${userId}`, request)
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Search approved users by query string
+   */
+  searchApprovedUsers(query: string): Observable<PendingUserResponse[]> {
+    if (!query || query.trim() === '') {
+      return this.getAllUsers();
+    }
+    return this.http.get<PendingUserResponse[]>(`${this.apiUrl}/search-users`, {
+      params: { query: query.trim() }
+    }).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Search pending users by query string
+   */
+  searchPendingUsers(query: string): Observable<PendingUserResponse[]> {
+    if (!query || query.trim() === '') {
+      return this.getPendingUsers();
+    }
+    return this.http.get<PendingUserResponse[]>(`${this.apiUrl}/search-pending`, {
+      params: { query: query.trim() }
+    }).pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Get compliance metrics from API
+   */
+  getComplianceMetrics(): Observable<ComplianceMetricsResponse> {
+    return this.http.get<ComplianceMetricsResponse>(`${this.apiUrl}/compliance-metrics`)
       .pipe(catchError(this.handleError));
   }
 

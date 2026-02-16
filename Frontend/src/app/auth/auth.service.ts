@@ -92,95 +92,10 @@ export class AuthService {
  
   constructor(private http: HttpClient) {
     this.loadUsers();
-    this.addDummyUsers();
     this.loadCurrentUser();
   }
  
-  /** Seed initial demo users */
-  private addDummyUsers() {
-    const dummyUsers: User[] = [
-      {
-        name: 'Admin User',
-        userId: 'admin123',
-        email: 'admin@example.com',
-        branch: 'HQ',
-        role: 'admin',
-        status: 'active',
-        password: 'Admin@123',
-      },
-      {
-        name: 'Manager User',
-        userId: 'manager123',
-        email: 'manager@example.com',
-        branch: 'Branch A',
-        role: 'bankManager',
-        status: 'active',
-        password: 'Manager@123',
-      },
-      {
-        name: 'Officer User',
-        userId: 'officer123',
-        email: 'officer@example.com',
-        branch: 'Branch B',
-        role: 'bankOfficer',
-        status: 'active',
-        password: 'Officer@123',
-      },
-      {
-        name: 'Vikram Singh',
-        userId: 'U2001',
-        email: 'vikram@bank.local',
-        branch: 'Bangalore',
-        role: 'bankOfficer',
-        status: 'pending',
-        password: 'Officer@123',
-      },
-      {
-        name: 'Sneha Kapoor',
-        userId: 'U2002',
-        email: 'sneha@bank.local',
-        branch: 'Pune',
-        role: 'bankManager',
-        status: 'pending',
-        password: 'Manager@123',
-      },
-      {
-        name: 'Arjun Kumar',
-        userId: 'U2003',
-        email: 'arjun@bank.local',
-        branch: 'Chennai',
-        role: 'bankOfficer',
-        status: 'pending',
-        password: 'Officer@123',
-      },
-      {
-        name: 'Divya Reddy',
-        userId: 'U2004',
-        email: 'divya@bank.local',
-        branch: 'Hyderabad',
-        role: 'admin',
-        status: 'pending',
-        password: 'Admin@123',
-      },
-      {
-        name: 'Rohan Verma',
-        userId: 'U2005',
-        email: 'rohan@bank.local',
-        branch: 'Kolkata',
-        role: 'bankOfficer',
-        status: 'pending',
-        password: 'Officer@123',
-      },
-    ];
-
-    dummyUsers.forEach(u => {
-      const exists = this.users.find(x => x.userId === u.userId);
-      if (!exists) this.users.push(u);
-      else if (!exists.password) exists.password = u.password;
-    });
-
-    this.saveUsers();
-  }  
+  
   /**
    * Register a new user via API
    */

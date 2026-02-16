@@ -20,6 +20,7 @@
         class="form-control form-control-sm"
         placeholder="Search by User ID, Name, Email, Role, Branch, or Status..."
         [(ngModel)]="searchTerm"
+        (input)="onSearchInput()"
         />
       <button
         *ngIf="searchTerm"

@@ -98,6 +98,7 @@
             class="form-control form-control-sm"
             placeholder="Search by User ID, Name, Email, Role, or Branch..."
             [(ngModel)]="pendingSearchTerm"
+            (input)="onPendingSearchChange()"
           />
           <button
             *ngIf="pendingSearchTerm"
@@ -158,6 +159,7 @@
         [rows]="existingUsers()"
         (selectUser)="onExistingUserSelected($event)"
         (updateUser)="onExistingUserUpdated($event)"
+        (searchChange)="onExistingSearchChange($event)"
       ></app-existing-users-table>
     </ng-template>
   </div>
