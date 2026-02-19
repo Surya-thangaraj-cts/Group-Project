@@ -76,6 +76,9 @@ interface ComplianceMetrics {
   imports: [CommonModule, ReactiveFormsModule, FormsModule, ExistingUsersTableComponent, AdminProfileComponent]
 })
 export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
+  // Expose Math to template
+  Math = Math;
+  
   activeView: 'admin' | 'compliance' = 'admin';
   showCompliance(): void { this.activeView = 'compliance'; }
   showAdmin(): void {
@@ -87,6 +90,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   // ----- Data -----
   users: User[] = [];         // existing = Active/Inactive
   pendingUsers: User[] = [];  // Pending only
+
+  // ----- Pagination -----
+  currentPage: number = 1;
+  pageSize: number = 10;
+  totalUsers: number = 0;
+  totalPages: number = 0;
  
   // ----- Selection / editing -----
   selectedUser?: User;
@@ -247,8 +256,15 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private loadPendingUsersFromApi(): void {
     this.adminService.getPendingUsers().subscribe({
-      next: (users) => {
-        this.pendingUsers = users.map(u => ({
+      next: (response) => {
+        console.log('Pending users API response:', response);
+        console.log('Response type:', typeof response);
+        console.log('Is array?', Array.isArray(response));
+        
+        // Handle response - check if it's an array or paginated response
+        const usersArray = Array.isArray(response) ? response : (response as any).items || [];
+        
+        this.pendingUsers = usersArray.map((u: any) => ({
           userId: u.userId,
           name: u.name,
           email: u.email,
@@ -265,12 +281,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /**
-   * Load existing users (Active/Inactive) from API
+   * Load existing users (Active/Inactive) from API with pagination
    */
-  private loadExistingUsersFromApi(): void {
-    this.adminService.getAllUsers().subscribe({
-      next: (users) => {
-        this.users = users.map(u => ({
+  private loadExistingUsersFromApi(pageNumber?: number): void {
+    const page = pageNumber || this.currentPage;
+    this.adminService.getAllUsers(page, this.pageSize).subscribe({
+      next: (response) => {
+        this.users = response.items.map(u => ({
           userId: u.userId,
           name: u.name,
           email: u.email,
@@ -278,6 +295,10 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           role: u.role as Role,
           status: u.status as Status
         }));
+        this.totalUsers = response.totalCount;
+        this.currentPage = response.pageNumber;
+        this.pageSize = response.pageSize;
+        this.totalPages = response.totalPages;
       },
       error: (error) => {
         console.error('Failed to load approved users from API');
@@ -870,8 +891,8 @@ private dedupeUsers(arr: User[]): User[] {
     const searchQuery = query !== undefined ? query : this.existingSearchTerm.trim();
     
     this.adminService.searchApprovedUsers(searchQuery).subscribe({
-      next: (users) => {
-        this.users = users.map(u => ({
+      next: (usersArray) => {
+        this.users = usersArray.map(u => ({
           userId: u.userId,
           name: u.name,
           email: u.email,
@@ -879,6 +900,10 @@ private dedupeUsers(arr: User[]): User[] {
           role: u.role as Role,
           status: u.status as Status
         }));
+        // Reset pagination when searching
+        this.currentPage = 1;
+        this.totalUsers = this.users.length;
+        this.totalPages = 1;
       },
       error: (error) => {
         console.error('Failed to search approved users');
@@ -891,6 +916,44 @@ private dedupeUsers(arr: User[]): User[] {
   clearExistingSearch(): void {
     this.existingSearchTerm = '';
     this.loadExistingUsersFromApi(); // Reload all existing users
+  }
+
+  // -------------------------------
+  //  Pagination methods
+  // -------------------------------
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.loadExistingUsersFromApi(page);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.goToPage(this.currentPage + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage - 1);
+    }
+  }
+
+  getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const maxPagesToShow = 5;
+    let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+    let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
+    
+    if (endPage - startPage < maxPagesToShow - 1) {
+      startPage = Math.max(1, endPage - maxPagesToShow + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    return pages;
   }
 }
  

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 /**
@@ -14,6 +14,14 @@ export interface PendingUserResponse {
   branch: string;
   role: string;
   status: string;
+}
+
+export interface PaginatedUserResponse {
+  items: PendingUserResponse[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  totalPages: number;
 }
 
 export interface ApprovalResponse {
@@ -97,11 +105,12 @@ export class AdminService {
   }
 
   /**
-   * Get all approved users (Active status only)
+   * Get all approved users (Active status only) with pagination
    */
-  getAllUsers(): Observable<PendingUserResponse[]> {
-    return this.http.get<PendingUserResponse[]>(`${this.apiUrl}/approved-users`)
-      .pipe(catchError(this.handleError));
+  getAllUsers(pageNumber: number = 1, pageSize: number = 10): Observable<PaginatedUserResponse> {
+    return this.http.get<PaginatedUserResponse>(`${this.apiUrl}/approved-users`, {
+      params: { pageNumber: pageNumber.toString(), pageSize: pageSize.toString() }
+    }).pipe(catchError(this.handleError));
   }
 
   /**
@@ -133,7 +142,10 @@ export class AdminService {
    */
   searchApprovedUsers(query: string): Observable<PendingUserResponse[]> {
     if (!query || query.trim() === '') {
-      return this.getAllUsers();
+      // For empty query, get all users from first page and extract items
+      return this.getAllUsers(1, 10000).pipe(
+        map(response => response.items)
+      );
     }
     return this.http.get<PendingUserResponse[]>(`${this.apiUrl}/search-users`, {
       params: { query: query.trim() }
