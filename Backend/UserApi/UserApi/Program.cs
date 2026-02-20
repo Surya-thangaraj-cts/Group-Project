@@ -33,6 +33,7 @@ builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IComplianceService, ComplianceService>();
 
 // Controllers + JSON enum converter (accept "Admin" | "Manager" | "Officer")
 builder.Services

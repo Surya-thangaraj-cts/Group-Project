@@ -3571,11 +3571,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\2464489\\source\\repos\\UserApi\\UserApi\\UserApi.csproj",
+      "projectUniqueName": "C:\\Users\\2464489\\MyBank1\\Group-Project\\Backend\\UserApi\\UserApi\\UserApi.csproj",
       "projectName": "UserApi",
-      "projectPath": "C:\\Users\\2464489\\source\\repos\\UserApi\\UserApi\\UserApi.csproj",
+      "projectPath": "C:\\Users\\2464489\\MyBank1\\Group-Project\\Backend\\UserApi\\UserApi\\UserApi.csproj",
       "packagesPath": "C:\\Users\\2464489\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\2464489\\source\\repos\\UserApi\\UserApi\\obj\\",
+      "outputPath": "C:\\Users\\2464489\\MyBank1\\Group-Project\\Backend\\UserApi\\UserApi\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

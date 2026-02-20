@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using UserApprovalApi.DTOs;
 using UserApprovalApi.Models;
 using UserApprovalApi.Repositories;
+using UserApprovalApi.Services;
 
 namespace UserApprovalApi.Controllers
 {
@@ -12,10 +13,12 @@ namespace UserApprovalApi.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IUserRepository _users;
+        private readonly IComplianceService _complianceService;
 
-        public AdminController(IUserRepository users)
+        public AdminController(IUserRepository users, IComplianceService complianceService)
         {
             _users = users;
+            _complianceService = complianceService;
         }
 
         [HttpGet("pending-users")]
@@ -140,6 +143,45 @@ namespace UserApprovalApi.Controllers
                     Status = user.Status.ToString()
                 }
             });
+        }
+
+        [HttpGet("compliance-metrics")]
+        public async Task<IActionResult> GetComplianceMetrics(CancellationToken ct)
+        {
+            var metrics = await _complianceService.GetMetricsAsync(ct);
+            return Ok(metrics);
+        }
+
+        [HttpGet("search-users")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string query, CancellationToken ct)
+        {
+            var users = await _users.SearchApprovedUsersAsync(query, ct);
+            var result = users.Select(u => new
+            {
+                u.UserId,
+                u.Name,
+                u.Email,
+                u.Branch,
+                u.Role,
+                Status = u.Status.ToString()
+            }).ToList();
+            return Ok(result);
+        }
+
+        [HttpGet("search-pending")]
+        public async Task<IActionResult> SearchPending([FromQuery] string query, CancellationToken ct)
+        {
+            var users = await _users.SearchPendingUsersAsync(query, ct);
+            var result = users.Select(u => new
+            {
+                u.UserId,
+                u.Name,
+                u.Email,
+                u.Branch,
+                u.Role,
+                Status = u.Status.ToString()
+            }).ToList();
+            return Ok(result);
         }
     }
 }
