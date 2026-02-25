@@ -1,9 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataService } from '../../services/data.service';
+import { ManagerService } from '../../services/manager.service';
 import { ProfileService } from '../../services/profile.service';
-import { Subject, combineLatest } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { ManagerDashboardOverviewDto } from '../../services/manager-dtos';
 
 @Component({
   selector: 'app-dashboard-overview',
@@ -15,22 +16,22 @@ import { takeUntil } from 'rxjs/operators';
 export class DashboardOverviewComponent implements OnInit, OnDestroy {
   managerName = '';
   pendingApprovalsCount = 0;
-  // Chart data
+  dashboardOverview: ManagerDashboardOverviewDto | null = null;
+  monthlyLabels: string[] = [];
+  monthlyTxnVolume: number[] = [];
+  monthlySuspicious: number[] = [];
+  amountBuckets: { label: string; count: number }[] = [];
   accountGrowth: { month: string; newAccounts: number; activeAccounts: number }[] = [];
-
-  // SVG chart sizes
   lineChartWidth = 600;
   lineChartHeight = 220;
   lineChartPath = '';
   lineChartPoints: { x: number; y: number; val: number }[] = [];
-
   barChartWidth = 600;
   barChartHeight = 180;
-
   private destroy$ = new Subject<void>();
 
   constructor(
-    private dataService: DataService,
+    private managerService: ManagerService,
     private profileService: ProfileService
   ) {}
 
@@ -42,23 +43,26 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
         this.managerName = `${profile.firstName} ${profile.lastName}`;
       });
 
-    // Combine approvals and data change approvals streams for real-time updates
-    combineLatest([
-      this.dataService.getApprovals(),
-      this.dataService.getDataChangeApprovals()
-    ])
+    // Fetch manager dashboard overview from backend
+    this.managerService.getManagerDashboardOverview()
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([approvals, dataChanges]) => {
-        const pendingTransactionCount = approvals.filter(a => a.decision === 'Pending').length;
-        const pendingDataChangeCount = dataChanges.filter(d => d.decision === 'Pending').length;
-        this.pendingApprovalsCount = pendingTransactionCount + pendingDataChangeCount;
+      .subscribe((overview) => {
+        console.log('Manager Dashboard Overview from backend:', overview);
+        this.dashboardOverview = overview;
+        // Use pendingApprovalsCount from overview (no separate API call needed)
+        this.pendingApprovalsCount = overview.pendingApprovalsCount;
+        this.monthlyLabels = overview.monthlyLabels;
+        this.monthlyTxnVolume = overview.monthlyTxnVolume;
+        this.monthlySuspicious = overview.monthlySuspicious;
+        this.amountBuckets = overview.amountBuckets;
+        // Build account growth array for chart
+        this.accountGrowth = overview.monthlyLabels.map((label: string, idx: number) => ({
+          month: label,
+          newAccounts: overview.monthlyNewAccounts[idx],
+          activeAccounts: overview.monthlyActiveAccounts[idx]
+        }));
+        this.buildLineChart();
       });
-
-    // Load account growth from data service
-    this.accountGrowth = this.dataService.getAccountGrowthTrends();
-
-    // Build chart path for account growth (activeAccounts over months)
-    this.buildLineChart();
   }
 
   ngOnDestroy(): void {
@@ -95,11 +99,11 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
 
   // Helpers for template bindings
   getLineChartLabels(): string[] {
-    return this.accountGrowth.map(a => a.month);
+    return this.monthlyLabels;
   }
 
   getBarChartMax(): number {
-    if (!this.accountGrowth || this.accountGrowth.length === 0) return 1;
-    return Math.max(...this.accountGrowth.map(a => a.newAccounts));
+    if (!this.amountBuckets || this.amountBuckets.length === 0) return 1;
+    return Math.max(...this.amountBuckets.map(a => a.count));
   }
 }
