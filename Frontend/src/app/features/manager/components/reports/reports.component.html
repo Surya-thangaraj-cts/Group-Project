@@ -17,24 +17,15 @@
     <div class="filters-grid">
       <!-- Date Range Column -->
       <div class="filter-column">
-        <label class="filter-label">From Date</label>
-        <input type="date" class="form-control" [(ngModel)]="filterCriteria.fromDate" (change)="generateReport()">
+        <label class="filter-label">Start Date</label>
+        <input type="date" class="form-control" [(ngModel)]="filterCriteria.startDate" (change)="generateReport()">
 
-        <label class="filter-label">To Date</label>
-        <input type="date" class="form-control" [(ngModel)]="filterCriteria.toDate" (change)="generateReport()">
-
-        <label class="filter-label">Month</label>
-        <input type="month" class="form-control" [(ngModel)]="filterCriteria.month" (change)="generateReport()">
+        <label class="filter-label">End Date</label>
+        <input type="date" class="form-control" [(ngModel)]="filterCriteria.endDate" (change)="generateReport()">
       </div>
 
-      <!-- Amount & Location Column -->
+      <!-- Amount Column -->
       <div class="filter-column">
-        <label class="filter-label">Branch</label>
-        <select class="form-control" [(ngModel)]="filterCriteria.branch" (change)="generateReport()">
-          <option value="">Select Branch</option>
-          <option *ngFor="let branch of branches" [value]="branch">{{ branch }}</option>
-        </select>
-
         <label class="filter-label">Min Amount</label>
         <input type="number" class="form-control" [(ngModel)]="filterCriteria.minAmount" (change)="generateReport()" placeholder="0">
 
@@ -44,12 +35,6 @@
 
       <!-- Transaction Details Column -->
       <div class="filter-column">
-        <label class="filter-label">Account Type</label>
-        <select class="form-control" [(ngModel)]="filterCriteria.accountType" (change)="generateReport()">
-          <option value="">Select Account Type</option>
-          <option *ngFor="let type of accountTypes" [value]="type">{{ type }}</option>
-        </select>
-
         <label class="filter-label">Transaction Type</label>
         <select class="form-control" [(ngModel)]="filterCriteria.transactionType" (change)="generateReport()">
           <option value="">Select Transaction Type</option>
@@ -59,7 +44,7 @@
         <label class="filter-label">Status</label>
         <select class="form-control" [(ngModel)]="filterCriteria.status" (change)="generateReport()">
           <option value="">Select Status</option>
-          <option *ngFor="let status of statuses" [value]="status">{{ status }}</option>
+          <option *ngFor="let status of statuses" [value]="status.value">{{ status.label }}</option>
         </select>
       </div>
     </div>
@@ -72,14 +57,14 @@
   </div>
 
   <!-- Summary Statistics Section -->
-  <div class="summary-section" *ngIf="reportSummary.totalTransactions > 0">
+  <div class="summary-section" *ngIf="reportSummary.totalCount > 0">
     <h3 class="section-title">Summary Statistics</h3>
     
     <div class="stats-grid">
       <div class="stat-card stat-total">
         <div class="stat-emoji">📊</div>
         <div class="stat-label">Total Transactions</div>
-        <div class="stat-value">{{ reportSummary.totalTransactions }}</div>
+        <div class="stat-value">{{ reportSummary.totalCount }}</div>
       </div>
 
       <div class="stat-card stat-amount">
@@ -130,79 +115,19 @@
   <div class="download-section">
     <h3 class="section-title">Export Report</h3>
     <div class="download-buttons">
-      <button class="btn btn-pdf" (click)="downloadPDF()">📄 Download as PDF</button>
-      <button class="btn btn-csv" (click)="downloadAsCSV()">📊 Download as CSV</button>
-    </div>
-  </div>
-
-  <!-- Transaction Table Section -->
-  <div class="table-section" *ngIf="filteredTransactions.length > 0">
-    <h3 class="section-title">Transaction Details</h3>
-    
-    <div class="table-wrapper">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Account ID</th>
-            <th>Customer Name</th>
-            <th>Type</th>
-            <th>Amount</th>
-            <th>Branch</th>
-            <th>Date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let transaction of paginatedTransactions" [ngClass]="'row-' + transaction.status.toLowerCase()">
-            <td>{{ transaction.id }}</td>
-            <td>{{ transaction.accountId }}</td>
-            <td>{{ transaction.customerName }}</td>
-            <td>{{ transaction.type }}</td>
-            <td class="amount-cell">{{ formatCurrency(transaction.amount) }}</td>
-            <td>{{ transaction.branch }}</td>
-            <td>{{ formatDate(transaction.date) }}</td>
-            <td>
-              <span class="status-badge" [ngClass]="'status-' + transaction.status.toLowerCase()">
-                {{ transaction.status }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Pagination -->
-    <div class="pagination-section">
-      <button class="pagination-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
-        ← Previous
-      </button>
-      
-      <div class="pagination-numbers">
-        <button *ngFor="let page of getPageNumbers()" 
-                class="pagination-number" 
-                [class.active]="page === currentPage"
-                (click)="onPageChange(page)">
-          {{ page }}
-        </button>
-      </div>
-      
-      <button class="pagination-btn" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">
-        Next →
-      </button>
-      
-      <span class="pagination-info">Page {{ currentPage }} of {{ totalPages }}</span>
+      <button class="btn btn-csv" (click)="exportToCSV()">📊 Download as CSV</button>
+      <button class="btn btn-excel" (click)="exportToExcel()">📗 Download as Excel</button>
     </div>
   </div>
 
   <!-- No Data Message -->
-  <div *ngIf="filteredTransactions.length === 0 && !isLoading" class="no-data">
+  <div *ngIf="reportSummary.totalCount === 0 && !isLoading" class="no-data">
     <p>No transactions found. Please adjust your filters and try again.</p>
   </div>
 
   <!-- Loading Indicator -->
   <div *ngIf="isLoading" class="loading">
     <div class="spinner"></div>
-    <p>Loading transactions...</p>
+    <p>Loading statistics...</p>
   </div>
 </div>

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // In your Angular service or interface file
@@ -28,6 +28,13 @@ export class ManagerTransactionsService {
 
   constructor(private http: HttpClient) {}
 
+  private getHeaders(): HttpHeaders {
+    const token = localStorage.getItem('authToken');
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
   getTransactions(params: {
     pageNumber?: number;
     pageSize?: number;
@@ -51,7 +58,9 @@ export class ManagerTransactionsService {
   }
 
   getHighValueCount(): Observable<{ highValueCount: number }> {
-    return this.http.get<{ highValueCount: number }>(`${this.apiUrl}/high-value-count`);
+    return this.http.get<{ highValueCount: number }>(`${this.apiUrl}/high-value-count`, {
+      headers: this.getHeaders()
+    });
   }
 
   exportToCSV(filters: any): void {
@@ -62,7 +71,24 @@ export class ManagerTransactionsService {
         httpParams = httpParams.set(key, value.toString());
       }
     });
-    window.open(`${this.apiUrl}/export/csv?${httpParams.toString()}`, '_blank');
+    
+    this.http.get(`${this.apiUrl}/export/csv`, {
+      headers: this.getHeaders(),
+      params: httpParams,
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `transactions-report-${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('CSV export failed:', err);
+      }
+    });
   }
 
   exportToExcel(filters: any): void {
@@ -73,6 +99,23 @@ export class ManagerTransactionsService {
         httpParams = httpParams.set(key, value.toString());
       }
     });
-    window.open(`${this.apiUrl}/export/excel?${httpParams.toString()}`, '_blank');
+    
+    this.http.get(`${this.apiUrl}/export/excel`, {
+      headers: this.getHeaders(),
+      params: httpParams,
+      responseType: 'blob'
+    }).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `transactions-report-${new Date().toISOString().split('T')[0]}.xlsx`;
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => {
+        console.error('Excel export failed:', err);
+      }
+    });
   }
 }

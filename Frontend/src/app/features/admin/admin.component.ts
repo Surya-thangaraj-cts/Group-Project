@@ -286,8 +286,10 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadExistingUsersFromApi(pageNumber?: number): void {
     const page = pageNumber || this.currentPage;
     this.adminService.getAllUsers(page, this.pageSize).subscribe({
-      next: (response) => {
-        this.users = response.items.map(u => ({
+      next: (response: any) => {
+        // Handle both paginated response and direct array response
+        const items = response.items || response || [];
+        this.users = items.map((u: any) => ({
           userId: u.userId,
           name: u.name,
           email: u.email,
@@ -295,13 +297,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           role: u.role as Role,
           status: u.status as Status
         }));
-        this.totalUsers = response.totalCount;
-        this.currentPage = response.pageNumber;
-        this.pageSize = response.pageSize;
-        this.totalPages = response.totalPages;
+        this.totalUsers = response.totalCount || items.length;
+        this.currentPage = response.pageNumber || page;
+        this.pageSize = response.pageSize || this.pageSize;
+        this.totalPages = response.totalPages || Math.ceil(this.totalUsers / this.pageSize);
       },
       error: (error) => {
-        console.error('Failed to load approved users from API');
+        console.error('Failed to load approved users from API', error);
         alert('Failed to load users. Please refresh the page.');
       }
     });

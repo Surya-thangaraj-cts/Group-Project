@@ -119,7 +119,7 @@
           <td>{{ formatDate(txn.date) }}</td>
           <td>
             <span class="status-badge" [ngClass]="getStatusClass(txn.status)">
-              {{ txn.status }}
+              {{ getStatusText(txn.status) }}
             </span>
           </td>
         </tr>

@@ -38,7 +38,8 @@
         <!-- Consolidated Notifications Component -->
         <app-notifications 
           *ngIf="showNotificationDropdown" 
-          (close)="closeNotificationDropdown()">
+          (close)="closeNotificationDropdown()"
+          (unreadCountChanged)="unreadNotificationsCount = $event">
         </app-notifications>
       </div>
 
