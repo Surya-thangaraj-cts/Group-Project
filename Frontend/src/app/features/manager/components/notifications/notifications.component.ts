@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DataService, Notification } from '../../services/data.service';
+import { ManagerService } from '../../services/manager.service';
+import { NotificationDto } from '../../services/manager-dtos';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -13,31 +14,19 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
+  @Output() unreadCountChanged = new EventEmitter<number>();
 
-  notifications: Notification[] = [];
+  notifications: NotificationDto[] = [];
   unreadCount: number = 0;
   showDetailModal: boolean = false;
-  selectedNotification: Notification | null = null;
-  detailData: any = {};
+  selectedNotification: NotificationDto | null = null;
 
   private destroy$ = new Subject<void>();
 
-  constructor(private dataService: DataService) {}
+  constructor(private managerService: ManagerService) {}
 
   ngOnInit(): void {
-    this.dataService.getNotifications()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(data => {
-        this.notifications = data.sort((a, b) => 
-          new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
-        );
-      });
-
-    this.dataService.getUnreadNotificationsCount()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(count => {
-        this.unreadCount = count;
-      });
+    this.loadNotifications();
   }
 
   ngOnDestroy(): void {
@@ -45,39 +34,45 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  loadNotifications(): void {
+    this.managerService.getNotifications()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.notifications = data.sort((a, b) => 
+            new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
+          );
+          // Count unread (status = 0 means unread)
+          this.unreadCount = this.notifications.filter(n => n.status === 0).length;
+          this.unreadCountChanged.emit(this.unreadCount);
+        },
+        error: (err) => {
+          console.error('Failed to load notifications:', err);
+        }
+      });
+  }
+
   /**
-   * Opens detail modal instantly with relevant data
+   * Opens detail modal with notification data
    */
-  handleNotificationClick(notification: Notification): void {
-    this.dataService.markNotificationAsRead(notification.notificationId);
-    this.selectedNotification = notification;
-
-    // Extract details from notification message
-    const details = this.dataService.extractNotificationDetailsFromMessage(notification.message);
-
-    // Fetch relevant data based on notification type
-    if (details.type === 'transaction') {
-      const transaction = this.dataService.getTransactionById(details.value);
-      const approval = this.dataService.getApprovalByTransactionId(details.value);
-      this.detailData = {
-        type: 'transaction',
-        transaction,
-        approval
-      };
-    } else if (details.type === 'datachange') {
-      const dataChange = this.dataService.getDataChangeApprovalByChangeId(details.value);
-      this.detailData = {
-        type: 'datachange',
-        dataChange
-      };
-    } else {
-      // Suspicious activity - just show the notification message
-      this.detailData = {
-        type: 'suspicious',
-        accountId: details.value
-      };
+  handleNotificationClick(notification: NotificationDto): void {
+    // Mark as read if unread (status = 0)
+    if (notification.status === 0) {
+      this.managerService.markNotificationAsRead(notification.notificationId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            notification.status = 1; // Update local state
+            this.unreadCount = this.notifications.filter(n => n.status === 0).length;
+            this.unreadCountChanged.emit(this.unreadCount);
+          },
+          error: (err) => {
+            console.error('Failed to mark notification as read:', err);
+          }
+        });
     }
-
+    
+    this.selectedNotification = notification;
     this.showDetailModal = true;
   }
 
@@ -87,27 +82,47 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.selectedNotification = null;
-    this.detailData = {};
+  }
+
+  /**
+   * Deletes a notification
+   */
+  deleteNotification(notification: NotificationDto, event: Event): void {
+    event.stopPropagation();
+    this.managerService.deleteNotification(notification.notificationId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.notifications = this.notifications.filter(n => n.notificationId !== notification.notificationId);
+          this.unreadCount = this.notifications.filter(n => n.status === 0).length;
+          this.unreadCountChanged.emit(this.unreadCount);
+        },
+        error: (err) => {
+          console.error('Failed to delete notification:', err);
+        }
+      });
+  }
+
+  /**
+   * Gets notification type label
+   */
+  getNotificationTypeLabel(type: number): string {
+    // Type mapping: 0=SuspiciousActivity, 1=ApprovalReminder, etc.
+    switch (type) {
+      case 0: return 'Suspicious Activity';
+      case 1: return 'Approval Reminder';
+      case 2: return 'System Alert';
+      default: return 'Notification';
+    }
   }
 
   /**
    * Gets a short description for dropdown display
    */
-  getNotificationDescription(notification: Notification): string {
-    if (notification.type === 'SuspiciousActivity') {
-      if (notification.message.toLowerCase().includes('high-value')) {
-        return 'High-value transaction';
-      }
-      if (notification.message.toLowerCase().includes('unusual')) {
-        return 'Unusual pattern detected';
-      }
-      return 'Suspicious activity';
-    } else if (notification.type === 'ApprovalReminder') {
-      const amountMatch = notification.message.match(/₹[\d,]+/);
-      if (amountMatch) {
-        return `Pending: ${amountMatch[0]}`;
-      }
-      return 'Pending approval';
+  getNotificationDescription(notification: NotificationDto): string {
+    const typeLabel = this.getNotificationTypeLabel(notification.type);
+    if (notification.message.length > 50) {
+      return notification.message.substring(0, 50) + '...';
     }
     return notification.message;
   }
@@ -122,7 +137,7 @@ export class NotificationsComponent implements OnInit, OnDestroy {
   /**
    * Formats date for display
    */
-  formatDate(date: Date): string {
+  formatDate(date: string): string {
     return new Date(date).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
@@ -130,6 +145,20 @@ export class NotificationsComponent implements OnInit, OnDestroy {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  /**
+   * Gets status label
+   */
+  getStatusLabel(status: number): string {
+    return status === 0 ? 'Unread' : 'Read';
+  }
+
+  /**
+   * Checks if notification is unread
+   */
+  isUnread(notification: NotificationDto): boolean {
+    return notification.status === 0;
   }
 
   closeDropdown(): void {

@@ -21,7 +21,7 @@
       [class.active]="viewMode === 'highvalue'"
       (click)="toggleHighValueFilter('highvalue')"
       style="padding: 12px 20px; background: none; border: none; cursor: pointer; font-weight: 500; color: #ff6b6b; border-bottom: 3px solid transparent; transition: all 0.3s;">
-      High-Value ₹100K+ ({{ getHighValueCount() }})
+      High-Value ₹100K+ ({{ highValueCount }})
     </button>
   </div>
 
@@ -111,15 +111,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let txn of paginatedTransactions" class="table-row">
-          <td class="id-cell">{{ txn.id }}</td>
+          <tr *ngFor="let txn of transactions" class="table-row">
+          <td class="id-cell">{{ txn.transactionId }}</td>
           <td>{{ txn.accountId }}</td>
           <td>{{ txn.type }}</td>
           <td class="amount-cell">{{ formatAmount(txn.amount) }}</td>
           <td>{{ formatDate(txn.date) }}</td>
           <td>
             <span class="status-badge" [ngClass]="getStatusClass(txn.status)">
-              {{ txn.status }}
+              {{ getStatusText(txn.status) }}
             </span>
           </td>
         </tr>
@@ -129,24 +129,14 @@
 
   <div class="pagination-container">
     <div class="pagination-info">
-      Showing {{ paginatedTransactions.length > 0 ? (currentPage * pageSize + 1) : 0 }} 
-      to {{ Math.min((currentPage + 1) * pageSize, totalItems) }} 
-      of {{ totalItems }} transactions
+        Showing {{ transactions.length > 0 ? ((currentPage - 1) * pageSize + 1) : 0 }}
+        to {{ (currentPage - 1) * pageSize + transactions.length }}
+        of {{ totalCount }} transactions
     </div>
     <div class="pagination-controls">
-      <button 
-        (click)="currentPage = Math.max(0, currentPage - 1)"
-        [disabled]="currentPage === 0"
-        class="pagination-btn">
-        Previous
-      </button>
-      <span class="page-indicator">Page {{ currentPage + 1 }} of {{ Math.ceil(totalItems / pageSize) || 1 }}</span>
-      <button 
-        (click)="currentPage = Math.min(Math.ceil(totalItems / pageSize) - 1, currentPage + 1)"
-        [disabled]="(currentPage + 1) * pageSize >= totalItems"
-        class="pagination-btn">
-        Next
-      </button>
+        <button (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages || 1 }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
     </div>
   </div>
 </div>
