@@ -7,11 +7,12 @@ import { map, filter } from 'rxjs/operators';
 import { AlertMsg } from '../model';
 import { AuthService, User } from '../../../auth/auth.service';
 import { ProfileComponent } from '../profile/profile.component';
+import { OfficerNotificationsComponent } from '../officer-notifications/officer-notifications.component';
  
 @Component({
   selector: 'officer-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, ProfileComponent],
+  imports: [CommonModule, RouterModule, ProfileComponent, OfficerNotificationsComponent],
   templateUrl: './officer-layout.component.html',
   styleUrls: ['../officer-theme.css'],
 })
@@ -24,14 +25,13 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
  
   isMobileNavOpen = false;
   isProfileMenuOpen = false;
+  showNotificationDropdown = false;
   activeSection = 'dashboard';
   isDashboard = true;
   showProfile = false;
  
   // Global alert stream
   alert$: Observable<AlertMsg | null> = this.officerSvc.alert$;
- 
-  // Notifications count
  
   // Notifications count
   unreadCount$: Observable<number> = this.officerSvc.notifications$.pipe(
@@ -138,11 +138,15 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
     const isProfileBtn = target?.closest('.profile-btn, [data-bs-toggle="dropdown"]');
     const isOffcanvas = target?.closest('.offcanvas, [data-bs-toggle="offcanvas"]');
     const isHamburger = target?.closest('.hamburger, .navbar-toggler');
+    const isNotificationBtn = target?.closest('.notification-bell-btn');
+    const isNotificationDropdown = target?.closest('.notifications-dropdown');
+    const isNotificationModal = target?.closest('.notification-modal-overlay, .notification-modal');
  
-    if (isDropdown || isProfileBtn || isOffcanvas || isHamburger) return;
+    if (isDropdown || isProfileBtn || isOffcanvas || isHamburger || isNotificationBtn || isNotificationDropdown || isNotificationModal) return;
  
     this.isProfileMenuOpen = false;
     this.isMobileNavOpen = false;
+    this.showNotificationDropdown = false;
   }
  
  
@@ -180,15 +184,23 @@ export class OfficerLayoutComponent implements OnInit, OnDestroy {
       this.router.navigate(['/officer/update']);
       this.activeSection = 'update';
       this.isDashboard = false;
-    } else if (section === 'alerts') {
-      this.router.navigate(['/officer/alerts']);
-      this.activeSection = 'alerts';
-      this.isDashboard = false;
     } else if (section === 'history') {
       this.router.navigate(['/officer/history']);
       this.activeSection = 'history';
       this.isDashboard = false;
     }
+  }
+
+  toggleNotificationDropdown(event: Event): void {
+    event.stopPropagation();
+    this.showNotificationDropdown = !this.showNotificationDropdown;
+    if (this.showNotificationDropdown) {
+      this.isProfileMenuOpen = false;
+    }
+  }
+
+  closeNotificationDropdown(): void {
+    this.showNotificationDropdown = false;
   }
 }
  

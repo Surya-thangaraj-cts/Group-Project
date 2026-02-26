@@ -8,7 +8,7 @@ import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { FormsModule } from '@angular/forms';
  
-type StatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
+type StatusFilter = 'ALL' | 'ACTIVE' | 'PENDING' | 'CLOSED';
  
 @Component({
   selector: 'create-account',
@@ -27,12 +27,10 @@ export class CreateAccountComponent {
   private router = inject(Router);
  
   createForm: FormGroup = this.fb.group({
-    accountId: ['', [Validators.required, Validators.minLength(3)]],
+    accountId: ['', [Validators.required, Validators.pattern(/^ACC\d{4}$/)]],
     customerName: ['', [Validators.required]],
-    customerId: ['', [Validators.required]],
+    customerId: ['', [Validators.required, Validators.minLength(7)]],
     accountType: ['SAVINGS' as AccountType, [Validators.required]],
-    balance: [0, [Validators.required, Validators.min(0)]],
-    status: ['ACTIVE' as AccountStatus, [Validators.required]],
   });
  
   submitted = false;
@@ -100,7 +98,8 @@ export class CreateAccountComponent {
  
       const filtered = list.filter(a => {
         if (sFilter === 'ACTIVE' && a.status !== 'ACTIVE') return false;
-        if (sFilter === 'INACTIVE' && a.status !== 'CLOSED') return false;
+        if (sFilter === 'PENDING' && a.status !== 'PENDING') return false;
+        if (sFilter === 'CLOSED' && a.status !== 'CLOSED') return false;
  
         if (q) {
           const id = norm(a.accountId);
@@ -135,8 +134,6 @@ export class CreateAccountComponent {
       customerName: '',
       customerId: '',
       accountType: 'SAVINGS' as AccountType,
-      balance: 0,
-      status: 'ACTIVE' as AccountStatus,
     };
   }
  

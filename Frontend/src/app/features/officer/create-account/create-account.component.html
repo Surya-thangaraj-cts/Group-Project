@@ -6,13 +6,13 @@
     <div class="grid">
       <label>
         Account ID
-        <input type="text" formControlName="accountId" placeholder="Enter Account ID" />
+        <input type="text" formControlName="accountId" placeholder="e.g., ACC0001" />
         <div class="error" *ngIf="createForm.get('accountId')?.invalid && (createForm.get('accountId')?.touched || submitted)">
           <small *ngIf="createForm.get('accountId')?.errors?.['required']" class="err-text">Account ID is required!</small>
-          <small *ngIf="createForm.get('accountId')?.errors?.['minlength']" class="err-text">Account ID must be at least 3 characters!</small>
+          <small *ngIf="createForm.get('accountId')?.errors?.['pattern']" class="err-text">Account ID must match pattern ACC#### (e.g., ACC0001)!</small>
         </div>
       </label>
- 
+
       <label>
         Customer Name
         <input type="text" formControlName="customerName" placeholder="Enter Customer Name" />
@@ -23,17 +23,19 @@
  
       <label>
         Customer ID
-        <input type="text" formControlName="customerId" placeholder="Enter Customer ID" />
+        <input type="text" formControlName="customerId" placeholder="Enter Customer ID (min 7 characters)" />
         <div class="error" *ngIf="createForm.get('customerId')?.invalid && (createForm.get('customerId')?.touched || submitted)">
           <small *ngIf="createForm.get('customerId')?.errors?.['required']" class="err-text">Customer ID is required!</small>
+          <small *ngIf="createForm.get('customerId')?.errors?.['minlength']" class="err-text">Customer ID must be at least 7 characters!</small>
         </div>
       </label>
  
       <label>
         Account Type
         <select formControlName="accountType">
-          <option value="CURRENT">Current</option>
           <option value="SAVINGS">Savings</option>
+          <option value="CURRENT">Current</option>
+          <option value="FIXED_DEPOSIT">Fixed Deposit</option>
         </select>
         <div class="error" *ngIf="createForm.get('accountType')?.invalid && (createForm.get('accountType')?.touched || submitted)">
           <small *ngIf="createForm.get('accountType')?.errors?.['required']" class="err-text">Account Type is required!</small>
@@ -60,38 +62,42 @@
   <!-- Existing Accounts section -->
   <ng-container *ngIf="vm$ | async as vm">
     <div class="section-header">
-      <h3>Existing Accounts ({{ vm.total }})</h3>
+      <h3>Existing Accounts</h3>
+      <span class="muted">({{ vm.total }} total)</span>
+    </div>
  
-      <!-- Filters bar (inline) -->
-      <div class="filters-bar" role="search">
-        <!-- Compact search -->
-        <div class="accounts-search">
-          <input
-            type="text"
-            class="accounts-search-input"
-            [ngModel]="searchTerm"
-            (ngModelChange)="onSearchChange($event)"
-            (keyup.enter)="onSearchSubmit()"
-            [ngModelOptions]="{standalone:true}"
-            placeholder="Search account or customer"
-            aria-label="Search accounts" />
+    <!-- Filters bar (inline) -->
+    <div class="filters-bar" role="search" style="margin-bottom: 1rem;">
+      <!-- Compact search -->
+      <div class="accounts-search" style="flex: 1; min-width: 200px;">
+        <input
+          type="text"
+          class="accounts-search-input"
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchChange($event)"
+          (keyup.enter)="onSearchSubmit()"
+          [ngModelOptions]="{standalone:true}"
+          placeholder="Search account or customer"
+          aria-label="Search accounts"
+          style="flex: 1;" />
  
-          <button type="button" class="accounts-search-btn" (click)="onSearchSubmit()">Search</button>
-          <button type="button" class="accounts-search-btn ghost" *ngIf="searchTerm" (click)="clearSearch()">Clear</button>
-        </div>
+        <button type="button" class="accounts-search-btn" (click)="onSearchSubmit()">Search</button>
+        <button type="button" class="accounts-search-btn ghost" *ngIf="searchTerm" (click)="clearSearch()">Clear</button>
+      </div>
  
-        <!-- Status filter -->
-        <div class="accounts-status">
-          <select
-            class="accounts-status-select"
-            [ngModel]="statusFilter"
-            (ngModelChange)="onStatusFilterChange($event)"
-            [ngModelOptions]="{standalone:true}">
-            <option value="ALL">All</option>
-            <option value="ACTIVE">Active</option>
-            <option value="INACTIVE">Inactive</option>
-          </select>
-        </div>
+      <!-- Status filter -->
+      <div class="accounts-status" style="min-width: 140px;">
+        <select
+          class="accounts-status-select"
+          [ngModel]="statusFilter"
+          (ngModelChange)="onStatusFilterChange($event)"
+          [ngModelOptions]="{standalone:true}"
+          aria-label="Filter by status">
+          <option value="ALL">All Status</option>
+          <option value="ACTIVE">Active</option>
+          <option value="PENDING">Pending</option>
+          <option value="CLOSED">Closed</option>
+        </select>
       </div>
     </div>
  
@@ -99,31 +105,35 @@
       <table>
         <thead>
           <tr>
-            <th>Account ID</th>
-            <th>Customer Name</th>
-            <th>Customer ID</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Opened</th>
-            <th></th>
+            <th scope="col">Account ID</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Customer ID</th>
+            <th scope="col">Type</th>
+            <th scope="col">Status</th>
+            <th scope="col">Opened</th>
+            <th scope="col">Actions</th>
           </tr>
         </thead>
  
         <tbody>
           <tr *ngFor="let a of vm.pageData; trackBy: trackByAccountId">
-            <td>{{ a.accountId }}</td>
-            <td>{{ a.customerName }}</td>
-            <td>{{ a.customerId }}</td>
-            <td>{{ a.accountType }}</td>
-            <td>
+            <td [attr.data-label]="'Account ID'">{{ a.accountId }}</td>
+            <td [attr.data-label]="'Customer Name'">{{ a.customerName }}</td>
+            <td [attr.data-label]="'Customer ID'">{{ a.customerId }}</td>
+            <td [attr.data-label]="'Type'">{{ a.accountType }}</td>
+            <td [attr.data-label]="'Status'">
               <span
                 class="status"
-                [ngClass]="a.status === 'ACTIVE' ? 'status--active' : 'status--inactive'">
-                {{ a.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+                [ngClass]="{
+                  'status--active': a.status === 'ACTIVE',
+                  'status--inactive': a.status === 'CLOSED',
+                  'status--pending': a.status === 'PENDING'
+                }">
+                {{ a.status === 'ACTIVE' ? 'Active' : a.status === 'CLOSED' ? 'Closed' : 'Pending' }}
               </span>
             </td>
-            <td>{{ a.openedAt | date:'medium' }}</td>
-            <td>
+            <td [attr.data-label]="'Opened'">{{ a.openedAt | date:'medium' }}</td>
+            <td [attr.data-label]="'Actions'">
               <button class="link" (click)="prefillUpdate(a.accountId)">Edit</button>
             </td>
           </tr>
@@ -131,30 +141,35 @@
       </table>
  
       <!-- Pagination -->
-      <div class="actions pagination-bar">
+      <div class="actions" style="justify-content: space-between; align-items: center; gap: .5rem; padding-top: .5rem;">
+        <!-- Rows per page -->
         <div class="inline">
           <span class="muted">Rows per page</span>
-          <select class="select-compact" [value]="vm.pageSize" (change)="onPageSizeChange($event)">
+          <select class="select-compact" [value]="vm.pageSize" (change)="onPageSizeChange($event)" aria-label="Rows per page">
             <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }}</option>
           </select>
         </div>
  
+        <!-- Range & total -->
         <div class="muted">
           {{ vm.from }}–{{ vm.to }} of {{ vm.total }}
         </div>
  
+        <!-- Page buttons -->
         <div class="pager">
-          <button class="pager-btn" (click)="setPage(1)" [disabled]="vm.currentPage===1">First</button>
-          <button class="pager-btn" (click)="prevPage()" [disabled]="vm.currentPage===1">Prev</button>
+          <button class="pager-btn" (click)="setPage(1)" [disabled]="vm.currentPage===1" aria-label="First page">First</button>
+          <button class="pager-btn" (click)="prevPage()" [disabled]="vm.currentPage===1" aria-label="Previous page">Prev</button>
  
           <button class="pager-btn" *ngFor="let p of vm.pages"
                   (click)="setPage(p)"
-                  [ngClass]="{'active': p===vm.currentPage}">
+                  [ngClass]="{'active': p===vm.currentPage}"
+                  [attr.aria-label]="'Page ' + p"
+                  [attr.aria-current]="p===vm.currentPage ? 'page' : null">
             {{ p }}
           </button>
  
-          <button class="pager-btn" (click)="nextPage()" [disabled]="vm.currentPage===vm.totalPages">Next</button>
-          <button class="pager-btn" (click)="setPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages">Last</button>
+          <button class="pager-btn" (click)="nextPage()" [disabled]="vm.currentPage===vm.totalPages" aria-label="Next page">Next</button>
+          <button class="pager-btn" (click)="setPage(vm.totalPages)" [disabled]="vm.currentPage===vm.totalPages" aria-label="Last page">Last</button>
         </div>
       </div>
     </div>

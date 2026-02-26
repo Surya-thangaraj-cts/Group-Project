@@ -9,7 +9,7 @@
 
   <!-- Dashboard Overview Cards -->
   <div class="overview-cards-container">
-    <!-- Accounts Created Card -->
+    <!-- Accounts Created Card (only ACTIVE accounts) -->
     <div class="overview-card card-glass">
       <div class="card-icon">📊</div>
       <div class="card-content">
@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <!-- Pending Requests Card -->
+    <!-- Pending Requests Card (accounts + updates + transactions) -->
     <div class="overview-card card-glass">
       <div class="card-icon">⏳</div>
       <div class="card-content">
@@ -27,40 +27,53 @@
       </div>
     </div>
 
-    <!-- Recent Activity Card -->
+    <!-- Total Transactions Card -->
     <div class="overview-card card-glass">
       <div class="card-icon">📋</div>
       <div class="card-content">
-        <div class="card-label">Recent Transactions</div>
-        <div class="card-value">{{ recentTransactions.length }}</div>
+        <div class="card-label">Total Transactions</div>
+        <div class="card-value">{{ totalTxnCount }}</div>
       </div>
     </div>
   </div>
 
-  <!-- Recent Activity Section -->
+  <!-- Recent Transactions Section -->
   <div class="recent-activity-section mt-5">
-    <h2 class="section-title">Recent Activity</h2>
+    <h2 class="section-title">Recent Transactions</h2>
     
     <div *ngIf="recentTransactions.length > 0; else noActivity" class="activity-table-wrapper">
       <table class="activity-table">
         <thead>
           <tr>
-            <th>Type</th>
+            <th>Transaction Type</th>
             <th>Customer Name</th>
+            <th>Amount</th>
             <th>Date</th>
             <th>Account Number</th>
+            <th>Status</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let transaction of recentTransactions" class="activity-row">
             <td class="type-cell">
-              <span class="transaction-badge" [ngClass]="'badge-' + transaction.type">
-                {{ transaction.type === 'CURRENT' ? 'Current' : transaction.type === 'SAVINGS' ? 'Savings' : transaction.type }}
+              <span class="transaction-badge" [ngClass]="'badge-' + transaction.txnType">
+                {{ transaction.txnType === 'DEPOSIT' ? 'Deposit' : transaction.txnType === 'WITHDRAWAL' ? 'Withdrawal' : 'Transfer' }}
               </span>
             </td>
             <td>{{ transaction.customerName || 'N/A' }}</td>
+            <td class="amount-cell">₹{{ transaction.amount | number:'1.2-2' }}</td>
             <td>{{ transaction.date | date: 'MMM dd, yyyy' }}</td>
             <td class="account-number">{{ transaction.accountNumber || 'N/A' }}</td>
+            <td>
+              <span class="transaction-badge"
+                [ngClass]="{
+                  'badge-completed': transaction.status === 'Completed',
+                  'badge-pending': transaction.status === 'Pending',
+                  'badge-rejected': transaction.status === 'Rejected'
+                }">
+                {{ transaction.status }}
+              </span>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -68,7 +81,7 @@
 
     <ng-template #noActivity>
       <div class="no-activity-message card-glass p-4 text-center">
-        <p class="text-muted">No recent transactions to display</p>
+        <p class="text-muted">No transactions to display</p>
       </div>
     </ng-template>
   </div>

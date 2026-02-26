@@ -1,6 +1,6 @@
 <div class="card">
   <h2>Alerts</h2>
-  <p class="helper">Notifications for account updates and high-value transactions.</p>
+  <p class="helper">Notifications for account updates and transactions.</p>
  
   <!-- Filters + Search -->
   <div class="grid-narrow mt-2">
@@ -42,7 +42,7 @@
         [ngModelOptions]="{standalone:true}">
         <option value="ALL">All</option>
         <option value="UPDATE_REQUEST">Update Request</option>
-        <option value="HIGH_VALUE_TXN">High-value Transaction</option>
+        <option value="TRANSACTION">Transaction</option>
       </select>
     </label>
  
@@ -64,7 +64,7 @@
               {{ typeLabel(n.type) }}
             </span>
  
-            <!-- Default status for Update Requests & High-value Txn -->
+            <!-- Default status for Update Requests & Transactions -->
             <span class="status-pill pending" *ngIf="statusLabelFor(n) as s">
               {{ s }}
             </span>

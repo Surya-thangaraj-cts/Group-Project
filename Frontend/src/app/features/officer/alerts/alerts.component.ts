@@ -11,7 +11,7 @@ import { FormsModule } from '@angular/forms';
  
 type ReadFilter = 'ALL' | 'UNREAD' | 'READ';
 // Removed 'TXN_FLAGGED' from the type filter options
-type TypeFilter = 'ALL' | 'UPDATE_REQUEST' | 'HIGH_VALUE_TXN';
+type TypeFilter = 'ALL' | 'UPDATE_REQUEST' | 'TRANSACTION';
  
 @Component({
   selector: 'alerts',
@@ -158,15 +158,15 @@ export class AlertsComponent {
   // Helpers for display
   typeLabel(t: NotificationType) {
     if (t === 'UPDATE_REQUEST') return 'Update Request';
-    if (t === 'HIGH_VALUE_TXN') return 'High-value Txn';
+    if (t === 'TRANSACTION') return 'Transaction';
     // We’re not showing Manual Flag category in the filter UI;
     // if any exist and Type=ALL, we can still show a neutral label.
     return 'Txn Flag';
   }
  
-  // Status (default 'Pending' for UPDATE_REQUEST and HIGH_VALUE_TXN)
+  // Status (default 'Pending' for UPDATE_REQUEST and TRANSACTION)
   statusLabelFor(n: Notification) {
-    if (n.type === 'UPDATE_REQUEST' || n.type === 'HIGH_VALUE_TXN') return 'Pending';
+    if (n.type === 'UPDATE_REQUEST' || n.type === 'TRANSACTION') return 'Pending';
     return null; // no status for others
   }
 }

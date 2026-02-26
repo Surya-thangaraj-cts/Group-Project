@@ -1,335 +1,541 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { Account, Transaction, UpdateRequest, TxnType, AlertMsg, Notification, OfficerProfile } from './model';
+import { Injectable, inject, OnDestroy } from '@angular/core';
+import { BehaviorSubject, Observable, of, interval, Subscription } from 'rxjs';
+import { map, catchError, tap, switchMap } from 'rxjs/operators';
+import { Account, Transaction, UpdateRequest, TxnType, AlertMsg, Notification, OfficerProfile, AccountType } from './model';
 import { AuthService } from '../../auth/auth.service';
+import { AccountApiService } from '../../core/services/account-api.service';
+import { TransactionApiService } from '../../core/services/transaction-api.service';
+import { ApprovalApiService } from '../../core/services/approval-api.service';
+import { 
+  CreateAccountDto, 
+  CreateTransactionDto, 
+  TransactionType as ApiTransactionType,
+  AccountType as ApiAccountType,
+  AccountStatus as ApiAccountStatus
+} from '../../core/models/api.models';
 
 @Injectable({ providedIn: 'root' })
-export class OfficerService {
+export class OfficerService implements OnDestroy {
+  private accountApi = inject(AccountApiService);
+  private transactionApi = inject(TransactionApiService);
+  private approvalApi = inject(ApprovalApiService);
+  private auth = inject(AuthService);
+
   // State streams
   private accountsSubject = new BehaviorSubject<Account[]>([]);
   private transactionsSubject = new BehaviorSubject<Transaction[]>([]);
   private updateReqsSubject = new BehaviorSubject<UpdateRequest[]>([]);
   private alertSubject = new BehaviorSubject<AlertMsg | null>(null);
-  private notificationsSubject = new BehaviorSubject<Notification[]>([]);
+  private localNotificationsSubject = new BehaviorSubject<Notification[]>([]);
+  private dismissedIds = new Set<string>();
+  private pollSub?: Subscription;
  
   accounts$ = this.accountsSubject.asObservable();
   transactions$ = this.transactionsSubject.asObservable();
   updateRequests$ = this.updateReqsSubject.asObservable();
   alert$ = this.alertSubject.asObservable();
-  notifications$ = this.notificationsSubject.asObservable();
+  /** Notifications shown in the bell icon — only officer's own actions + manager decisions */
+  notifications$ = this.localNotificationsSubject.asObservable();
  
   readonly highValueThreshold = 100000;
 
-  constructor(private auth: AuthService) {
-    this.load();
+  constructor() {
+    this.loadDismissedIds();
+    this.loadLocalNotifications();
+    this.loadAccounts();
+    this.loadTransactions();
+    this.loadUpdateRequests();
+    this.startApprovalPolling();
   }
- 
- 
-  private save(): void {
-    localStorage.setItem('accounts', JSON.stringify(this.accountsSubject.value));
-    localStorage.setItem('transactions', JSON.stringify(this.transactionsSubject.value));
-    localStorage.setItem('updateRequests', JSON.stringify(this.updateReqsSubject.value));
-    localStorage.setItem('notifications', JSON.stringify(this.notificationsSubject.value));
+
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
   }
- 
-  private load(): void {
-    try {
-      const a = localStorage.getItem('accounts');
-      const t = localStorage.getItem('transactions');
-      const u = localStorage.getItem('updateRequests');
-      const n = localStorage.getItem('notifications');
 
-      // Dummy data to always include
-      const dummyAccounts: Account[] = [
-        {
-          accountId: 'ACC-1001',
-          customerName: 'Priya Sharma',
-          customerId: 'CUST-001',
-          accountType: 'SAVINGS',
-          balance: 150000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACC-1002',
-          customerName: 'Rahul Verma',
-          customerId: 'CUST-002',
-          accountType: 'CURRENT',
-          balance: 500000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACC-1003',
-          customerName: 'Anita Rao',
-          customerId: 'CUST-003',
-          accountType: 'SAVINGS',
-          balance: 250000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACCT2001',
-          customerName: 'Vikram Kumar',
-          customerId: 'CUST-004',
-          accountType: 'CURRENT',
-          balance: 350000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACCT2002',
-          customerName: 'Neha Singh',
-          customerId: 'CUST-005',
-          accountType: 'SAVINGS',
-          balance: 200000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACCT2003',
-          customerName: 'Rohan Patel',
-          customerId: 'CUST-006',
-          accountType: 'CURRENT',
-          balance: 450000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ];
+  // ========== API Integration Methods ==========
 
-      // Parse existing accounts from localStorage
-      const existingAccounts = a ? JSON.parse(a) : [];
-      
-      // Merge: add dummy accounts that don't already exist by accountId
-      const merged = [...dummyAccounts];
-      for (const existing of existingAccounts) {
-        if (!merged.find(m => m.accountId === existing.accountId)) {
-          merged.push(existing);
+  /**
+   * Load accounts from API
+   */
+  loadAccounts(): void {
+    console.log('Loading accounts from API...');
+    this.accountApi.getAccounts(1, 100).pipe( // Load all accounts regardless of status
+      map(apiAccounts => this.mapAccountsFromApi(apiAccounts)),
+      catchError(error => {
+        console.error('Error loading accounts:', error);
+        this.setError('Failed to connect to the server. Please check if the backend is running.');
+        return of([]);
+      })
+    ).subscribe(accounts => {
+      console.log(`Loaded ${accounts.length} accounts successfully`);
+      this.accountsSubject.next(accounts);
+    });
+  }
+
+  /**
+   * Load transactions from API
+   */
+  loadTransactions(): void {
+    console.log('Loading transactions from API...');
+    this.transactionApi.getTransactions(1, 100).pipe(
+      map(pagedResult => this.mapTransactionsFromApi(pagedResult.items)),
+      catchError(error => {
+        console.error('Error loading transactions:', error);
+        this.setError('Failed to connect to the server. Please check if the backend is running.');
+        return of([]);
+      })
+    ).subscribe(transactions => {
+      console.log(`Loaded ${transactions.length} transactions successfully`);
+      this.transactionsSubject.next(transactions);
+    });
+  }
+
+
+
+  /**
+   * Load update requests from Approvals API (AccountUpdate + AccountCreation approvals)
+   */
+  loadUpdateRequests(): void {
+    console.log('Loading update requests from Approvals API...');
+    this.approvalApi.getApprovals(1, 100).pipe(
+      map(result => {
+        if (!result || !result.items) return [];
+        return result.items
+          .filter((a: any) => a.type === 'AccountUpdate' || a.type === 'AccountCreation')
+          .map((a: any) => this.mapApprovalToUpdateRequest(a));
+      }),
+      catchError(error => {
+        console.error('Error loading update requests:', error);
+        return of([]);
+      })
+    ).subscribe(requests => {
+      console.log(`Loaded ${requests.length} update requests`);
+      this.updateReqsSubject.next(requests);
+    });
+  }
+
+  /**
+   * Map an Approval object to an UpdateRequest for the table
+   */
+  private mapApprovalToUpdateRequest(approval: any): UpdateRequest {
+    // Parse pendingChanges JSON if available
+    let changeSummary = '';
+    let customerName = '';
+    let customerId = '';
+    let accountType: AccountType = 'SAVINGS';
+
+    if (approval.pendingChanges) {
+      try {
+        const changes = JSON.parse(approval.pendingChanges);
+        const parts: string[] = [];
+        if (changes.CustomerName) { customerName = changes.CustomerName; parts.push(`Name: ${changes.CustomerName}`); }
+        if (changes.CustomerId) { customerId = changes.CustomerId; parts.push(`CID: ${changes.CustomerId}`); }
+        if (changes.AccountType !== undefined) {
+          const typeStr = changes.AccountType === 0 ? 'SAVINGS' : changes.AccountType === 1 ? 'CURRENT' : 'FIXED_DEPOSIT';
+          accountType = typeStr as AccountType;
+          parts.push(`Type: ${typeStr}`);
         }
+        if (changes.Status !== undefined) {
+          parts.push(`Status: ${changes.Status === 0 ? 'Active' : 'Closed'}`);
+        }
+        changeSummary = parts.length > 0 ? parts.join(', ') : 'No changes';
+      } catch {
+        changeSummary = approval.pendingChanges;
       }
+    } else {
+      changeSummary = approval.type === 'AccountCreation' ? 'New account creation' : 'Account update';
+    }
 
-      // Create initial dummy transactions for recent activity display
-      const dummyTransactions: Transaction[] = [
-        {
-          id: 'a7f3c2e1b9d4f5a8',
-          time: new Date(2026, 0, 30, 23, 45, 0).toISOString(),
-          type: 'DEPOSIT',
-          amount: 50000,
-          accountId: 'ACC-1001',
-          flagged: false,
-          narrative: 'Initial deposit'
-        },
-        {
-          id: '6b8e2c9f1d7a4e3f',
-          time: new Date(2026, 0, 30, 22, 30, 0).toISOString(),
-          type: 'TRANSFER',
-          amount: 75000,
-          accountId: 'ACC-1002',
-          toAccountId: 'ACC-1003',
-          flagged: false,
-          narrative: 'Transfer to savings'
-        },
-        {
-          id: 'c4d7b1e9a3f2c6d8',
-          time: new Date(2026, 0, 30, 20, 15, 0).toISOString(),
-          type: 'WITHDRAWAL',
-          amount: 25000,
-          accountId: 'ACC-1003',
-          flagged: false,
-          narrative: 'Cash withdrawal'
-        },
-        {
-          id: '9f2a5b8c1e3d7a4c',
-          time: new Date(2026, 0, 30, 18, 0, 0).toISOString(),
-          type: 'DEPOSIT',
-          amount: 120000,
-          accountId: 'ACCT2001',
-          flagged: true,
-          narrative: 'High-value deposit'
-        },
-        {
-          id: 'e2f8a3d1b6c4e9a7',
-          time: new Date(2026, 0, 30, 15, 25, 0).toISOString(),
-          type: 'TRANSFER',
-          amount: 95000,
-          accountId: 'ACCT2002',
-          toAccountId: 'ACCT2003',
-          flagged: true,
-          narrative: 'Inter-account transfer'
-        },
-        {
-          id: 'd5b9c7e2a1f3d8c6',
-          time: new Date(2026, 0, 29, 22, 0, 0).toISOString(),
-          type: 'WITHDRAWAL',
-          amount: 150000,
-          accountId: 'ACCT2001',
-          flagged: true,
-          narrative: 'Large withdrawal'
-        }
-      ];
+    // Map decision string to status
+    let status: 'PENDING' | 'APPROVED' | 'REJECTED' = 'PENDING';
+    if (approval.decision === 'Approve') status = 'APPROVED';
+    else if (approval.decision === 'Reject') status = 'REJECTED';
 
-      this.accountsSubject.next(merged);
-      let existingTransactions = t ? JSON.parse(t) : [];
-      // Filter out unwanted test transactions by amount
-      const amountsToRemove = [1500, 200, 320.50, 125, 980.75, 25000, 45, 600, 750, 150, 40, 5000];
-      existingTransactions = existingTransactions.filter((tx: any) => !amountsToRemove.includes(tx.amount));
-      // Put existing (real) transactions first so they appear at the top (newest)
-      const allTransactions = [...existingTransactions, ...dummyTransactions];
-      this.transactionsSubject.next(allTransactions);
-      this.updateReqsSubject.next(u ? JSON.parse(u) : []);
-      this.notificationsSubject.next(n ? JSON.parse(n) : []);
-    } catch {
-      // Fallback dummy data on error
-      const dummyAccounts: Account[] = [
-        {
-          accountId: 'ACC-1001',
-          customerName: 'Priya Sharma',
-          customerId: 'CUST-001',
-          accountType: 'SAVINGS',
-          balance: 150000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACC-1002',
-          customerName: 'Rahul Verma',
-          customerId: 'CUST-002',
-          accountType: 'CURRENT',
-          balance: 500000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACC-1003',
-          customerName: 'Anita Rao',
-          customerId: 'CUST-003',
-          accountType: 'SAVINGS',
-          balance: 250000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACCT2001',
-          customerName: 'Vikram Kumar',
-          customerId: 'CUST-004',
-          accountType: 'CURRENT',
-          balance: 350000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACCT2002',
-          customerName: 'Neha Singh',
-          customerId: 'CUST-005',
-          accountType: 'SAVINGS',
-          balance: 200000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          accountId: 'ACCT2003',
-          customerName: 'Rohan Patel',
-          customerId: 'CUST-006',
-          accountType: 'CURRENT',
-          balance: 450000,
-          status: 'ACTIVE',
-          openedAt: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ];
-      // Create initial dummy transactions for recent activity display
-      const dummyTransactions: Transaction[] = [
-        {
-          id: 'a7f3c2e1b9d4f5a8',
-          time: new Date(2026, 0, 30, 23, 45, 0).toISOString(),
-          type: 'DEPOSIT',
-          amount: 50000,
-          accountId: 'ACC-1001',
-          flagged: false,
-          narrative: 'Initial deposit'
-        },
-        {
-          id: '6b8e2c9f1d7a4e3f',
-          time: new Date(2026, 0, 30, 22, 30, 0).toISOString(),
-          type: 'TRANSFER',
-          amount: 75000,
-          accountId: 'ACC-1002',
-          toAccountId: 'ACC-1003',
-          flagged: false,
-          narrative: 'Transfer to savings'
-        },
-        {
-          id: 'c4d7b1e9a3f2c6d8',
-          time: new Date(2026, 0, 30, 20, 15, 0).toISOString(),
-          type: 'WITHDRAWAL',
-          amount: 25000,
-          accountId: 'ACC-1003',
-          flagged: false,
-          narrative: 'Cash withdrawal'
-        },
-        {
-          id: '9f2a5b8c1e3d7a4c',
-          time: new Date(2026, 0, 30, 18, 0, 0).toISOString(),
-          type: 'DEPOSIT',
-          amount: 120000,
-          accountId: 'ACCT2001',
-          flagged: true,
-          narrative: 'High-value deposit'
-        },
-        {
-          id: 'e2f8a3d1b6c4e9a7',
-          time: new Date(2026, 0, 30, 15, 25, 0).toISOString(),
-          type: 'TRANSFER',
-          amount: 95000,
-          accountId: 'ACCT2002',
-          toAccountId: 'ACCT2003',
-          flagged: true,
-          narrative: 'Inter-account transfer'
-        },
-        {
-          id: 'd5b9c7e2a1f3d8c6',
-          time: new Date(2026, 0, 29, 22, 0, 0).toISOString(),
-          type: 'WITHDRAWAL',
-          amount: 150000,
-          accountId: 'ACCT2001',
-          flagged: true,
-          narrative: 'Large withdrawal'
-        }
-      ];
-      this.accountsSubject.next(dummyAccounts);
-      this.transactionsSubject.next(dummyTransactions);
-      this.updateReqsSubject.next([]);
-      this.notificationsSubject.next([]);
+    return {
+      updateId: approval.approvalId?.toString() || '',
+      accountId: approval.accountId?.toString() || '',
+      customerName: customerName || approval.accountCustomerName || '',
+      customerId: customerId,
+      accountType: accountType,
+      changeSummary: changeSummary,
+      status: status,
+      time: approval.approvalDate || new Date().toISOString()
+    };
+  }
+
+  /**
+   * Load local notifications from localStorage
+   */
+  private loadLocalNotifications(): void {
+    try {
+      const stored = localStorage.getItem('officer_local_notifications');
+      if (stored) {
+        const localNotifications = (JSON.parse(stored) as Notification[])
+          .filter(n => !this.dismissedIds.has(n.id)); // Skip dismissed
+        this.localNotificationsSubject.next(localNotifications);
+        this.saveLocalNotifications(localNotifications); // Clean up storage
+      }
+    } catch (error) {
+      console.error('Error loading local notifications:', error);
     }
   }
- 
+
+  /**
+   * Save local notifications to localStorage
+   */
+  private saveLocalNotifications(notifications: Notification[]): void {
+    try {
+      localStorage.setItem('officer_local_notifications', JSON.stringify(notifications));
+    } catch (error) {
+      console.error('Error saving local notifications:', error);
+    }
+  }
+
+  /**
+   * Load dismissed notification IDs from localStorage
+   */
+  private loadDismissedIds(): void {
+    try {
+      const stored = localStorage.getItem('officer_dismissed_notifications');
+      if (stored) {
+        const ids = JSON.parse(stored) as string[];
+        ids.forEach(id => this.dismissedIds.add(id));
+      }
+    } catch (error) {
+      console.error('Error loading dismissed notifications:', error);
+    }
+  }
+
+  /**
+   * Save dismissed notification IDs to localStorage
+   */
+  private saveDismissedIds(): void {
+    try {
+      localStorage.setItem('officer_dismissed_notifications', JSON.stringify([...this.dismissedIds]));
+    } catch (error) {
+      console.error('Error saving dismissed notifications:', error);
+    }
+  }
+
+  /**
+   * Add a local notification (for officer's own submissions)
+   */
+  addLocalNotification(notification: Omit<Notification, 'id' | 'timestamp' | 'read'>): void {
+    const newNotification: Notification = {
+      ...notification,
+      id: `local_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      time: new Date().toISOString(),
+      read: false
+    };
+
+    const currentLocal = this.localNotificationsSubject.value;
+    const updatedLocal = [newNotification, ...currentLocal];
+    this.localNotificationsSubject.next(updatedLocal);
+    this.saveLocalNotifications(updatedLocal);
+  }
+
+  /**
+   * Update a local notification (for approval/rejection updates)
+   */
+  updateLocalNotification(approvalId: number, updates: Partial<Notification>): void {
+    const currentLocal = this.localNotificationsSubject.value;
+    const updatedLocal = currentLocal.map(notification => {
+      // Find notification by approvalId in meta
+      if (notification.meta?.approvalId === approvalId) {
+        return {
+          ...notification,
+          ...updates,
+          meta: {
+            ...notification.meta,
+            ...updates.meta
+          },
+          timestamp: new Date().toISOString(),
+          time: new Date().toISOString(),
+          read: false // Mark as unread so officer sees the update
+        };
+      }
+      return notification;
+    });
+
+    this.localNotificationsSubject.next(updatedLocal);
+    this.saveLocalNotifications(updatedLocal);
+  }
+
+  // ========== Approval Polling ==========
+
+  /**
+   * Poll approvals every 30 seconds to detect manager decisions.
+   * When a local notification has a pending approvalId and the approval
+   * is now Approved/Rejected, update the notification with the decision & comments.
+   */
+  private startApprovalPolling(): void {
+    // Poll every 30 seconds
+    this.pollSub = interval(30000).pipe(
+      switchMap(() => {
+        const localNotifications = this.localNotificationsSubject.value;
+        // Find local notifications that have an approvalId and are still pending
+        const pendingApprovalIds = localNotifications
+          .filter(n => n.meta?.approvalId && (!n.meta?.decision || n.meta.decision === 'Pending'))
+          .map(n => n.meta!.approvalId!);
+
+        if (pendingApprovalIds.length === 0) {
+          return of(null);
+        }
+
+        // Fetch all approvals (both approved and rejected) to check for updates
+        return this.approvalApi.getApprovals(1, 100).pipe(
+          catchError(() => of(null))
+        );
+      })
+    ).subscribe(result => {
+      if (!result || !result.items) return;
+
+      const localNotifications = this.localNotificationsSubject.value;
+      let hasUpdates = false;
+
+      const updatedLocal = localNotifications.map(notification => {
+        if (!notification.meta?.approvalId) return notification;
+        if (notification.meta?.decision && notification.meta.decision !== 'Pending') return notification;
+
+        // Find matching approval
+        const approval = result.items.find(
+          (a: any) => a.approvalId === notification.meta!.approvalId
+        );
+
+        if (!approval) return notification;
+
+        // Check if the approval has been decided
+        const decision = approval.decision;
+        // decision: 'Pending' | 'Approve' | 'Reject'
+        if (decision === 'Pending') return notification; // Still pending
+
+        hasUpdates = true;
+        const isApproved = decision === 'Approve';
+        const decisionStr = isApproved ? 'Approved' : 'Rejected';
+
+        // Build updated message
+        let updatedMessage = notification.message;
+        if (notification.type === 'ACCOUNT_CREATION') {
+          updatedMessage = isApproved
+            ? `Account creation request for ${notification.meta?.customerName || 'account'} has been approved`
+            : `Account creation request for ${notification.meta?.customerName || 'account'} has been rejected`;
+        } else if (notification.type === 'UPDATE_REQUEST') {
+          updatedMessage = isApproved
+            ? `Account update request for Account ${notification.meta?.accountId || ''} has been approved`
+            : `Account update request for Account ${notification.meta?.accountId || ''} has been rejected`;
+        } else if (notification.type === 'TRANSACTION') {
+          updatedMessage = isApproved
+            ? `Transaction of ₹${notification.meta?.amount?.toFixed(2) || '0.00'} has been approved`
+            : `Transaction of ₹${notification.meta?.amount?.toFixed(2) || '0.00'} has been rejected`;
+        }
+
+        return {
+          ...notification,
+          message: updatedMessage,
+          title: isApproved ? '✅ ' + (notification.title || 'Request') + ' — Approved' : '❌ ' + (notification.title || 'Request') + ' — Rejected',
+          severity: (isApproved ? 'success' : 'error') as 'success' | 'error',
+          timestamp: new Date().toISOString(),
+          time: new Date().toISOString(),
+          read: false, // Mark unread so officer sees the update
+          meta: {
+            ...notification.meta,
+            status: decisionStr,
+            decision: decisionStr,
+            comments: approval.comments || ''
+          }
+        };
+      });
+
+      if (hasUpdates) {
+        this.localNotificationsSubject.next(updatedLocal);
+        this.saveLocalNotifications(updatedLocal);
+
+        // Also refresh accounts in case approval changed account status
+        this.loadAccounts();
+        this.loadTransactions();
+      }
+    });
+  }
+
+  /**
+   * Force-check approvals immediately (e.g. when user opens notifications)
+   */
+  checkApprovalUpdates(): void {
+    const localNotifications = this.localNotificationsSubject.value;
+    const pendingApprovalIds = localNotifications
+      .filter(n => n.meta?.approvalId && (!n.meta?.decision || n.meta.decision === 'Pending'))
+      .map(n => n.meta!.approvalId!);
+
+    if (pendingApprovalIds.length === 0) return;
+
+    this.approvalApi.getApprovals(1, 100).pipe(
+      catchError(() => of(null))
+    ).subscribe(result => {
+      if (!result || !result.items) return;
+
+      let hasUpdates = false;
+      const updatedLocal = localNotifications.map(notification => {
+        if (!notification.meta?.approvalId) return notification;
+        if (notification.meta?.decision && notification.meta.decision !== 'Pending') return notification;
+
+        const approval = result.items.find(
+          (a: any) => a.approvalId === notification.meta!.approvalId
+        );
+        if (!approval || approval.decision === 'Pending') return notification;
+
+        hasUpdates = true;
+        const isApproved = approval.decision === 'Approve';
+        const decisionStr = isApproved ? 'Approved' : 'Rejected';
+
+        let updatedMessage = notification.message;
+        if (notification.type === 'ACCOUNT_CREATION') {
+          updatedMessage = isApproved
+            ? `Account creation for ${notification.meta?.customerName || 'account'} has been approved`
+            : `Account creation for ${notification.meta?.customerName || 'account'} has been rejected`;
+        } else if (notification.type === 'UPDATE_REQUEST') {
+          updatedMessage = isApproved
+            ? `Update request for Account ${notification.meta?.accountId || ''} has been approved`
+            : `Update request for Account ${notification.meta?.accountId || ''} has been rejected`;
+        } else if (notification.type === 'TRANSACTION') {
+          updatedMessage = isApproved
+            ? `Transaction of ₹${notification.meta?.amount?.toFixed(2) || '0.00'} has been approved`
+            : `Transaction of ₹${notification.meta?.amount?.toFixed(2) || '0.00'} has been rejected`;
+        }
+
+        return {
+          ...notification,
+          message: updatedMessage,
+          title: isApproved ? '✅ ' + (notification.title || 'Request') + ' — Approved' : '❌ ' + (notification.title || 'Request') + ' — Rejected',
+          severity: (isApproved ? 'success' : 'error') as 'success' | 'error',
+          timestamp: new Date().toISOString(),
+          time: new Date().toISOString(),
+          read: false,
+          meta: {
+            ...notification.meta,
+            status: decisionStr,
+            decision: decisionStr,
+            comments: approval.comments || ''
+          }
+        };
+      });
+
+      if (hasUpdates) {
+        this.localNotificationsSubject.next(updatedLocal);
+        this.saveLocalNotifications(updatedLocal);
+        this.loadAccounts();
+        this.loadTransactions();
+      }
+    });
+  }
+
+  // ========== Mapping Functions ==========
+
+  private mapAccountsFromApi(apiAccounts: any[]): Account[] {
+    return apiAccounts.map(apiAcc => ({
+      accountId: apiAcc.accountId?.toString() || '',
+      customerName: apiAcc.customerName || '',
+      customerId: apiAcc.customerId || '',
+      accountType: apiAcc.accountType === 0 ? 'SAVINGS' : apiAcc.accountType === 1 ? 'CURRENT' : 'FIXED_DEPOSIT',
+      balance: apiAcc.balance || 0,
+      status: apiAcc.status === 0 ? 'ACTIVE' : apiAcc.status === 1 ? 'CLOSED' : 'PENDING',
+      openedAt: apiAcc.openedAt || new Date().toISOString()
+    }));
+  }
+
+  private mapTransactionsFromApi(apiTransactions: any[]): Transaction[] {
+    return apiTransactions.map(apiTxn => ({
+      id: apiTxn.transactionId?.toString() || cryptoRandomId(),
+      time: apiTxn.date || new Date().toISOString(),
+      type: this.mapTransactionType(apiTxn.type),
+      amount: apiTxn.amount || 0,
+      accountId: apiTxn.accountId?.toString() || '',
+      toAccountId: apiTxn.toAccountId?.toString(),
+      flagged: apiTxn.flag === 'High' || apiTxn.flag === 'Suspicious',
+      narrative: apiTxn.narrative || '',
+      status: apiTxn.status || 'Completed',
+      flag: apiTxn.flag || 'Normal'
+    }));
+  }
+
+  private mapTransactionType(type: string): TxnType {
+    if (type === 'Deposit') return 'DEPOSIT';
+    if (type === 'Withdrawal') return 'WITHDRAWAL';
+    if (type === 'Transfer') return 'TRANSFER';
+    return 'DEPOSIT';
+  }
+
   // for alerts subject
   clearAlert() { this.alertSubject.next(null); }
   setSuccess(message: string) { this.alertSubject.next({ type: 'success', message }); }
-  setError(message: string) { this.alertSubject.next({ type: 'error', message }); }
+  setError(message: string) {
+    // Prevent duplicate consecutive error messages
+    const current = this.alertSubject.value;
+    if (current && current.type === 'error' && current.message === message) {
+      return;
+    }
+    this.alertSubject.next({ type: 'error', message });
+  }
  
  
   getAccountById(accountId: string): Account | undefined {
     return this.accountsSubject.value.find(a => a.accountId === accountId);
   }
  
-  createAccount(input: Omit<Account, 'openedAt'>): void {
-    const accounts = [...this.accountsSubject.value];
-    const exists = accounts.some(a => a.accountId === input.accountId);
-    if (exists) throw new Error(`Account ID ${input.accountId} already exists.`);
- 
-    const newAcc: Account = { ...input, openedAt: new Date().toISOString() };
-    accounts.unshift(newAcc);
-    this.accountsSubject.next(accounts);
-    this.save();
-    this.setSuccess(`Account ${newAcc.accountId} created successfully.`);
+  /**
+   * Create account via API (requires approval)
+   */
+  createAccount(input: { accountId: string; customerName: string; customerId: string; accountType: AccountType }): void {
+    const dto: CreateAccountDto = {
+      accountId: input.accountId,
+      customerName: input.customerName,
+      customerId: input.customerId,
+      accountType: input.accountType === 'SAVINGS' ? 0 : input.accountType === 'CURRENT' ? 1 : 2
+    };
+
+    this.accountApi.createAccount(dto).pipe(
+      tap((response) => {
+        this.setSuccess(response.message || 'Account creation request submitted for approval.');
+        
+        // Add local notification
+        this.addLocalNotification({
+          type: 'ACCOUNT_CREATION',
+          title: 'Account Creation Request',
+          message: `Account creation request submitted for ${input.customerName} (${input.accountId})`,
+          severity: 'info',
+          meta: {
+            accountId: response.accountId,
+            approvalId: response.approvalId,
+            customerName: input.customerName,
+            customerId: input.customerId,
+            accountType: input.accountType,
+            status: 'Pending'
+          }
+        });
+        
+        this.loadAccounts(); // Refresh account list
+        this.loadUpdateRequests(); // Refresh update requests table
+      }),
+      catchError(error => {
+        console.error('Error creating account:', error);
+        this.setError(error.message || 'Failed to create account');
+        return of(null);
+      })
+    ).subscribe();
   }
  
   // ---------- Update Requests ----------
   submitUpdateRequest(newValues: Account): void {
-    const accounts = this.accountsSubject.value;
-    const existing = accounts.find(a => a.accountId === newValues.accountId);
-    if (!existing) throw new Error('Account not found.');
- 
+    const existing = this.getAccountById(newValues.accountId);
+    if (!existing) {
+      this.setError('Account not found.');
+      return;
+    }
+    if (existing.status === 'PENDING') {
+      this.setError('Account is still pending approval. Cannot modify until approved.');
+      return;
+    }
+
     // Build change summary
     const changes: string[] = [];
     if (existing.customerName !== newValues.customerName)
@@ -338,172 +544,191 @@ export class OfficerService {
       changes.push(`Customer ID: "${existing.customerId}" → "${newValues.customerId}"`);
     if (existing.accountType !== newValues.accountType)
       changes.push(`Account Type: ${existing.accountType} → ${newValues.accountType}`);
-    if (existing.balance !== newValues.balance)
-      changes.push(`Balance: ₹${existing.balance} → ₹${newValues.balance}`);
     if (existing.status !== newValues.status)
       changes.push(`Status: ${existing.status} → ${newValues.status}`);
- 
-    const req: UpdateRequest = {
-      updateId: cryptoRandomId(),
-      accountId: newValues.accountId,
+
+    const updateDto = {
       customerName: newValues.customerName,
       customerId: newValues.customerId,
-      accountType: newValues.accountType,
-      changeSummary: changes.length ? changes.join(' | ') : 'No changes detected',
-      status: 'PENDING',
-      time: new Date().toISOString()
+      accountType: newValues.accountType === 'SAVINGS' ? 0 : newValues.accountType === 'CURRENT' ? 1 : 2,
+      status: newValues.status === 'ACTIVE' ? 0 : 1
     };
- 
-    const updateReqs = [req, ...this.updateReqsSubject.value];
-    this.updateReqsSubject.next(updateReqs);
- 
-    //notification for update request
-    this.addNotification({
-      type: 'UPDATE_REQUEST',
-      title: `Update request for ${req.accountId}`,
-      message: req.changeSummary,
-      meta: { accountId: req.accountId, updateId: req.updateId }
-    });
- 
-    this.save();
-    this.setSuccess(`Update request created for Account ${newValues.accountId}.`);
+
+    const accountId = newValues.accountId;
+    this.accountApi.updateAccount(accountId, updateDto).pipe(
+      tap((response) => {
+        this.setSuccess(response.message || `Update request submitted for Account ${newValues.accountId}.`);
+        
+        // Add local notification
+        this.addLocalNotification({
+          type: 'UPDATE_REQUEST',
+          title: 'Account Update Request',
+          message: `Update request submitted for Account ${newValues.accountId}`,
+          severity: 'info',
+          meta: {
+            accountId: newValues.accountId,
+            approvalId: response.approvalId,
+            updateId: response.approvalId,
+            customerName: newValues.customerName,
+            changes: changes,
+            status: 'Pending'
+          }
+        });
+        
+        this.loadAccounts();
+        this.loadUpdateRequests();
+      }),
+      catchError(error => {
+        console.error('Error submitting update request:', error);
+        this.setError(error.message || 'Failed to submit update request');
+        return of(null);
+      })
+    ).subscribe();
   }
  
  
+  /**
+   * Record transaction via API
+   * High-value transactions (>100k) will automatically create approval
+   */
   recordTransaction(
     sourceAccountId: string,
     form: { type: TxnType; amount: number; toAccountId?: string; narrative?: string }
   ): void {
     const { type, amount, toAccountId, narrative } = form;
-    if (!sourceAccountId) throw new Error('Select an account to record transactions.');
- 
-    const accounts = [...this.accountsSubject.value];
-    const source = accounts.find(a => a.accountId === sourceAccountId);
-    if (!source) throw new Error('Account not found.');
-    if (source.status === 'CLOSED') throw new Error('Cannot record transactions on CLOSED accounts.');
-    if (amount <= 0) throw new Error('Amount must be greater than zero.');
- 
-    const txns = [...this.transactionsSubject.value];
-    const isHigh = amount >= this.highValueThreshold;
- 
-    if (type === 'DEPOSIT') {
-      source.balance = round2(source.balance + amount);
-      const tx = this.makeTxn({ type, amount, accountId: source.accountId, narrative });
-      txns.unshift(tx);
-      if (isHigh) {
-        this.addNotification({
-          type: 'HIGH_VALUE_TXN',
-          title: `High-value DEPOSIT on ${source.accountId}`,
-          message: `₹${amount.toFixed(2)} deposited.`,
-          meta: { accountId: source.accountId, txnId: tx.id, amount }
-        });
-      }
-      this.setSuccess(`Deposited ₹${amount.toFixed(2)} to ${source.accountId}.`);
-    } else if (type === 'WITHDRAWAL') {
-      if (source.balance < amount) throw new Error('Insufficient balance for withdrawal.');
-      source.balance = round2(source.balance - amount);
-      const tx = this.makeTxn({ type, amount, accountId: source.accountId, narrative });
-      txns.unshift(tx);
-      if (isHigh) {
-        this.addNotification({
-          type: 'HIGH_VALUE_TXN',
-          title: `High-value WITHDRAWAL on ${source.accountId}`,
-          message: `₹${amount.toFixed(2)} withdrawn.`,
-          meta: { accountId: source.accountId, txnId: tx.id, amount }
-        });
-      }
-      this.setSuccess(`Withdrew ₹${amount.toFixed(2)} from ${source.accountId}.`);
-    } else {
-      if (!toAccountId) throw new Error('Select a destination account for transfer.');
-      if (toAccountId === source.accountId) throw new Error('Destination account must be different.');
-      const dest = accounts.find(a => a.accountId === toAccountId);
-      if (!dest) throw new Error('Destination account not found.');
-      if (dest.status === 'CLOSED') throw new Error('Cannot transfer to a CLOSED destination.');
-      if (source.balance < amount) throw new Error('Insufficient balance for transfer.');
- 
-      // Perform transfer
-      source.balance = round2(source.balance - amount);
-      dest.balance = round2(dest.balance + amount);
- 
-      // Record two transactions (outgoing & incoming)
-      const txOut = this.makeTxn({
-        type, amount, accountId: source.accountId, toAccountId, narrative: narrative || 'Transfer out'
-      });
-      const txIn = this.makeTxn({
-        type, amount, accountId: dest.accountId, toAccountId: source.accountId, narrative: 'Transfer in'
-      });
-      txns.unshift(txOut);
-      txns.unshift(txIn);
-      //adding notification for high value transfer
-      if (isHigh) {
-        this.addNotification({
-          type: 'HIGH_VALUE_TXN',
-          title: `High-value TRANSFER from ${source.accountId}`,
-          message: `₹${amount.toFixed(2)} → ${dest.accountId}`,
-          meta: { accountId: source.accountId, toAccountId: dest.accountId, txnId: txOut.id, amount }
-        });
-      }
- 
-      this.setSuccess(`Transferred ₹${amount.toFixed(2)} from ${source.accountId} to ${dest.accountId}.`);
+    if (!sourceAccountId) {
+      this.setError('Select an account to record transactions.');
+      return;
     }
- 
-    // Commit
-    this.accountsSubject.next(accounts);
-    this.transactionsSubject.next(txns);
-    this.save();
+
+    const source = this.getAccountById(sourceAccountId);
+    if (!source) {
+      this.setError('Account not found.');
+      return;
+    }
+    if (source.status === 'CLOSED') {
+      this.setError('Cannot record transactions on CLOSED accounts.');
+      return;
+    }
+    if (source.status === 'PENDING') {
+      this.setError('Cannot record transactions on PENDING accounts. Wait for approval first.');
+      return;
+    }
+    if (amount <= 0) {
+      this.setError('Amount must be greater than zero.');
+      return;
+    }
+
+    // Check balance for withdrawals/transfers
+    if ((type === 'WITHDRAWAL' || type === 'TRANSFER') && source.balance < amount) {
+      this.setError('Insufficient balance.');
+      return;
+    }
+
+    // Map transaction type
+    let apiTxnType: number;
+    if (type === 'DEPOSIT') apiTxnType = ApiTransactionType.Deposit;
+    else if (type === 'WITHDRAWAL') apiTxnType = ApiTransactionType.Withdrawal;
+    else apiTxnType = ApiTransactionType.Transfer;
+
+    const dto: CreateTransactionDto = {
+      accountId: sourceAccountId,
+      transactionType: apiTxnType,
+      amount: amount,
+      narrative: narrative || '',
+      toAccountId: toAccountId || undefined
+    };
+
+    this.transactionApi.createTransaction(dto).pipe(
+      tap((response) => {
+        // Show appropriate success message based on transaction status
+        const statusMsg = response.status === 'Pending' ? ' (Pending approval)' : '';
+
+        if (type === 'DEPOSIT') {
+          this.setSuccess(`Deposited ₹${amount.toFixed(2)} to ${source.accountId}.${statusMsg}`);
+        } else if (type === 'WITHDRAWAL') {
+          this.setSuccess(`Withdrew ₹${amount.toFixed(2)} from ${source.accountId}.${statusMsg}`);
+        } else {
+          this.setSuccess(`Transferred ₹${amount.toFixed(2)} from ${source.accountId} to ${toAccountId}.${statusMsg}`);
+        }
+
+        // Add notification if transaction requires approval
+        if (response.approvalId || response.requiresApproval || response.status === 'Pending') {
+          this.addLocalNotification({
+            type: 'TRANSACTION',
+            title: 'Transaction Pending Approval',
+            message: `${type} transaction of ₹${amount.toFixed(2)} on Account ${sourceAccountId} requires manager approval`,
+            severity: 'warning',
+            meta: {
+              txnId: response.transactionId,
+              accountId: sourceAccountId,
+              amount: amount,
+              type: type,
+              toAccountId: toAccountId,
+              approvalId: response.approvalId,
+              status: 'Pending'
+            }
+          });
+        }
+
+        // Refresh data
+        this.loadAccounts();
+        this.loadTransactions();
+      }),
+      catchError(error => {
+        console.error('Error recording transaction:', error);
+        this.setError(error.message || 'Failed to record transaction');
+        return of(null);
+      })
+    ).subscribe();
   }
 
-  // ---------- Notifications (helpers) ----------
-  private addNotification(input: Omit<Notification, 'id' | 'time' | 'read'>): void {
-    const n: Notification = {
-      id: cryptoRandomId(),
-      time: new Date().toISOString(),
-      read: false,
-      ...input
-    };
-    const list = [n, ...this.notificationsSubject.value];
-    this.notificationsSubject.next(list);
-    this.save();
-  }
+  // ---------- Notifications (API-based) ----------
  
   markAsRead(id: string): void {
-    const list = this.notificationsSubject.value.map(n => n.id === id ? { ...n, read: true } : n);
-    this.notificationsSubject.next(list);
-    this.save();
+    const localNotifications = this.localNotificationsSubject.value;
+    const updated = localNotifications.map(n => 
+      n.id === id ? { ...n, read: true } : n
+    );
+    this.localNotificationsSubject.next(updated);
+    this.saveLocalNotifications(updated);
   }
  
   markAsUnread(id: string): void {
-    const list = this.notificationsSubject.value.map(n => n.id === id ? { ...n, read: false } : n);
-    this.notificationsSubject.next(list);
-    this.save();
+    const localNotifications = this.localNotificationsSubject.value;
+    const updated = localNotifications.map(n => 
+      n.id === id ? { ...n, read: false } : n
+    );
+    this.localNotificationsSubject.next(updated);
+    this.saveLocalNotifications(updated);
   }
  
   deleteNotification(id: string): void {
-    const list = this.notificationsSubject.value.filter(n => n.id !== id);
-    this.notificationsSubject.next(list);
-    this.save();
+    // Track this ID as dismissed so it never reappears
+    this.dismissedIds.add(id);
+    this.saveDismissedIds();
+
+    const localNotifications = this.localNotificationsSubject.value;
+    const updated = localNotifications.filter(n => n.id !== id);
+    this.localNotificationsSubject.next(updated);
+    this.saveLocalNotifications(updated);
   }
  
   markAllAsRead(): void {
-    const list = this.notificationsSubject.value.map(n => ({ ...n, read: true }));
-    this.notificationsSubject.next(list);
-    this.save();
+    const localNotifications = this.localNotificationsSubject.value;
+    const updated = localNotifications.map(n => ({ ...n, read: true }));
+    this.localNotificationsSubject.next(updated);
+    this.saveLocalNotifications(updated);
   }
  
   clearAllNotifications(): void {
-    this.notificationsSubject.next([]);
-    this.save();
-  }
- 
-  // helper
-  private makeTxn(partial: Omit<Transaction, 'id' | 'time' | 'flagged'>): Transaction {
-    const flagged = partial.amount >= this.highValueThreshold;
-    return {
-      id: cryptoRandomId(),
-      time: new Date().toISOString(),
-      flagged,
-      ...partial
-    };
+    // Track all current notification IDs as dismissed
+    const all = this.localNotificationsSubject.value;
+    all.forEach(n => this.dismissedIds.add(n.id));
+    this.saveDismissedIds();
+
+    this.localNotificationsSubject.next([]);
+    this.saveLocalNotifications([]);
   }
 
   // ---------- Officer Profile ----------

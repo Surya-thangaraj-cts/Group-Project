@@ -1,0 +1,293 @@
+<div class="notifications-dropdown">
+  <!-- Dropdown Header -->
+  <div class="dropdown-header">
+    <h3 class="dropdown-title">Notifications</h3>
+    <button class="close-btn" (click)="closeDropdown()" title="Close">×</button>
+  </div>
+
+  <!-- Notifications List -->
+  <div class="notifications-list">
+    <div *ngIf="notifications.length === 0" class="no-notifications">
+      <span class="empty-icon">🔔</span>
+      <p>No notifications</p>
+    </div>
+
+    <div 
+      *ngFor="let notification of notifications" 
+      class="notification-item"
+      [class.unread]="!notification.read">
+      
+      <!-- Notification Icon -->
+      <div class="notification-icon" [ngClass]="getStatusClass(notification.type, notification.meta)">
+        <!-- Show decision icons when approved/rejected -->
+        <ng-container *ngIf="notification.meta?.decision === 'Approved'">
+          <span>✅</span>
+        </ng-container>
+        <ng-container *ngIf="notification.meta?.decision === 'Rejected'">
+          <span>❌</span>
+        </ng-container>
+        <!-- Show type icons when still pending -->
+        <ng-container *ngIf="!notification.meta?.decision || notification.meta?.decision === 'Pending'">
+          <span *ngIf="notification.type === 'ACCOUNT_CREATION'">👤</span>
+          <span *ngIf="notification.type === 'UPDATE_REQUEST'">📝</span>
+          <span *ngIf="notification.type === 'TRANSACTION'">💰</span>
+          <span *ngIf="notification.type === 'TXN_FLAGGED'">⚠️</span>
+        </ng-container>
+      </div>
+
+      <!-- Notification Content -->
+      <div class="notification-content" (click)="handleNotificationClick(notification)">
+        <p class="notification-description">{{ getNotificationDescription(notification) }}</p>
+        <p class="notification-time" [title]="formatDate(notification.timestamp || notification.time)">{{ timeAgo(notification.timestamp || notification.time) }}</p>
+      </div>
+
+      <!-- Delete Button -->
+      <button class="delete-btn" (click)="onDelete(notification.id, $event)" title="Delete notification">×</button>
+
+      <!-- Unread Indicator -->
+      <div class="unread-indicator" *ngIf="!notification.read"></div>
+    </div>
+  </div>
+
+  <!-- Dropdown Footer -->
+  <div class="dropdown-footer" *ngIf="notifications.length > 0">
+    <button class="footer-btn" (click)="onMarkAllRead()" title="Mark all as read">✓ Mark all read</button>
+    <button class="footer-btn danger" (click)="onClearAll()" title="Delete all notifications">✕ Clear all</button>
+  </div>
+</div>
+
+<!-- NOTIFICATION DETAIL MODAL -->
+<div class="notification-modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+  <div class="notification-modal" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h2 class="modal-title">Notification Details</h2>
+      <button class="modal-close-btn" (click)="closeDetailModal()" title="Close">×</button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="modal-content">
+      
+      <!-- Account Creation Request Details -->
+      <div *ngIf="detailData.type === 'account_creation'" class="detail-section">
+        <div class="detail-header">
+          <h3>Account Creation Request</h3>
+          <span class="detail-type-badge update" 
+                [class.status-approved]="detailData.decision === 'Approved'"
+                [class.status-rejected]="detailData.decision === 'Rejected'">
+            {{ detailData.status || 'Pending' }}
+          </span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item">
+            <label>Customer Name</label>
+            <span class="detail-value">{{ detailData.customerName }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Customer ID</label>
+            <span class="detail-value">{{ detailData.customerId }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Account Type</label>
+            <span class="detail-value">{{ detailData.accountType }}</span>
+          </div>
+          <div class="detail-item" *ngIf="detailData.accountId">
+            <label>Account ID</label>
+            <span class="detail-value">{{ detailData.accountId }}</span>
+          </div>
+          <div class="detail-item" *ngIf="detailData.approvalId">
+            <label>Approval ID</label>
+            <span class="detail-value">{{ detailData.approvalId }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Submitted On</label>
+            <span class="detail-value">{{ formatDate(selectedNotification!.timestamp || selectedNotification!.time) }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="detailData.decision">
+            <label>Decision</label>
+            <span class="detail-value" 
+                  [class.status-approved]="detailData.decision === 'Approved'"
+                  [class.status-rejected]="detailData.decision === 'Rejected'">
+              {{ detailData.decision }}
+            </span>
+          </div>
+          <div class="detail-item full-width" *ngIf="detailData.comments">
+            <label>Manager Comments</label>
+            <span class="detail-value">{{ detailData.comments }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="!detailData.decision">
+            <label>Status</label>
+            <span class="detail-value status-pending">Pending Manager Approval</span>
+          </div>
+        </div>
+
+        <div class="info-box" *ngIf="!detailData.decision">
+          <p><strong>ℹ️ Note:</strong> Your account creation request has been submitted successfully and is awaiting manager approval. You will be notified once a decision is made.</p>
+        </div>
+        <div class="info-box" *ngIf="detailData.decision === 'Approved'" style="background: #dcfce7; border-left-color: #16a34a;">
+          <p><strong>✅ Approved:</strong> Your account creation request has been approved by the manager. The account is now active.</p>
+        </div>
+        <div class="info-box" *ngIf="detailData.decision === 'Rejected'" style="background: #fee2e2; border-left-color: #dc2626;">
+          <p><strong>❌ Rejected:</strong> Your account creation request has been rejected by the manager. Please review the comments above.</p>
+        </div>
+      </div>
+
+      <!-- Account Update Request Details -->
+      <div *ngIf="detailData.type === 'update_request'" class="detail-section">
+        <div class="detail-header">
+          <h3>Account Update Request</h3>
+          <span class="detail-type-badge update"
+                [class.status-approved]="detailData.decision === 'Approved'"
+                [class.status-rejected]="detailData.decision === 'Rejected'">
+            {{ detailData.status || 'Pending' }}
+          </span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item" *ngIf="detailData.accountId">
+            <label>Account ID</label>
+            <span class="detail-value">{{ detailData.accountId }}</span>
+          </div>
+          <div class="detail-item" *ngIf="detailData.updateId">
+            <label>Approval ID</label>
+            <span class="detail-value">{{ detailData.updateId }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Submitted On</label>
+            <span class="detail-value">{{ formatDate(selectedNotification!.timestamp || selectedNotification!.time) }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="detailData.changes && detailData.changes.length > 0">
+            <label>Changes Requested</label>
+            <span class="detail-value" *ngFor="let change of detailData.changes">{{ change }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="!detailData.changes || detailData.changes.length === 0">
+            <label>Details</label>
+            <span class="detail-value">{{ detailData.message }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="detailData.decision">
+            <label>Decision</label>
+            <span class="detail-value"
+                  [class.status-approved]="detailData.decision === 'Approved'"
+                  [class.status-rejected]="detailData.decision === 'Rejected'">
+              {{ detailData.decision }}
+            </span>
+          </div>
+          <div class="detail-item full-width" *ngIf="detailData.comments">
+            <label>Manager Comments</label>
+            <span class="detail-value">{{ detailData.comments }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="!detailData.decision">
+            <label>Status</label>
+            <span class="detail-value status-pending">Pending Manager Approval</span>
+          </div>
+        </div>
+
+        <div class="info-box" *ngIf="!detailData.decision">
+          <p><strong>ℹ️ Note:</strong> Your update request has been submitted successfully and is awaiting manager approval. You will be notified once a decision is made.</p>
+        </div>
+        <div class="info-box" *ngIf="detailData.decision === 'Approved'" style="background: #dcfce7; border-left-color: #16a34a;">
+          <p><strong>✅ Approved:</strong> Your update request has been approved by the manager. The changes have been applied.</p>
+        </div>
+        <div class="info-box" *ngIf="detailData.decision === 'Rejected'" style="background: #fee2e2; border-left-color: #dc2626;">
+          <p><strong>❌ Rejected:</strong> Your update request has been rejected by the manager. Please review the comments above.</p>
+        </div>
+      </div>
+
+      <!-- Transaction Details -->
+      <div *ngIf="detailData.type === 'transaction'" class="detail-section">
+        <div class="detail-header">
+          <h3>Transaction</h3>
+          <span class="detail-type-badge transaction"
+                [class.status-approved]="detailData.decision === 'Approved'"
+                [class.status-rejected]="detailData.decision === 'Rejected'">
+            {{ detailData.status || 'Pending' }}
+          </span>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item" *ngIf="detailData.txnId">
+            <label>Transaction ID</label>
+            <span class="detail-value">{{ detailData.txnId }}</span>
+          </div>
+          <div class="detail-item" *ngIf="detailData.accountId">
+            <label>Account ID</label>
+            <span class="detail-value">{{ detailData.accountId }}</span>
+          </div>
+          <div class="detail-item" *ngIf="detailData.transactionType">
+            <label>Transaction Type</label>
+            <span class="detail-value">{{ detailData.transactionType }}</span>
+          </div>
+          <div class="detail-item" *ngIf="detailData.amount">
+            <label>Amount</label>
+            <span class="detail-value" style="font-weight: 700; color: #059669; font-size: 15px;">
+              {{ formatCurrency(detailData.amount) }}
+            </span>
+          </div>
+          <div class="detail-item" *ngIf="detailData.toAccountId">
+            <label>To Account ID</label>
+            <span class="detail-value">{{ detailData.toAccountId }}</span>
+          </div>
+          <div class="detail-item" *ngIf="detailData.approvalId">
+            <label>Approval ID</label>
+            <span class="detail-value">{{ detailData.approvalId }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Submitted On</label>
+            <span class="detail-value">{{ formatDate(selectedNotification!.timestamp || selectedNotification!.time) }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="detailData.decision">
+            <label>Decision</label>
+            <span class="detail-value"
+                  [class.status-approved]="detailData.decision === 'Approved'"
+                  [class.status-rejected]="detailData.decision === 'Rejected'">
+              {{ detailData.decision }}
+            </span>
+          </div>
+          <div class="detail-item full-width" *ngIf="detailData.comments">
+            <label>Manager Comments</label>
+            <span class="detail-value">{{ detailData.comments }}</span>
+          </div>
+          <div class="detail-item full-width" *ngIf="!detailData.decision">
+            <label>Status</label>
+            <span class="detail-value status-pending">Pending Manager Approval</span>
+          </div>
+        </div>
+
+        <div class="info-box warning" *ngIf="!detailData.decision">
+          <p><strong>⚠️ Transaction:</strong> This transaction requires manager approval due to the high amount. The account balance will be updated once approved.</p>
+        </div>
+        <div class="info-box" *ngIf="detailData.decision === 'Approved'" style="background: #dcfce7; border-left-color: #16a34a;">
+          <p><strong>✅ Approved:</strong> Your transaction has been approved by the manager. The amount has been processed.</p>
+        </div>
+        <div class="info-box" *ngIf="detailData.decision === 'Rejected'" style="background: #fee2e2; border-left-color: #dc2626;">
+          <p><strong>❌ Rejected:</strong> Your transaction has been rejected by the manager. Please review the comments above.</p>
+        </div>
+      </div>
+
+      <!-- General Notification -->
+      <div *ngIf="detailData.type === 'general'" class="detail-section">
+        <div class="detail-header">
+          <h3>Notification Details</h3>
+        </div>
+
+        <div class="detail-grid">
+          <div class="detail-item full-width">
+            <label>Message</label>
+            <span class="detail-value">{{ detailData.message }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Time</label>
+            <span class="detail-value">{{ formatDate(selectedNotification!.timestamp || selectedNotification!.time) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-danger" (click)="onDeleteFromModal()" title="Delete this notification">✕ Delete</button>
+      <button class="btn btn-primary" (click)="closeDetailModal()">Close</button>
+    </div>
+  </div>
+</div>

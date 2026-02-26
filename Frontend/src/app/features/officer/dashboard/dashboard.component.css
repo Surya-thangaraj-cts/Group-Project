@@ -193,6 +193,29 @@
   color: #6b7280;
 }
 
+.amount-cell {
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.badge-completed {
+  background: rgba(76, 175, 80, 0.15);
+  color: #2e7d32;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.badge-pending {
+  background: rgba(255, 152, 0, 0.15);
+  color: #e65100;
+  border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.badge-rejected {
+  background: rgba(244, 67, 54, 0.15);
+  color: #c62828;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
 /* No Activity Message */
 .no-activity-message {
   border-radius: 12px;

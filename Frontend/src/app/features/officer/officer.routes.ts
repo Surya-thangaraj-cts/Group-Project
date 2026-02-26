@@ -6,7 +6,6 @@ import { OfficerDashboardComponent } from './dashboard/dashboard.component';
 import { CreateAccountComponent } from './create-account/create-account.component';
 import { UpdateAccountComponent } from './update-account/update-account.component';
 import { TransactionsComponent } from './transactions/transactions.component';
-import { AlertsComponent } from './alerts/alerts.component';
  
 export const OFFICER_ROUTES: Routes = [
   {
@@ -17,7 +16,6 @@ export const OFFICER_ROUTES: Routes = [
       { path: 'dashboard', component: OfficerDashboardComponent },
       { path: 'create', component: CreateAccountComponent },
       { path: 'update', component: UpdateAccountComponent },
-      { path: 'alerts', component: AlertsComponent }, // NEW
       { path: 'history', component: TransactionsComponent },
     ]
   }

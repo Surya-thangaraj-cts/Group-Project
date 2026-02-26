@@ -1,5 +1,5 @@
-export type AccountType = 'SAVINGS' | 'CURRENT';
-export type AccountStatus = 'ACTIVE' | 'CLOSED';
+export type AccountType = 'SAVINGS' | 'CURRENT' | 'FIXED_DEPOSIT';
+export type AccountStatus = 'ACTIVE' | 'CLOSED' | 'PENDING';
 export type TxnType = 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER';
  
 export interface Account {
@@ -21,6 +21,8 @@ export interface Transaction {
   toAccountId?: string;
   flagged?: boolean;
   narrative?: string;
+  status?: 'Completed' | 'Pending' | 'Rejected';
+  flag?: 'Normal' | 'High' | 'Suspicious';
 }
  
 export interface UpdateRequest {
@@ -40,21 +42,32 @@ export interface AlertMsg {
 }
  
 // ===== NEW: Notifications for Alerts tab =====
-export type NotificationType = 'UPDATE_REQUEST' | 'HIGH_VALUE_TXN' | 'TXN_FLAGGED';
+export type NotificationType = 'UPDATE_REQUEST' | 'TRANSACTION' | 'TXN_FLAGGED' | 'ACCOUNT_CREATION';
  
 export interface Notification {
   id: string;
   type: NotificationType;
-  title: string;
+  title?: string;
   message: string;
-  time: string; // ISO
+  time?: string; // ISO (legacy support)
+  timestamp?: string; // ISO (new field)
   read: boolean;
+  severity?: 'info' | 'warning' | 'error' | 'success';
   meta?: {
-    accountId?: string;
-    updateId?: string;
-    txnId?: string;
+    accountId?: string | number;
+    updateId?: string | number;
+    txnId?: string | number;
     amount?: number;
     toAccountId?: string;
+    customerName?: string;
+    customerId?: string;
+    accountType?: string;
+    changes?: string[];
+    type?: string;
+    approvalId?: number;
+    status?: string;
+    decision?: string;
+    comments?: string;
   };
 }
 

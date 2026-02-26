@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-lg fixed-top" style="background: linear-gradient(90deg, #7c3aed, #6d28d9); box-shadow: 0 6px 25px rgba(124, 58, 237, 0.35); padding: 0.6rem 1rem;" role="navigation" aria-label="Primary">
   <div class="container-fluid">
     <!-- Brand/Logo -->
-    <a class="navbar-brand d-flex align-items-center gap-2" style="cursor: pointer; color: #ffffff; font-weight: 700;">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/officer/dashboard" (click)="handleNavigation('dashboard')" style="cursor: pointer; color: #ffffff; font-weight: 700; text-decoration: none;">
       <svg xmlns="http://www.w3.org/2000/svg"
         width="40"
         height="40"
@@ -53,26 +53,41 @@
         </button>
         <button 
           class="btn btn-glass nav-button"
-          [class.active]="activeSection === 'alerts'"
-          routerLink="/officer/alerts"
-          routerLinkActive="active"
-          (click)="handleNavigation('alerts')">
-          Alerts
-          <span *ngIf="(unreadCount$ | async) as u" class="badge badge-gradient" [hidden]="!u || u===0">{{ u }}</span>
-        </button>
-        <button 
-          class="btn btn-glass nav-button"
           [class.active]="activeSection === 'history'"
           routerLink="/officer/history"
           routerLinkActive="active"
           (click)="handleNavigation('history')">
-          High Value
+          Transactions
         </button>
       </div>
 
+      <!-- Notification Bell -->
+      <div class="notification-bell-wrapper position-relative me-2">
+        <button 
+          class="btn btn-light btn-circle notification-bell-btn"
+          style="width: 42px; height: 42px; padding: 0; position: relative;"
+          (click)="toggleNotificationDropdown($event)"
+          title="Notifications"
+          type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: #7c3aed;">
+            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+          </svg>
+          <span *ngIf="(unreadCount$ | async) as count" class="badge badge-gradient animate-pulse" [hidden]="!count || count===0" 
+            style="position: absolute; top: 5px; right: 5px; font-size: 11px; padding: 2px 6px; min-width: 20px;">
+            {{ count }}
+          </span>
+        </button>
+
+        <!-- Notification Dropdown -->
+        <officer-notifications 
+          *ngIf="showNotificationDropdown"
+          (close)="closeNotificationDropdown()">
+        </officer-notifications>
+      </div>
+
       <!-- Profile Section -->
-      <div class="profile-section position-relative ms-3" *ngIf="currentUser">
-        <button class="btn btn-light btn-circle profile-btn" style="width: 50px; height: 50px; font-weight: 700; padding: 0;" (click)="toggleProfileMenu()" 
+      <div class="profile-section position-relative ms-0" *ngIf="currentUser">
+        <button class="btn btn-light btn-circle profile-btn" style="width: 42px; height: 42px; font-weight: 700; padding: 0;" (click)="toggleProfileMenu()" 
           title="Profile" type="button" id="headerProfileDropdown" aria-expanded="false">
           <span class="initials">{{ initials(currentUser.name) }}</span>
         </button>
@@ -114,25 +129,8 @@
        class="console-alert"
        [class.is-success]="alert.type === 'success'"
        [class.is-error]="alert.type === 'error'"
-       [class.is-success]="alert.type === 'success'"
-       [class.is-error]="alert.type === 'error'"
        role="alert"
        aria-live="assertive">
-    <div class="alert-left">
-      <span class="alert-icon" aria-hidden="true">
-        <!-- Success icon -->
-        <svg *ngIf="alert.type === 'success'" viewBox="0 0 24 24" width="18" height="18">
-          <path fill="currentColor" d="M9 16.2l-3.5-3.6L4 14l5 5 11-11-1.5-1.6z"></path>
-        </svg>
-        <!-- Error icon -->
-        <svg *ngIf="alert.type === 'error'" viewBox="0 0 24 24" width="18" height="18">
-          <path fill="currentColor" d="M12 2L1 21h22L12 2zm1 15h-2v-2h2v2zm0-4h-2V8h2v5z"/>
-        </svg>
-      </span>
-      <span class="alert-text">{{ alert.message }}</span>
-    </div>
-    <button class="alert-close" (click)="clearAlert()" aria-label="Close alert">✕</button>
-    <div class="alert-progress" aria-hidden="true"></div>
     <div class="alert-left">
       <span class="alert-icon" aria-hidden="true">
         <!-- Success icon -->

@@ -26,6 +26,9 @@ export class TransactionsComponent {
  
   // Streams
   accounts$ = this.officerSvc.accounts$;
+  activeAccounts$ = this.officerSvc.accounts$.pipe(
+    map(accounts => (accounts || []).filter(a => a.status === 'ACTIVE'))
+  );
   transactions$ = this.officerSvc.transactions$;
  
  
@@ -40,9 +43,12 @@ export class TransactionsComponent {
  
   selectedHistoryAccountId?: string;
   highValueThreshold = this.officerSvc.highValueThreshold;
- 
- 
-  // ----- Filters (bind to ngModel; also push into subjects for VM) -----
+  toAccountStatus: 'internal' | 'external' | null = null;
+  filteredToAccounts: any[] = [];
+  showToSuggestions = false;
+
+
+  // ----- Filters(bind to ngModel; also push into subjects for VM) -----
   historyFilterAccountId?: string;
   fromDate?: string; // yyyy-MM-dd
   toDate?: string;
@@ -99,6 +105,9 @@ export class TransactionsComponent {
  
       // Apply filters
       const filtered = list.filter(t => {
+        // Exclude pending transactions from history
+        if (t.status === 'Pending') return false;
+
         if (accountId && t.accountId !== accountId) return false;
  
  
@@ -152,7 +161,43 @@ export class TransactionsComponent {
   onTxnTypeChange() {
     if (this.txnForm.value.type !== 'TRANSFER') {
       this.txnForm.patchValue({ toAccountId: undefined });
+      this.toAccountStatus = null;
     }
+  }
+
+
+  onToAccountIdInput(): void {
+    const toId = (this.txnForm.value.toAccountId || '').trim();
+    if (!toId) {
+      this.toAccountStatus = null;
+      this.filteredToAccounts = [];
+      this.showToSuggestions = false;
+      return;
+    }
+    // Filter active accounts matching the typed text (exclude source account)
+    const accounts = (this.officerSvc as any).accountsSubject?.value || [];
+    const active = accounts.filter((a: any) => a.status === 'ACTIVE');
+    const query = toId.toUpperCase();
+    this.filteredToAccounts = active.filter((a: any) =>
+      a.accountId !== this.selectedHistoryAccountId &&
+      (a.accountId.toUpperCase().includes(query) || a.customerName.toUpperCase().includes(query))
+    );
+    this.showToSuggestions = this.filteredToAccounts.length > 0;
+
+    // Check if exact match exists
+    const found = active.find((a: any) => a.accountId === toId);
+    this.toAccountStatus = found ? 'internal' : 'external';
+  }
+
+  selectToAccount(accountId: string): void {
+    this.txnForm.patchValue({ toAccountId: accountId });
+    this.showToSuggestions = false;
+    this.toAccountStatus = 'internal';
+  }
+
+  hideToSuggestions(): void {
+    // Small delay so click on suggestion registers before hiding
+    setTimeout(() => { this.showToSuggestions = false; }, 200);
   }
  
  
@@ -162,13 +207,27 @@ export class TransactionsComponent {
  
  
   recordTransaction(): void {
+    const formVal = this.txnForm.getRawValue();
+    // Validate toAccountId is provided for transfers
+    if (formVal.type === 'TRANSFER') {
+      const toId = (formVal.toAccountId || '').trim();
+      if (!toId) {
+        this.officerSvc.setError('Please enter a destination Account ID for the transfer.');
+        return;
+      }
+      if (toId === this.selectedHistoryAccountId) {
+        this.officerSvc.setError('Cannot transfer to the same account.');
+        return;
+      }
+      formVal.toAccountId = toId;
+    }
     try {
       this.officerSvc.recordTransaction(
         this.selectedHistoryAccountId!,
-        this.txnForm.getRawValue()
+        formVal
       );
       this.resetTxnForm();
-      // Optional: you can scroll to top or keep position; pagination is unaffected.
+      this.toAccountStatus = null;
     } catch (e: any) {
       this.officerSvc.setError(e?.message || 'Failed to record transaction');
     }

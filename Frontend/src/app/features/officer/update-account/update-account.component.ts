@@ -131,6 +131,11 @@ export class UpdateAccountComponent implements OnInit {
           this.updateFormLoaded = false;
           return;
         }
+        if (found.status === 'PENDING') {
+          this.officerSvc.setError(`Account "${id}" is still pending approval. You cannot modify it until it is approved.`);
+          this.updateFormLoaded = false;
+          return;
+        }
         this.updateForm.reset({
           accountId: found.accountId,
           customerName: found.customerName,

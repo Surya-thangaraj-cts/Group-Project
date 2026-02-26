@@ -12,18 +12,12 @@
           Account ID
           <select [(ngModel)]="selectedHistoryAccountId" [ngModelOptions]="{ standalone: true }" name="txnAcc">
             <option [ngValue]="undefined">— Select Account —</option>
-            <ng-container *ngIf="(accounts$ | async) as accounts">
+            <ng-container *ngIf="(activeAccounts$ | async) as accounts">
               <option *ngFor="let a of accounts" [ngValue]="a.accountId">
                 {{ a.accountId }} — {{ a.customerName }}
               </option>
             </ng-container>
           </select>
-        </label>
- 
-        <!-- Threshold -->
-        <label>
-          High Value Threshold (₹)
-          <input type="number" [value]="highValueThreshold" disabled />
         </label>
  
         <!-- Type -->
@@ -43,18 +37,23 @@
         </label>
  
         <!-- Transfer Account -->
-        <label *ngIf="txnForm.value.type==='TRANSFER'">
+        <label *ngIf="txnForm.value.type==='TRANSFER'" class="autocomplete-wrapper">
           To Account ID
-          <select formControlName="toAccountId">
-            <option [ngValue]="undefined">— Select —</option>
-            <ng-container *ngIf="(accounts$ | async) as accounts">
-              <option *ngFor="let a of accounts"
-                      [ngValue]="a.accountId"
-                      [disabled]="a.accountId===selectedHistoryAccountId">
-                {{ a.accountId }} — {{ a.customerName }}
-              </option>
-            </ng-container>
-          </select>
+          <input type="text" formControlName="toAccountId"
+                 placeholder="Type Account ID or Customer Name"
+                 (input)="onToAccountIdInput()"
+                 (focus)="onToAccountIdInput()"
+                 (blur)="hideToSuggestions()"
+                 autocomplete="off" />
+          <!-- Suggestions dropdown -->
+          <ul class="autocomplete-list" *ngIf="showToSuggestions">
+            <li *ngFor="let a of filteredToAccounts"
+                class="autocomplete-item"
+                (mousedown)="selectToAccount(a.accountId)">
+              <strong>{{ a.accountId }}</strong> — {{ a.customerName }}
+            </li>
+          </ul>
+          <small class="hint" *ngIf="toAccountStatus === 'internal'">✅ Internal account — balance will be credited</small>
         </label>
  
         <!-- Narrative -->
@@ -141,15 +140,22 @@
               <td [attr.data-label]="'Status'">
                 <span
                   class="status"
-                  [ngClass]="t.amount < highValueThreshold ? 'status--completed' : 'status--pending'">
-                  {{ t.amount < highValueThreshold ? 'Completed' : 'Pending' }}
+                  [ngClass]="{
+                    'status--completed': t.status === 'Completed',
+                    'status--pending': t.status === 'Pending',
+                    'status--rejected': t.status === 'Rejected'
+                  }">
+                  {{ t.status || 'Completed' }}
                 </span>
               </td>
               <td [attr.data-label]="'Flag'">
                 <span
                   class="status"
-                  [ngClass]="t.flagged ? 'status--flag-high' : 'status--flag-normal'">
-                  {{ t.flagged ? 'High' : 'Normal' }}
+                  [ngClass]="{
+                    'status--flag-high': t.flag === 'High' || t.flag === 'Suspicious',
+                    'status--flag-normal': t.flag === 'Normal' || !t.flag
+                  }">
+                  {{ t.flag || 'Normal' }}
                 </span>
               </td>
             </tr>
