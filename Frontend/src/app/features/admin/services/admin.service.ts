@@ -108,9 +108,21 @@ export class AdminService {
    * Get all approved users (Active status only) with pagination
    */
   getAllUsers(pageNumber: number = 1, pageSize: number = 10): Observable<PaginatedUserResponse> {
-    return this.http.get<PaginatedUserResponse>(`${this.apiUrl}/approved-users`, {
-      params: { pageNumber: pageNumber.toString(), pageSize: pageSize.toString() }
-    }).pipe(catchError(this.handleError));
+    const url = `${this.apiUrl}/approved-users`;
+    const params = { page: pageNumber.toString(), pageSize: pageSize.toString() };
+    console.log('AdminService.getAllUsers - Full URL:', url, 'Params:', params);
+    console.log('AdminService.getAllUsers - Request URL will be:', `${url}?page=${pageNumber}&pageSize=${pageSize}`);
+    return this.http.get<PaginatedUserResponse>(url, { params })
+      .pipe(
+        map(response => {
+          console.log('AdminService.getAllUsers - Raw response:', response);
+          console.log('AdminService.getAllUsers - Items count:', response.items?.length);
+          console.log('AdminService.getAllUsers - Total count:', response.totalCount);
+          console.log('AdminService.getAllUsers - Page:', response.pageNumber, 'PageSize:', response.pageSize, 'TotalPages:', response.totalPages);
+          return response;
+        }),
+        catchError(this.handleError)
+      );
   }
 
   /**
@@ -138,17 +150,15 @@ export class AdminService {
   }
 
   /**
-   * Search approved users by query string
+   * Search approved users by query string with pagination
    */
-  searchApprovedUsers(query: string): Observable<PendingUserResponse[]> {
-    if (!query || query.trim() === '') {
-      // For empty query, get all users from first page and extract items
-      return this.getAllUsers(1, 10000).pipe(
-        map(response => response.items)
-      );
-    }
-    return this.http.get<PendingUserResponse[]>(`${this.apiUrl}/search-users`, {
-      params: { query: query.trim() }
+  searchApprovedUsers(query: string, pageNumber: number = 1, pageSize: number = 10): Observable<PaginatedUserResponse> {
+    return this.http.get<PaginatedUserResponse>(`${this.apiUrl}/search-users`, {
+      params: { 
+        query: query.trim() || '',
+        page: pageNumber.toString(),
+        pageSize: pageSize.toString()
+      }
     }).pipe(catchError(this.handleError));
   }
 

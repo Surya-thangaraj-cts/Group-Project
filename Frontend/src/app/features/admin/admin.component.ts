@@ -91,7 +91,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   users: User[] = [];         // existing = Active/Inactive
   pendingUsers: User[] = [];  // Pending only
 
-  // ----- Pagination -----
+  // ----- Pagination for Existing Users -----
   currentPage: number = 1;
   pageSize: number = 10;
   totalUsers: number = 0;
@@ -256,15 +256,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private loadPendingUsersFromApi(): void {
     this.adminService.getPendingUsers().subscribe({
-      next: (response) => {
-        console.log('Pending users API response:', response);
-        console.log('Response type:', typeof response);
-        console.log('Is array?', Array.isArray(response));
-        
-        // Handle response - check if it's an array or paginated response
-        const usersArray = Array.isArray(response) ? response : (response as any).items || [];
-        
-        this.pendingUsers = usersArray.map((u: any) => ({
+      next: (users) => {
+        this.pendingUsers = users.map(u => ({
           userId: u.userId,
           name: u.name,
           email: u.email,
@@ -285,10 +278,21 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
    */
   private loadExistingUsersFromApi(pageNumber?: number): void {
     const page = pageNumber || this.currentPage;
+    console.log('Loading existing users - requesting page:', page, 'pageSize:', this.pageSize);
     this.adminService.getAllUsers(page, this.pageSize).subscribe({
       next: (response: any) => {
+        console.log('Existing users API response:', response);
         // Handle both paginated response and direct array response
-        const items = response.items || response || [];
+        let items = response.items || response || [];
+        console.log('Items received from backend:', items.length);
+        
+        // Backend workaround: If backend returns more items than pageSize, slice it
+        if (items.length > this.pageSize) {
+          console.warn('Backend returned more items than pageSize. Slicing to pageSize.');
+          items = items.slice(0, this.pageSize);
+        }
+        
+        console.log('Items to map:', items.length);
         this.users = items.map((u: any) => ({
           userId: u.userId,
           name: u.name,
@@ -301,6 +305,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         this.currentPage = response.pageNumber || page;
         this.pageSize = response.pageSize || this.pageSize;
         this.totalPages = response.totalPages || Math.ceil(this.totalUsers / this.pageSize);
+        console.log('Loaded users:', this.users.length, 'Current page:', this.currentPage, 'Total pages:', this.totalPages);
       },
       error: (error) => {
         console.error('Failed to load approved users from API', error);
@@ -869,6 +874,11 @@ private dedupeUsers(arr: User[]): User[] {
   onPendingSearchChange(): void {
     const query = this.pendingSearchTerm.trim();
     
+    if (!query) {
+      this.loadPendingUsersFromApi();
+      return;
+    }
+
     this.adminService.searchPendingUsers(query).subscribe({
       next: (users) => {
         this.pendingUsers = users.map(u => ({
@@ -887,14 +897,20 @@ private dedupeUsers(arr: User[]): User[] {
     });
   }
 
-  /** Search existing users via API */
+  /** Search existing users via API with pagination */
   onExistingSearchChange(query?: string): void {
     // If query is provided (from child component), use it; otherwise use existingSearchTerm
     const searchQuery = query !== undefined ? query : this.existingSearchTerm.trim();
     
-    this.adminService.searchApprovedUsers(searchQuery).subscribe({
-      next: (usersArray) => {
-        this.users = usersArray.map(u => ({
+    // If query is empty, load regular paginated users instead of searching
+    if (!searchQuery) {
+      this.loadExistingUsersFromApi(1);
+      return;
+    }
+    
+    this.adminService.searchApprovedUsers(searchQuery, 1, this.pageSize).subscribe({
+      next: (response) => {
+        this.users = response.items.map(u => ({
           userId: u.userId,
           name: u.name,
           email: u.email,
@@ -904,8 +920,8 @@ private dedupeUsers(arr: User[]): User[] {
         }));
         // Reset pagination when searching
         this.currentPage = 1;
-        this.totalUsers = this.users.length;
-        this.totalPages = 1;
+        this.totalUsers = response.totalCount;
+        this.totalPages = response.totalPages;
       },
       error: (error) => {
         console.error('Failed to search approved users');
@@ -921,22 +937,28 @@ private dedupeUsers(arr: User[]): User[] {
   }
 
   // -------------------------------
-  //  Pagination methods
+  //  Pagination methods for Existing Users
   // -------------------------------
   goToPage(page: number): void {
+    console.log('goToPage called with page:', page, 'totalPages:', this.totalPages);
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
+      console.log('Calling loadExistingUsersFromApi for page:', page);
       this.loadExistingUsersFromApi(page);
+    } else {
+      console.log('Page out of range:', page);
     }
   }
 
   nextPage(): void {
+    console.log('nextPage called - currentPage:', this.currentPage, 'totalPages:', this.totalPages);
     if (this.currentPage < this.totalPages) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
   previousPage(): void {
+    console.log('previousPage called - currentPage:', this.currentPage);
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }
