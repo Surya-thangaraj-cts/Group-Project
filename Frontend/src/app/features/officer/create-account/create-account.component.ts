@@ -27,7 +27,7 @@ export class CreateAccountComponent {
   private router = inject(Router);
  
   createForm: FormGroup = this.fb.group({
-    accountId: ['', [Validators.required, Validators.pattern(/^ACC\d{4}$/)]],
+    accountId: ['', [Validators.required, Validators.pattern(/^ACC\d{4,}$/)]],  // ACC + 4 or more digits
     customerName: ['', [Validators.required]],
     customerId: ['', [Validators.required, Validators.minLength(7)]],
     accountType: ['SAVINGS' as AccountType, [Validators.required]],

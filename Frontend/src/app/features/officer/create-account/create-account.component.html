@@ -9,7 +9,7 @@
         <input type="text" formControlName="accountId" placeholder="e.g., ACC0001" />
         <div class="error" *ngIf="createForm.get('accountId')?.invalid && (createForm.get('accountId')?.touched || submitted)">
           <small *ngIf="createForm.get('accountId')?.errors?.['required']" class="err-text">Account ID is required!</small>
-          <small *ngIf="createForm.get('accountId')?.errors?.['pattern']" class="err-text">Account ID must match pattern ACC#### (e.g., ACC0001)!</small>
+          <small *ngIf="createForm.get('accountId')?.errors?.['pattern']" class="err-text">Account ID must start with ACC followed by at least 4 digits (e.g., ACC0001, ACC12345)!</small>
         </div>
       </label>
 
