@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
+import { ManagerNotificationService } from '../../services/manager-notification.service';
 import { ApprovalDto, ApprovalDetailsDto, PagedApprovals, PagedApprovalDetails } from '../../services/manager-dtos';
 
 @Component({
@@ -35,6 +36,8 @@ export class ApprovalsComponent implements OnInit {
   rejectedCount = 0;
 
 
+  private notifService = inject(ManagerNotificationService);
+
   constructor(
     private managerService: ManagerService,
     private route: ActivatedRoute
@@ -57,7 +60,7 @@ export class ApprovalsComponent implements OnInit {
     else if (this.activeTab === 'rejected') decision = 'Reject';
     this.managerService.getApprovalDetails(this.pageNumber, this.pageSize, decision)
       .subscribe((paged: PagedApprovalDetails) => {
-        this.approvalDetails = paged.items;
+        this.approvalDetails = paged.items || [];
         this.totalCount = paged.totalCount;
         this.totalPages = paged.totalPages;
         this.filteredItems = this.approvalDetails;
@@ -137,25 +140,37 @@ export class ApprovalsComponent implements OnInit {
     if (!this.approvalDecision || !this.selectedApproval) {
       return;
     }
+
+    const approvalId = this.selectedApproval.approvalId;
+
+    if (!approvalId) {
+      this.showAlert = true;
+      this.alertType = 'error';
+      this.alertMessage = 'Cannot process: approval ID is missing. Please refresh and try again.';
+      return;
+    }
+
     this.managerService.updateApprovalDecision(
-      Number(this.selectedApproval.approvalId),
+      approvalId,
       this.approvalDecision === 'Approved' ? 1 : 2,
       this.approvalComments
     )
       .subscribe({
         next: () => {
-          const message = this.approvalDecision === 'Approved' 
+          const isApproved = this.approvalDecision === 'Approved';
+          const message = isApproved 
             ? `✓ Successfully approved! Item moved to Approved list.`
             : `✓ Successfully rejected! Item moved to Rejected list.`;
           this.showSuccessAlert(message);
-          this.selectTab(this.approvalDecision === 'Approved' ? 'approved' : 'rejected');
+          this.notifService.refresh();
+          this.selectTab(isApproved ? 'approved' : 'rejected');
           this.loadApprovals();
           this.closeApprovalModal();
         },
         error: (err) => {
           this.showAlert = true;
           this.alertType = 'error';
-          this.alertMessage = err?.error?.error || 'Failed to update approval.';
+          this.alertMessage = err?.error?.error || err?.error?.message || err?.message || 'Failed to update approval.';
         }
       });
   }

@@ -1,22 +1,18 @@
 ﻿<nav class="navbar navbar-expand-lg fixed-top">
   <div class="container-fluid navbar-container">
-    <!-- Brand/Logo -->
     <a class="navbar-brand d-flex align-items-center gap-2" (click)="navigateToDashboard()" style="cursor: pointer;">
       <span class="logo-text d-none d-md-inline">MyBank</span>
     </a>
 
-    <!-- Navbar Toggler for Mobile -->
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <!-- Navbar Content -->
     <div class="collapse navbar-collapse" id="navbarNav">
-      <!-- Nav Items -->
       <div class="nav-items d-flex gap-3 ms-auto me-4 navbar-nav">
-        <button 
-          *ngFor="let item of navItems" 
+        <button
+          *ngFor="let item of navItems"
           class="btn btn-glass nav-button"
           [class.active]="activeNav === item.label"
           (click)="setActive(item)">
@@ -25,34 +21,35 @@
         </button>
       </div>
 
-      <!-- Notifications Bell -->
-      <div class="navbar-notifications d-flex align-items-center position-relative">
-        <button class="btn btn-glass rounded-circle p-2" (click)="toggleNotificationDropdown()" 
-          title="Notifications" style="width: 48px; height: 48px; font-size: 24px;">
-          <span>🔔</span>
-          <span *ngIf="unreadNotificationsCount > 0" class="badge badge-gradient position-absolute top-0 end-0 animate-pulse">
+      <div class="notification-bell-wrapper position-relative me-2">
+        <button
+          class="btn btn-light btn-circle notification-bell-btn"
+          style="width: 42px; height: 42px; padding: 0; position: relative;"
+          (click)="toggleNotificationDropdown()"
+          title="Notifications"
+          type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: #7c3aed;">
+            <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+          </svg>
+          <span *ngIf="unreadNotificationsCount > 0" class="badge badge-gradient animate-pulse"
+            style="position: absolute; top: 5px; right: 5px; font-size: 11px; padding: 2px 6px; min-width: 20px;">
             {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
           </span>
         </button>
 
-        <!-- Consolidated Notifications Component -->
-        <app-notifications 
-          *ngIf="showNotificationDropdown" 
-          (close)="closeNotificationDropdown()"
-          (unreadCountChanged)="unreadNotificationsCount = $event">
+        <app-notifications
+          *ngIf="showNotificationDropdown"
+          (close)="closeNotificationDropdown()">
         </app-notifications>
       </div>
 
-      <!-- Profile Section -->
       <div class="profile-section position-relative ms-3">
-        <button class="btn btn-glass rounded-circle p-2" (click)="toggleProfileDropdown()" 
+        <button class="btn btn-glass rounded-circle p-2" (click)="toggleProfileDropdown()"
           title="Profile" style="width: 60px; height: 60px; font-weight: 700;">
           <span class="initials">{{ managerInitials }}</span>
         </button>
 
-        <!-- Profile Dropdown -->
         <div *ngIf="showProfileDropdown" class="dropdown-menu show animate-slideDown p-0" style="right: 0; left: auto; width: 320px;">
-          <!-- Profile Header -->
           <div class="card-gradient-header p-3 d-flex gap-3 border-0">
             <div class="btn btn-glass rounded-circle p-2 flex-center flex-shrink-0" style="width: 50px; height: 50px; font-weight: 700;">
               {{ managerInitials }}
@@ -65,7 +62,6 @@
 
           <div class="dropdown-divider m-0"></div>
 
-          <!-- Dropdown Items -->
           <button class="dropdown-item" (click)="viewFullProfile()">
             <span class="item-icon">👤</span>
             <span>View Profile</span>

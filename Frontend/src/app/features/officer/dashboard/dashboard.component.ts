@@ -36,13 +36,11 @@ export class OfficerDashboardComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /** Recalculate the total pending requests count (accounts + update requests only) */
   private recalcPending(): void {
     this.pendingRequestsCount = this.pendingAccountsCount + this.pendingUpdateReqsCount;
   }
 
   private loadDashboardData(): void {
-    // Accounts — only ACTIVE ones count as "created"
     this.officerSvc.accounts$
       .pipe(takeUntil(this.destroy$))
       .subscribe(accounts => {
@@ -56,17 +54,18 @@ export class OfficerDashboardComponent implements OnInit, OnDestroy {
         this.recalcPending();
       });
 
-    // Pending update requests from approvals API
     this.officerSvc.updateRequests$
       .pipe(takeUntil(this.destroy$))
       .subscribe(requests => {
         this.pendingUpdateReqsCount = Array.isArray(requests)
-          ? requests.filter((r: any) => (r.status || '').toUpperCase() === 'PENDING').length
+          ? requests.filter((r: any) =>
+              (r.status || '').toUpperCase() === 'PENDING' &&
+              r.requestType === 'AccountUpdate'
+            ).length
           : 0;
         this.recalcPending();
       });
 
-    // All transactions
     this.officerSvc.transactions$
       .pipe(takeUntil(this.destroy$))
       .subscribe(transactions => {

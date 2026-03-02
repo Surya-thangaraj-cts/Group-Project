@@ -1,8 +1,7 @@
-/* You can add global styles to this file, and also import other style files */
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 @import './styles/buttons.css';
 
-/* ===== UNIFIED THEME COLORS (Landing Page Theme) ===== */
+/* Theme Colors */
 :root {
   /* Primary Colors - Purple Theme */
   --primary-300: #a78bfa;
@@ -53,6 +52,3 @@ body {
   background-color: var(--bg);
   color: var(--text);
 }
-
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

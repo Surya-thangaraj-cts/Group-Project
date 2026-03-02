@@ -34,7 +34,6 @@ export class OfficerService implements OnDestroy {
   transactions$ = this.transactionsSubject.asObservable();
   updateRequests$ = this.updateReqsSubject.asObservable();
   alert$ = this.alertSubject.asObservable();
-  /** Notifications shown in the bell icon — only officer's own actions + manager decisions */
   notifications$ = this.localNotificationsSubject.asObservable();
  
   readonly highValueThreshold = 100000;
@@ -52,51 +51,33 @@ export class OfficerService implements OnDestroy {
     this.pollSub?.unsubscribe();
   }
 
-  // ========== API Integration Methods ==========
-
-  /**
-   * Load accounts from API
-   */
   loadAccounts(): void {
-    console.log('Loading accounts from API...');
-    this.accountApi.getAccounts(1, 100).pipe( // Load all accounts regardless of status
+    this.accountApi.getAccounts(1, 100).pipe(
       map(apiAccounts => this.mapAccountsFromApi(apiAccounts)),
       catchError(error => {
-        console.error('Error loading accounts:', error);
         this.setError('Failed to connect to the server. Please check if the backend is running.');
         return of([]);
       })
     ).subscribe(accounts => {
-      console.log(`Loaded ${accounts.length} accounts successfully`);
       this.accountsSubject.next(accounts);
     });
   }
 
-  /**
-   * Load transactions from API
-   */
   loadTransactions(): void {
-    console.log('Loading transactions from API...');
     this.transactionApi.getTransactions(1, 100).pipe(
       map(pagedResult => this.mapTransactionsFromApi(pagedResult.items)),
       catchError(error => {
-        console.error('Error loading transactions:', error);
         this.setError('Failed to connect to the server. Please check if the backend is running.');
         return of([]);
       })
     ).subscribe(transactions => {
-      console.log(`Loaded ${transactions.length} transactions successfully`);
       this.transactionsSubject.next(transactions);
     });
   }
 
 
 
-  /**
-   * Load update requests from Approvals API (AccountUpdate + AccountCreation approvals)
-   */
   loadUpdateRequests(): void {
-    console.log('Loading update requests from Approvals API...');
     this.approvalApi.getApprovals(1, 100).pipe(
       map(result => {
         if (!result || !result.items) return [];
@@ -105,18 +86,13 @@ export class OfficerService implements OnDestroy {
           .map((a: any) => this.mapApprovalToUpdateRequest(a));
       }),
       catchError(error => {
-        console.error('Error loading update requests:', error);
         return of([]);
       })
     ).subscribe(requests => {
-      console.log(`Loaded ${requests.length} update requests`);
       this.updateReqsSubject.next(requests);
     });
   }
 
-  /**
-   * Map an Approval object to an UpdateRequest for the table
-   */
   private mapApprovalToUpdateRequest(approval: any): UpdateRequest {
     // Parse pendingChanges JSON if available
     let changeSummary = '';
@@ -158,42 +134,34 @@ export class OfficerService implements OnDestroy {
       customerId: customerId,
       accountType: accountType,
       changeSummary: changeSummary,
+      requestType: approval.type === 'AccountCreation' ? 'AccountCreation' : 'AccountUpdate',
       status: status,
       time: approval.approvalDate || new Date().toISOString()
     };
   }
 
-  /**
-   * Load local notifications from localStorage
-   */
   private loadLocalNotifications(): void {
     try {
       const stored = localStorage.getItem('officer_local_notifications');
       if (stored) {
         const localNotifications = (JSON.parse(stored) as Notification[])
-          .filter(n => !this.dismissedIds.has(n.id)); // Skip dismissed
+          .filter(n => !this.dismissedIds.has(n.id));
         this.localNotificationsSubject.next(localNotifications);
-        this.saveLocalNotifications(localNotifications); // Clean up storage
+        this.saveLocalNotifications(localNotifications);
       }
-    } catch (error) {
-      console.error('Error loading local notifications:', error);
+    } catch {
+      // ignore
     }
   }
 
-  /**
-   * Save local notifications to localStorage
-   */
   private saveLocalNotifications(notifications: Notification[]): void {
     try {
       localStorage.setItem('officer_local_notifications', JSON.stringify(notifications));
-    } catch (error) {
-      console.error('Error saving local notifications:', error);
+    } catch {
+      // ignore
     }
   }
 
-  /**
-   * Load dismissed notification IDs from localStorage
-   */
   private loadDismissedIds(): void {
     try {
       const stored = localStorage.getItem('officer_dismissed_notifications');
@@ -201,25 +169,19 @@ export class OfficerService implements OnDestroy {
         const ids = JSON.parse(stored) as string[];
         ids.forEach(id => this.dismissedIds.add(id));
       }
-    } catch (error) {
-      console.error('Error loading dismissed notifications:', error);
+    } catch {
+      // ignore
     }
   }
 
-  /**
-   * Save dismissed notification IDs to localStorage
-   */
   private saveDismissedIds(): void {
     try {
       localStorage.setItem('officer_dismissed_notifications', JSON.stringify([...this.dismissedIds]));
-    } catch (error) {
-      console.error('Error saving dismissed notifications:', error);
+    } catch {
+      // ignore
     }
   }
 
-  /**
-   * Add a local notification (for officer's own submissions)
-   */
   addLocalNotification(notification: Omit<Notification, 'id' | 'timestamp' | 'read'>): void {
     const newNotification: Notification = {
       ...notification,
@@ -235,10 +197,7 @@ export class OfficerService implements OnDestroy {
     this.saveLocalNotifications(updatedLocal);
   }
 
-  /**
-   * Update a local notification (for approval/rejection updates)
-   */
-  updateLocalNotification(approvalId: number, updates: Partial<Notification>): void {
+  updateLocalNotification(approvalId: string, updates: Partial<Notification>): void {
     const currentLocal = this.localNotificationsSubject.value;
     const updatedLocal = currentLocal.map(notification => {
       // Find notification by approvalId in meta
@@ -262,16 +221,8 @@ export class OfficerService implements OnDestroy {
     this.saveLocalNotifications(updatedLocal);
   }
 
-  // ========== Approval Polling ==========
-
-  /**
-   * Poll approvals every 30 seconds to detect manager decisions.
-   * When a local notification has a pending approvalId and the approval
-   * is now Approved/Rejected, update the notification with the decision & comments.
-   */
   private startApprovalPolling(): void {
-    // Poll every 30 seconds
-    this.pollSub = interval(30000).pipe(
+    this.pollSub = interval(10000).pipe(
       switchMap(() => {
         const localNotifications = this.localNotificationsSubject.value;
         // Find local notifications that have an approvalId and are still pending
@@ -298,9 +249,8 @@ export class OfficerService implements OnDestroy {
         if (!notification.meta?.approvalId) return notification;
         if (notification.meta?.decision && notification.meta.decision !== 'Pending') return notification;
 
-        // Find matching approval
         const approval = result.items.find(
-          (a: any) => a.approvalId === notification.meta!.approvalId
+          (a: any) => String(a.approvalId) === String(notification.meta!.approvalId)
         );
 
         if (!approval) return notification;
@@ -358,9 +308,6 @@ export class OfficerService implements OnDestroy {
     });
   }
 
-  /**
-   * Force-check approvals immediately (e.g. when user opens notifications)
-   */
   checkApprovalUpdates(): void {
     const localNotifications = this.localNotificationsSubject.value;
     const pendingApprovalIds = localNotifications
@@ -380,7 +327,7 @@ export class OfficerService implements OnDestroy {
         if (notification.meta?.decision && notification.meta.decision !== 'Pending') return notification;
 
         const approval = result.items.find(
-          (a: any) => a.approvalId === notification.meta!.approvalId
+          (a: any) => String(a.approvalId) === String(notification.meta!.approvalId)
         );
         if (!approval || approval.decision === 'Pending') return notification;
 
@@ -428,8 +375,6 @@ export class OfficerService implements OnDestroy {
       }
     });
   }
-
-  // ========== Mapping Functions ==========
 
   private mapAccountsFromApi(apiAccounts: any[]): Account[] {
     return apiAccounts.map(apiAcc => ({
@@ -482,9 +427,6 @@ export class OfficerService implements OnDestroy {
     return this.accountsSubject.value.find(a => a.accountId === accountId);
   }
  
-  /**
-   * Create account via API (requires approval)
-   */
   createAccount(input: { accountId: string; customerName: string; customerId: string; accountType: AccountType }): void {
     const dto: CreateAccountDto = {
       accountId: input.accountId,
@@ -517,14 +459,13 @@ export class OfficerService implements OnDestroy {
         this.loadUpdateRequests(); // Refresh update requests table
       }),
       catchError(error => {
-        console.error('Error creating account:', error);
         this.setError(error.message || 'Failed to create account');
         return of(null);
       })
     ).subscribe();
   }
  
-  // ---------- Update Requests ----------
+  // Update Requests
   submitUpdateRequest(newValues: Account): void {
     const existing = this.getAccountById(newValues.accountId);
     if (!existing) {
@@ -579,7 +520,6 @@ export class OfficerService implements OnDestroy {
         this.loadUpdateRequests();
       }),
       catchError(error => {
-        console.error('Error submitting update request:', error);
         this.setError(error.message || 'Failed to submit update request');
         return of(null);
       })
@@ -587,10 +527,6 @@ export class OfficerService implements OnDestroy {
   }
  
  
-  /**
-   * Record transaction via API
-   * High-value transactions (>100k) will automatically create approval
-   */
   recordTransaction(
     sourceAccountId: string,
     form: { type: TxnType; amount: number; toAccountId?: string; narrative?: string }
@@ -676,15 +612,14 @@ export class OfficerService implements OnDestroy {
         this.loadTransactions();
       }),
       catchError(error => {
-        console.error('Error recording transaction:', error);
         this.setError(error.message || 'Failed to record transaction');
         return of(null);
       })
     ).subscribe();
   }
 
-  // ---------- Notifications (API-based) ----------
- 
+  // Notifications (API-based)
+
   markAsRead(id: string): void {
     const localNotifications = this.localNotificationsSubject.value;
     const updated = localNotifications.map(n => 
@@ -731,7 +666,7 @@ export class OfficerService implements OnDestroy {
     this.saveLocalNotifications([]);
   }
 
-  // ---------- Officer Profile ----------
+  // Officer Profile
   getOfficerProfile(): Observable<OfficerProfile> {
     // Prefer authenticated user data; fallback to a minimal empty profile
     const user = this.auth.getCurrentUser();
@@ -790,9 +725,6 @@ function cryptoRandomId(): string {
   } catch {
     return Math.random().toString(16).slice(2) + Math.random().toString(16).slice(2);
   }
-}
-function round2(n: number): number {
-  return Math.round(n * 100) / 100;
 }
  
  

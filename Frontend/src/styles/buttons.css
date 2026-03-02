@@ -1,4 +1,4 @@
-/* Global Button Utilities - Landing Page Navbar Style */
+/* Global Button Utilities */
 
 /* Base Button Styles (Rectangle, consistent sizes) */
 .btn {
@@ -22,30 +22,47 @@
   outline-offset: 2px;
 }
 
-/* Primary Button - White bg, purple text (Navbar style) */
+/* Primary Button - Purple bg, white text (default app-wide style) */
 .btn-primary {
-  background: #ffffff;
-  color: #6d28d9;
-  border: 1px solid #ffffff;
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  color: #ffffff;
+  border: none;
   font-weight: 600;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #f3f4f6;
-  color: #5b21b6;
-  border-color: #e5e7eb;
   transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4);
 }
 
 .btn-primary:active:not(:disabled) {
-  background: #e5e7eb;
-  color: #4c1d95;
   transform: translateY(0);
 }
 
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Nav Button - White bg, purple text (Navbar / landing page style) */
+.btn-nav {
+  background: #ffffff;
+  color: #6d28d9;
+  border: 1px solid #ffffff;
+  font-weight: 600;
+}
+
+.btn-nav:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #5b21b6;
+  border-color: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.btn-nav:active:not(:disabled) {
+  background: #e5e7eb;
+  color: #4c1d95;
+  transform: translateY(0);
 }
 
 /* Secondary / Outline Button - Transparent bg, white border, white text */

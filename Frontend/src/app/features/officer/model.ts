@@ -32,6 +32,7 @@ export interface UpdateRequest {
   customerId: string;
   accountType: AccountType;
   changeSummary: string;
+  requestType: 'AccountCreation' | 'AccountUpdate';
   status: 'PENDING' | 'APPROVED' | 'REJECTED';
   time: string;
 }
@@ -41,16 +42,15 @@ export interface AlertMsg {
   message: string;
 }
  
-// ===== NEW: Notifications for Alerts tab =====
 export type NotificationType = 'UPDATE_REQUEST' | 'TRANSACTION' | 'TXN_FLAGGED' | 'ACCOUNT_CREATION';
- 
+
 export interface Notification {
   id: string;
   type: NotificationType;
   title?: string;
   message: string;
-  time?: string; // ISO (legacy support)
-  timestamp?: string; // ISO (new field)
+  time?: string;
+  timestamp?: string;
   read: boolean;
   severity?: 'info' | 'warning' | 'error' | 'success';
   meta?: {
@@ -64,7 +64,7 @@ export interface Notification {
     accountType?: string;
     changes?: string[];
     type?: string;
-    approvalId?: number;
+    approvalId?: string;
     status?: string;
     decision?: string;
     comments?: string;

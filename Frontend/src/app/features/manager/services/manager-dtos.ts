@@ -1,4 +1,3 @@
-// Dashboard overview DTO for manager dashboard
 export interface ManagerDashboardOverviewDto {
   totalTransactions: number;
   highValueCount: number;
@@ -14,7 +13,6 @@ export interface ManagerDashboardOverviewDto {
   monthlyActiveAccounts: number[];
   amountBuckets: AmountBucketDto[];
 }
-// DTO interfaces for ManagerService
 
 export interface PagedApprovals {
   items: ApprovalDto[];
@@ -25,10 +23,10 @@ export interface PagedApprovals {
 }
 
 export interface ApprovalDto {
-  approvalId: number;
+  approvalId: string;
   type: string;
-  accountId: number | null;
-  reviewerId: number;
+  accountId: string | null;
+  reviewerId: string;
   decision: string;
   pendingChanges: string;
   approvalDate: string;
@@ -44,11 +42,11 @@ export interface PagedApprovalDetails {
 }
 
 export interface ApprovalDetailsDto {
-  approvalId: number;
+  approvalId: string;
   type: string;
-  accountId: number | null;
+  accountId: string | null;
   customerName: string | null;
-  reviewerId: number;
+  reviewerId: string;
   decision: string;
   pendingChanges: string;
   approvalDate: string;
@@ -64,18 +62,18 @@ export interface PagedTransactions {
 }
 
 export interface TransactionDto {
-  transactionId: number;
-  accountId: number;
+  transactionId: string;
+  accountId: string;
   type: string;
   amount: number;
   date: string;
   status: number;
   flag: string;
-  toAccountId: number | null;
+  toAccountId: string | null;
 }
 
 export interface AccountDto {
-  accountId: number;
+  accountId: string;
   customerName: string;
   customerId: string;
   accountType: number;
@@ -99,12 +97,12 @@ export interface AmountBucketDto {
 }
 
 export interface NotificationDto {
-  notificationId: number;
-  userId: number;
+  notificationId: string;
+  userId: string;
   type: number;
   message: string;
   status: number;
   createdDate: string;
-  approvalId: number | null;
-  transactionId: number | null;
+  approvalId: string | null;
+  transactionId: string | null;
 }

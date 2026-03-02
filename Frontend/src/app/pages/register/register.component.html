@@ -1,6 +1,5 @@
 <div class="auth-wrapper min-vh-100 d-flex flex-column">
-  
-  <!-- Navbar (edge-to-edge) -->
+
   <nav class="navbar app-navbar">
     <div class="brand">
       <a routerLink="/home" class="d-flex align-items-center text-decoration-none">
@@ -17,11 +16,9 @@
     </div>
   </nav>
 
-  <!-- Main Container (you can keep Bootstrap here) -->
   <div class="container my-3 my-md-4 flex-grow-1 d-flex align-items-center">
     <div class="rounded-4 shadow-lg overflow-hidden w-100">
       <div class="row g-0">
-        <!-- LEFT: Image -->
         <div class="col-12 col-lg-6 auth-layout">
           <div class="hero-panel">
             <img src="../../assets/bg.png" alt="Banking" class="left-img">
@@ -33,7 +30,6 @@
           </div>
         </div>
 
-        <!-- RIGHT: Form -->
         <div class="col-12 col-lg-6 d-flex">
           <div class="auth-panel mx-auto w-100">
             <div class="title">
@@ -41,7 +37,6 @@
               <p class="text-muted">Fill in your details to create an account</p>
             </div>
 
-            <!-- Alert Message -->
             <div
               *ngIf="showMessage && message"
               [ngClass]="{
@@ -57,7 +52,6 @@
               </div>
             </div>
 
-            <!-- Register Form -->
             <form [formGroup]="signupForm" (ngSubmit)="signup()" novalidate>
               <div class="mb-3">
                 <label class="form-label">Name</label>

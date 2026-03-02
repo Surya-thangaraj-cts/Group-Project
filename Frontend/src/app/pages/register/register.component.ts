@@ -121,11 +121,8 @@ export class RegisterComponent implements OnInit {
       password: payload.password
     };
 
-    console.log('Sending registration request:', registerRequest);
-
     this.auth.register(registerRequest).subscribe({
       next: (response) => {
-        console.log('Registration successful:', response);
         this.displayMessage(response.message || 'Registration submitted ✅', 'success');
 
         setTimeout(() => {
@@ -148,15 +145,10 @@ export class RegisterComponent implements OnInit {
         }
 
         this.displayMessage(displayMsg, 'error');
-        console.error('Signup error:', error);
       }
     });
   }
 
-  /**
-   * Normalize role from form to API format
-   * API expects: "Admin", "Manager", "Officer"
-   */
   private normalizeRoleToApi(role: any): string {
     const r = (role ?? '').toString().toLowerCase();
     if (r === 'admin') return 'Admin';

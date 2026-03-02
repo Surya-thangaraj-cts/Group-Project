@@ -4,14 +4,14 @@ import { Observable } from 'rxjs';
 
 // In your Angular service or interface file
 export interface Transaction {
-  transactionId: number;  // Change from string to number
-  accountId: number;
+  transactionId: string;  // e.g. "TXN1234"
+  accountId: string;      // e.g. "ACC1234"
   type: string;
   amount: number;
   date: string | Date;
   status: number;
   flag: string;
-  toAccountId?: number;
+  toAccountId?: string;
 }
 
 export interface PagedResult<T> {
@@ -29,7 +29,7 @@ export class ManagerTransactionsService {
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('auth_token');
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`
     });
@@ -85,9 +85,7 @@ export class ManagerTransactionsService {
         link.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => {
-        console.error('CSV export failed:', err);
-      }
+      error: () => { }
     });
   }
 
@@ -113,9 +111,7 @@ export class ManagerTransactionsService {
         link.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => {
-        console.error('Excel export failed:', err);
-      }
+      error: () => { }
     });
   }
 }

@@ -17,7 +17,7 @@
 .table-header h2 {
   font-size: 28px;
   font-weight: 700;
-  background: linear-gradient(135deg, #0b3d91 0%, #082567 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -200,18 +200,18 @@
 }
 
 .status-approved {
-  background: rgba(76, 175, 80, 0.15);
-  color: #4caf50;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
 }
 
 .status-pending {
-  background: rgba(255, 193, 7, 0.15);
-  color: #ffc107;
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
 }
 
 .status-rejected {
-  background: rgba(244, 67, 54, 0.15);
-  color: #f44336;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
 }
 
 /* Pagination */

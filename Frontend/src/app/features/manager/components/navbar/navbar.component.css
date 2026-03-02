@@ -82,12 +82,6 @@
   align-items: center;
 }
 
-.profile-name {
-  color: #7c3aed;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
 .item-icon {
   font-size: 16px;
 }
@@ -191,14 +185,13 @@
 }
 
 .profile-name {
-  color: #7c3aed;
-  font-size: 16px;
+  color: white;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
 }
 
 .profile-designation {
-  color: #6d28d9;
+  color: rgba(255, 255, 255, 0.85);
   font-size: 13px;
   margin-bottom: 0;
 }
@@ -234,8 +227,27 @@
 }
 
 /* Notification Badge Styling */
-.navbar-notifications {
+.notification-bell-wrapper {
   position: relative;
+}
+
+.btn-circle {
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.notification-bell-btn {
+  background: #fff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.notification-bell-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .badge-gradient {
@@ -243,9 +255,9 @@
   color: white !important;
   font-size: 11px !important;
   font-weight: 700 !important;
-  padding: 4px 8px !important;
+  padding: 2px 6px !important;
   border-radius: 12px !important;
-  min-width: 24px !important;
+  min-width: 20px !important;
   text-align: center !important;
   border: 2px solid rgba(124, 58, 237, 1) !important;
   animation: pulse 2s ease-in-out infinite;
@@ -282,8 +294,6 @@
     font-size: 13px;
   }
 }
-
-
 
 
 

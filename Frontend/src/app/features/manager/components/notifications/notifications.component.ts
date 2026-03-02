@@ -1,7 +1,6 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ManagerService } from '../../services/manager.service';
-import { NotificationDto } from '../../services/manager-dtos';
+import { ManagerNotificationService, ManagerNotification } from '../../services/manager-notification.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -14,19 +13,29 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class NotificationsComponent implements OnInit, OnDestroy {
   @Output() close = new EventEmitter<void>();
-  @Output() unreadCountChanged = new EventEmitter<number>();
 
-  notifications: NotificationDto[] = [];
-  unreadCount: number = 0;
-  showDetailModal: boolean = false;
-  selectedNotification: NotificationDto | null = null;
-
+  private notifService = inject(ManagerNotificationService);
   private destroy$ = new Subject<void>();
 
-  constructor(private managerService: ManagerService) {}
+  notifications: ManagerNotification[] = [];
+  unreadCount = 0;
+  showDetailModal = false;
+  selectedNotification: ManagerNotification | null = null;
 
   ngOnInit(): void {
-    this.loadNotifications();
+    this.notifService.refresh();
+
+    this.notifService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(data => {
+        this.notifications = data;
+        this.unreadCount = data.filter(n => n.status === 0).length;
+
+        if (this.selectedNotification) {
+          const updated = data.find(n => n.notificationId === this.selectedNotification!.notificationId);
+          if (updated) this.selectedNotification = updated;
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -34,134 +43,123 @@ export class NotificationsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadNotifications(): void {
-    this.managerService.getNotifications()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.notifications = data.sort((a, b) => 
-            new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime()
-          );
-          // Count unread (status = 0 means unread)
-          this.unreadCount = this.notifications.filter(n => n.status === 0).length;
-          this.unreadCountChanged.emit(this.unreadCount);
-        },
-        error: (err) => {
-          console.error('Failed to load notifications:', err);
-        }
-      });
-  }
-
-  /**
-   * Opens detail modal with notification data
-   */
-  handleNotificationClick(notification: NotificationDto): void {
-    // Mark as read if unread (status = 0)
-    if (notification.status === 0) {
-      this.managerService.markNotificationAsRead(notification.notificationId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            notification.status = 1; // Update local state
-            this.unreadCount = this.notifications.filter(n => n.status === 0).length;
-            this.unreadCountChanged.emit(this.unreadCount);
-          },
-          error: (err) => {
-            console.error('Failed to mark notification as read:', err);
-          }
-        });
-    }
-    
+  handleNotificationClick(notification: ManagerNotification): void {
+    if (notification.status === 0) this.notifService.markAsRead(notification);
     this.selectedNotification = notification;
     this.showDetailModal = true;
   }
 
-  /**
-   * Closes the detail modal
-   */
+  onDelete(notification: ManagerNotification, event: Event): void {
+    event.stopPropagation();
+    this.notifService.deleteNotification(notification);
+  }
+
+  onDeleteFromModal(): void {
+    if (this.selectedNotification) {
+      this.notifService.deleteNotification(this.selectedNotification);
+      this.closeDetailModal();
+    }
+  }
+
+  onMarkAllRead(): void { this.notifService.markAllAsRead(); }
+  onClearAll(): void { this.notifService.clearAll(); }
+
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.selectedNotification = null;
   }
 
-  /**
-   * Deletes a notification
-   */
-  deleteNotification(notification: NotificationDto, event: Event): void {
-    event.stopPropagation();
-    this.managerService.deleteNotification(notification.notificationId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.notifications = this.notifications.filter(n => n.notificationId !== notification.notificationId);
-          this.unreadCount = this.notifications.filter(n => n.status === 0).length;
-          this.unreadCountChanged.emit(this.unreadCount);
-        },
-        error: (err) => {
-          console.error('Failed to delete notification:', err);
-        }
-      });
-  }
+  closeDropdown(): void { this.close.emit(); }
 
-  /**
-   * Gets notification type label
-   */
+  isUnread(n: ManagerNotification): boolean { return n.status === 0; }
+
   getNotificationTypeLabel(type: number): string {
-    // Type mapping: 0=SuspiciousActivity, 1=ApprovalReminder, etc.
     switch (type) {
-      case 0: return 'Suspicious Activity';
+      case 0: return 'Account Request';
       case 1: return 'Approval Reminder';
-      case 2: return 'System Alert';
+      case 2: return 'Transaction Alert';
+      case 3: return 'System Alert';
       default: return 'Notification';
     }
   }
 
-  /**
-   * Gets a short description for dropdown display
-   */
-  getNotificationDescription(notification: NotificationDto): string {
-    const typeLabel = this.getNotificationTypeLabel(notification.type);
-    if (notification.message.length > 50) {
-      return notification.message.substring(0, 50) + '...';
+  getNotificationIcon(n: ManagerNotification): string {
+    if (n._fromApproval) {
+      switch (n._approvalType) {
+        case 'AccountCreation': return '👤';
+        case 'AccountUpdate': return '📝';
+        case 'Transaction': return '💰';
+        default: return '📋';
+      }
     }
-    return notification.message;
+    switch (n.type) {
+      case 0: return '👤';
+      case 1: return '📋';
+      case 2: return '💰';
+      case 3: return '⚠️';
+      default: return '🔔';
+    }
   }
 
-  /**
-   * Formats currency for display
-   */
-  formatCurrency(amount: number): string {
-    return '₹' + amount.toLocaleString('en-IN');
+  getApprovalTypeLabel(n: ManagerNotification): string {
+    if (!n._fromApproval) return '';
+    switch (n._approvalType) {
+      case 'AccountCreation': return 'New Account Request';
+      case 'AccountUpdate': return 'Account Update Request';
+      case 'Transaction': return 'Transaction Approval';
+      default: return 'Pending Approval';
+    }
   }
 
-  /**
-   * Formats date for display
-   */
+  getNotificationDescription(n: ManagerNotification): string {
+    if (n.message && n.message.length > 60) return n.message.substring(0, 60) + '...';
+    return n.message || this.getNotificationTypeLabel(n.type);
+  }
+
+  getStatusLabel(status: number): string { return status === 0 ? 'Unread' : 'Read'; }
+
+  getPendingChangesEntries(n: ManagerNotification): { label: string; value: string }[] {
+    const raw = n._pendingChanges;
+    if (!raw) return [];
+
+    if (raw.includes(':') && !raw.startsWith('{')) {
+      return raw.split('\n').filter((l: string) => l.trim()).map((line: string) => {
+        const idx = line.indexOf(':');
+        return { label: line.substring(0, idx).trim(), value: line.substring(idx + 1).trim() };
+      });
+    }
+
+    try {
+      const obj = JSON.parse(raw);
+      return Object.entries(obj).map(([key, val]) => ({
+        label: key.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, s => s.toUpperCase()),
+        value: String(val)
+      }));
+    } catch {
+      return [{ label: 'Details', value: raw }];
+    }
+  }
+
   formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleString('en-IN', {
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
   }
 
-  /**
-   * Gets status label
-   */
-  getStatusLabel(status: number): string {
-    return status === 0 ? 'Unread' : 'Read';
-  }
-
-  /**
-   * Checks if notification is unread
-   */
-  isUnread(notification: NotificationDto): boolean {
-    return notification.status === 0;
-  }
-
-  closeDropdown(): void {
-    this.close.emit();
+  timeAgo(dateStr: string): string {
+    if (!dateStr) return '';
+    const then = new Date(dateStr).getTime();
+    if (isNaN(then)) return '';
+    const diffSec = Math.floor((Date.now() - then) / 1000);
+    if (diffSec < 60) return 'Just now';
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} min ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr} hr ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    if (diffDay === 1) return 'Yesterday';
+    if (diffDay < 7) return `${diffDay} days ago`;
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   }
 }

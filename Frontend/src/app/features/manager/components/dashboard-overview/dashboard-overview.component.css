@@ -7,43 +7,28 @@
 
 .welcome-card {
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  position: relative;
-  overflow: hidden;
-}
-
-.welcome-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
-  pointer-events: none;
-  border-radius: 20px;
+  border-radius: 16px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
 }
 
 .welcome-content {
-  position: relative;
-  z-index: 2;
+  color: white;
 }
 
 .welcome-title {
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 700;
   color: white;
-  margin: 0 0 15px 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.2px;
 }
 
 .welcome-message {
-  font-size: 18px;
+  font-size: 1rem;
   color: rgba(255, 255, 255, 0.95);
+  opacity: 0.95;
   margin: 0;
   line-height: 1.6;
 }

@@ -11,16 +11,11 @@ import {
   TransactionCreationResponse
 } from '../models/api.models';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class TransactionApiService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/transactions`;
 
-  /**
-   * Get all transactions with pagination and filtering
-   */
   getTransactions(
     pageNumber: number = 1,
     pageSize: number = 10,
@@ -46,53 +41,31 @@ export class TransactionApiService {
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Get transaction by ID
-   */
   getTransactionById(id: string): Observable<Transaction> {
     return this.http.get<Transaction>(`${this.apiUrl}/${id}`)
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Create new transaction
-   * High-value transactions (>100k) will automatically create approval
-   */
   createTransaction(dto: CreateTransactionDto): Observable<TransactionCreationResponse> {
     return this.http.post<TransactionCreationResponse>(this.apiUrl, dto)
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Unified error handler for API errors
-   */
   private handleError(error: any): Observable<never> {
-    console.error('Transaction API Error:', {
-      status: error.status,
-      statusText: error.statusText,
-      url: error.url,
-      error: error.error,
-      message: error.message
-    });
-    
     let errorMessage = 'An error occurred while retrieving transactions.';
-    
+
     if (error.status === 500) {
       errorMessage = 'Server error (500). Please check if the backend API is running correctly.';
     } else if (error.status === 0) {
-      errorMessage = 'Cannot connect to the backend API. Please check if the backend server is running.';
+      errorMessage = 'Cannot connect to the backend API.';
     } else if (error.error) {
-      if (typeof error.error === 'string') {
-        errorMessage = error.error;
-      } else if (error.error.error) {
-        errorMessage = error.error.error;
-      } else if (error.error.title) {
-        errorMessage = error.error.title;
-      }
+      if (typeof error.error === 'string') errorMessage = error.error;
+      else if (error.error.error) errorMessage = error.error.error;
+      else if (error.error.title) errorMessage = error.error.title;
     } else if (error.message) {
       errorMessage = error.message;
     }
-    
+
     return throwError(() => new Error(errorMessage));
   }
 }

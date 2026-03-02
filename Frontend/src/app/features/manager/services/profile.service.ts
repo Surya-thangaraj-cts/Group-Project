@@ -33,9 +33,6 @@ export class ProfileService {
     this.loadCurrentUserProfile();
   }
 
-  /**
-   * Load the current logged-in user's profile from AuthService
-   */
   private loadCurrentUserProfile(): void {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
@@ -46,9 +43,6 @@ export class ProfileService {
     }
   }
 
-  /**
-   * Map AuthService User to ManagerProfile
-   */
   private mapUserToProfile(user: User): ManagerProfile {
     const nameParts = user.name?.split(' ') || ['Unknown'];
     const firstName = nameParts[0];
@@ -75,9 +69,6 @@ export class ProfileService {
     };
   }
 
-  /**
-   * Get human-readable designation based on role
-   */
   private getRoleDesignation(role: string): string {
     const designations: { [key: string]: string } = {
       'bankManager': 'Manager',
@@ -87,9 +78,6 @@ export class ProfileService {
     return designations[role] || 'Staff Member';
   }
 
-  /**
-   * Get department based on role
-   */
   private getDepartmentByRole(role: string): string {
     const departments: { [key: string]: string } = {
       'bankManager': 'Operations',
@@ -141,10 +129,6 @@ export class ProfileService {
     return (profile.firstName.charAt(0) + profile.lastName.charAt(0)).toUpperCase();
   }
 
-  /**
-   * Refresh profile from the current logged-in user
-   * Call this after user login to update profile
-   */
   refreshProfile(): void {
     this.loadCurrentUserProfile();
   }

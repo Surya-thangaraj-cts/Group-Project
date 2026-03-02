@@ -25,21 +25,19 @@ export class ManagerService {
   constructor(private http: HttpClient) {}
 
   private getHeaders(): HttpHeaders {
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('auth_token');
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json'
     });
   }
 
-  // MANAGER DASHBOARD OVERVIEW
   getManagerDashboardOverview(): Observable<ManagerDashboardOverviewDto> {
     return this.http.get<ManagerDashboardOverviewDto>(`${this.apiUrl}/manager-dashboard/overview`, {
       headers: this.getHeaders()
     });
   }
 
-  // APPROVALS
   getApprovals(pageNumber: number = 1, pageSize: number = 10, decision?: string, type?: string): Observable<PagedApprovals> {
     let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
@@ -64,24 +62,23 @@ export class ManagerService {
     });
   }
 
-  getApprovalById(id: number): Observable<ApprovalDto> {
+  getApprovalById(id: string): Observable<ApprovalDto> {
     return this.http.get<ApprovalDto>(`${this.apiUrl}/approvals/${id}`, {
       headers: this.getHeaders()
     });
   }
 
-  updateApprovalDecision(id: number, decision: number, comments: string): Observable<ApprovalDto> {
+  updateApprovalDecision(id: string, decision: number, comments: string): Observable<ApprovalDto> {
     const body = { decision, comments };
     return this.http.put<ApprovalDto>(`${this.apiUrl}/approvals/${id}`, body, {
       headers: this.getHeaders()
     });
   }
 
-  // TRANSACTIONS
   getTransactions(
     pageNumber: number = 1,
     pageSize: number = 10,
-    accountId?: number,
+    accountId?: string,
     type?: string,
     status?: string,
     flag?: string,
@@ -103,13 +100,12 @@ export class ManagerService {
     });
   }
 
-  getTransactionById(id: number): Observable<TransactionDto> {
+  getTransactionById(id: string): Observable<TransactionDto> {
     return this.http.get<TransactionDto>(`${this.apiUrl}/transactions/${id}`, {
       headers: this.getHeaders()
     });
   }
 
-  // ACCOUNTS
   getAccounts(pageNumber: number = 1, pageSize: number = 10, status?: number): Observable<AccountDto[]> {
     let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
@@ -121,20 +117,18 @@ export class ManagerService {
     });
   }
 
-  getAccountById(id: number): Observable<AccountDto> {
+  getAccountById(id: string): Observable<AccountDto> {
     return this.http.get<AccountDto>(`${this.apiUrl}/accounts/${id}`, {
       headers: this.getHeaders()
     });
   }
 
-  // COMPLIANCE METRICS
   getComplianceMetrics(): Observable<ComplianceMetricsDto> {
     return this.http.get<ComplianceMetricsDto>(`${this.apiUrl}/manager/compliance-metrics`, {
       headers: this.getHeaders()
     });
   }
 
-  // NOTIFICATIONS
   getNotifications(type?: string, status?: string): Observable<NotificationDto[]> {
     let params = new HttpParams();
     if (type) params = params.set('type', type);
@@ -145,14 +139,14 @@ export class ManagerService {
     });
   }
 
-  markNotificationAsRead(id: number): Observable<NotificationDto> {
+  markNotificationAsRead(id: string): Observable<NotificationDto> {
     const body = { status: 1 };
     return this.http.put<NotificationDto>(`${this.apiUrl}/notifications/${id}/status`, body, {
       headers: this.getHeaders()
     });
   }
 
-  deleteNotification(id: number): Observable<void> {
+  deleteNotification(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/notifications/${id}`, {
       headers: this.getHeaders()
     });

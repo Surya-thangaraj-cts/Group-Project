@@ -1,7 +1,8 @@
-import { Component, OnInit, OnDestroy, Output, EventEmitter, Inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, Output, EventEmitter, Inject, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
+import { ManagerNotificationService } from '../../services/manager-notification.service';
 import { ProfileService } from '../../services/profile.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { NotificationsComponent } from '../notifications/notifications.component';
@@ -18,6 +19,9 @@ import { takeUntil } from 'rxjs/operators';
 export class NavbarComponent implements OnInit, OnDestroy {
   @Output() setActiveSection = new EventEmitter<string>();
 
+  private notifService = inject(ManagerNotificationService);
+  private destroy$ = new Subject<void>();
+
   navItems = [
     { label: 'Dashboard', icon: 'Dashboard', section: 'dashboard' },
     { label: 'Approvals', icon: 'Approvals', section: 'approvals' },
@@ -25,15 +29,14 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ];
 
   activeNav = 'Dashboard';
-  unreadNotificationsCount: number = 0;
-  private destroy$ = new Subject<void>();
-  showNotificationDropdown: boolean = false;
-  showProfileDropdown: boolean = false;
+  unreadNotificationsCount = 0;
+  showNotificationDropdown = false;
+  showProfileDropdown = false;
   
-  managerInitials: string = '';
-  managerName: string = '';
-  managerDesignation: string = '';
-  managerBranch: string = '';
+  managerInitials = '';
+  managerName = '';
+  managerDesignation = '';
+  managerBranch = '';
 
   constructor(
     private managerService: ManagerService,
@@ -43,28 +46,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.loadNotificationsCount();
+    this.notifService.unreadCount$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(count => {
+        this.unreadNotificationsCount = count;
+      });
+
     this.loadProfileData();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  loadNotificationsCount(): void {
-    this.managerService.getNotifications()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (notifications) => {
-          // Count unread (status = 0 means unread)
-          this.unreadNotificationsCount = notifications.filter(n => n.status === 0).length;
-        },
-        error: (err) => {
-          console.error('Failed to load notifications count:', err);
-          this.unreadNotificationsCount = 0;
-        }
-      });
   }
 
   loadProfileData(): void {

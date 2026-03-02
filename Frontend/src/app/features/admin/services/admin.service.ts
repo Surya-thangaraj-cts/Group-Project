@@ -1,12 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
-/**
- * Admin API DTOs matching ASP.NET Core backend
- */
 export interface PendingUserResponse {
   userId: string;
   name: string;
@@ -58,9 +55,6 @@ export interface DebugAuthResponse {
   claims: Array<{ type: string; value: string }>;
 }
 
-/**
- * Compliance Metrics Response from API
- */
 export interface ComplianceMetricsResponse {
   totalTransactions: number;
   highValueCount: number;
@@ -71,15 +65,6 @@ export interface ComplianceMetricsResponse {
   amountBuckets: Array<{ label: string; count: number }>;
 }
 
-/**
- * Admin Service
- * 
- * Handles admin operations:
- * - Fetch pending users
- * - Approve users
- * - Deactivate users
- * - Debug authentication
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -88,70 +73,37 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Debug authentication - Test if token is being sent correctly
-   */
   debugAuth(): Observable<DebugAuthResponse> {
     return this.http.get<DebugAuthResponse>(`${this.apiUrl}/debug-auth`)
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Get all pending users awaiting approval
-   */
   getPendingUsers(): Observable<PendingUserResponse[]> {
     return this.http.get<PendingUserResponse[]>(`${this.apiUrl}/pending-users`)
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Get all approved users (Active status only) with pagination
-   */
   getAllUsers(pageNumber: number = 1, pageSize: number = 10): Observable<PaginatedUserResponse> {
-    const url = `${this.apiUrl}/approved-users`;
-    const params = { page: pageNumber.toString(), pageSize: pageSize.toString() };
-    console.log('AdminService.getAllUsers - Full URL:', url, 'Params:', params);
-    console.log('AdminService.getAllUsers - Request URL will be:', `${url}?page=${pageNumber}&pageSize=${pageSize}`);
-    return this.http.get<PaginatedUserResponse>(url, { params })
-      .pipe(
-        map(response => {
-          console.log('AdminService.getAllUsers - Raw response:', response);
-          console.log('AdminService.getAllUsers - Items count:', response.items?.length);
-          console.log('AdminService.getAllUsers - Total count:', response.totalCount);
-          console.log('AdminService.getAllUsers - Page:', response.pageNumber, 'PageSize:', response.pageSize, 'TotalPages:', response.totalPages);
-          return response;
-        }),
-        catchError(this.handleError)
-      );
+    return this.http.get<PaginatedUserResponse>(`${this.apiUrl}/approved-users`, {
+      params: { page: pageNumber.toString(), pageSize: pageSize.toString() }
+    }).pipe(catchError(this.handleError));
   }
 
-  /**
-   * Approve a pending user (set status to Active)
-   */
   approveUser(userId: string): Observable<ApprovalResponse> {
     return this.http.put<ApprovalResponse>(`${this.apiUrl}/approve/${userId}`, {})
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Deactivate a user (set status to Inactive)
-   */
   deactivateUser(userId: string): Observable<ApprovalResponse> {
     return this.http.put<ApprovalResponse>(`${this.apiUrl}/deactivate/${userId}`, {})
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Edit an existing user's details
-   */
   editUser(userId: string, request: EditUserRequest): Observable<EditUserResponse> {
     return this.http.put<EditUserResponse>(`${this.apiUrl}/edit/${userId}`, request)
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Search approved users by query string with pagination
-   */
   searchApprovedUsers(query: string, pageNumber: number = 1, pageSize: number = 10): Observable<PaginatedUserResponse> {
     return this.http.get<PaginatedUserResponse>(`${this.apiUrl}/search-users`, {
       params: { 
@@ -162,9 +114,6 @@ export class AdminService {
     }).pipe(catchError(this.handleError));
   }
 
-  /**
-   * Search pending users by query string
-   */
   searchPendingUsers(query: string): Observable<PendingUserResponse[]> {
     if (!query || query.trim() === '') {
       return this.getPendingUsers();
@@ -174,22 +123,15 @@ export class AdminService {
     }).pipe(catchError(this.handleError));
   }
 
-  /**
-   * Get compliance metrics from API
-   */
   getComplianceMetrics(): Observable<ComplianceMetricsResponse> {
     return this.http.get<ComplianceMetricsResponse>(`${this.apiUrl}/compliance-metrics`)
       .pipe(catchError(this.handleError));
   }
 
-  /**
-   * Handle HTTP errors
-   */
   private handleError(error: any) {
     let errorMessage = 'An error occurred';
-    
+
     if (error.error instanceof ErrorEvent) {
-      // Client-side error
       errorMessage = error.error.message;
     } else if (error.status === 0) {
       errorMessage = 'Cannot connect to API. Please check if the API is running.';
@@ -207,7 +149,6 @@ export class AdminService {
       errorMessage = `Server error: ${error.status}`;
     }
     
-    console.error('Admin API Error:', error);
     return throwError(() => new Error(errorMessage));
   }
 }

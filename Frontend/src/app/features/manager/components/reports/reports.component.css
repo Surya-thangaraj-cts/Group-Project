@@ -100,7 +100,6 @@
   border: 2px solid #e5e7eb;
   border-radius: 10px;
   font-size: 14px;
-  font-family: 'Poppins', sans-serif;
   transition: all 0.3s ease;
   background: white;
 }
@@ -131,7 +130,6 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-family: 'Poppins', sans-serif;
 }
 
 .btn:disabled {

@@ -69,8 +69,7 @@ export class TransactionTableComponent implements OnInit, OnDestroy {
           this.totalPages = result.totalPages;
           this.loading = false;
         },
-        error: (err) => {
-          console.error('Error loading transactions:', err);
+        error: () => {
           this.loading = false;
         }
       });

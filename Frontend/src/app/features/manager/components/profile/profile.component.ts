@@ -36,9 +36,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         next: (profile: ManagerProfile) => {
           this.profile = profile;
         },
-        error: (err: any) => {
-          console.error('Profile loading error:', err);
-        }
+        error: () => { }
       });
   }
 

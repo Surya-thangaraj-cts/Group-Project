@@ -26,7 +26,6 @@ import { Router } from '@angular/router';
 type Role = 'Officer' | 'Manager' | 'Admin';
 type Status = 'Active' | 'Inactive' | 'Pending';
 
-/** UI User model */
 interface User {
   userId: string;
   name: string;
@@ -65,28 +64,23 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.editingUserId = undefined;
   }
 
-  // ----- Data -----
   users: User[] = [];         // existing = Active/Inactive
   pendingUsers: User[] = [];  // Pending only
 
-  // ----- Pagination for Existing Users -----
   currentPage: number = 1;
   pageSize: number = 10;
   totalUsers: number = 0;
   totalPages: number = 0;
 
-  // ----- Selection / editing -----
   selectedUser?: User;
   editingUserId?: string;
   editingUser?: User;  // for modal editing
   pendingSearchTerm: string = '';  // for pending users search
   existingSearchTerm: string = '';  // for existing users search
 
-  // ----- Forms -----
   editUserForm: FormGroup;
   myDetailsForm: FormGroup;
 
-  // ----- Compliance metrics -----
   compliance: ComplianceMetrics = {
     totalTransactions: 0,
     highValueCount: 0,
@@ -97,11 +91,9 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     amountBuckets: [],
   };
 
-  // ----- UI state -----
   pendingDisplayedColumns = ['userId', 'name', 'role', 'email', 'branch', 'actions'];
   usersDisplayedColumns   = ['userId', 'name', 'role', 'email', 'branch', 'status', 'actions'];
 
-  // ----- FULL-WIDTH CHART: DOM refs & sizing -----
   @ViewChild('chartWrap') chartWrap?: ElementRef<HTMLElement>;
   chartWidth = 1200;  // updated at runtime
   chartHeight = 220;
@@ -134,10 +126,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return height - (val / max) * height;
   }
 
-  // ====== Current user for Profile UI ======
   currentUser: User | null = null;
 
-  // ====== Profile sidebar & menu ======
   showProfile: boolean = false;
   isProfileMenuOpen: boolean = false;
 
@@ -164,23 +154,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // -------------------------------
-  //  Lifecycle
-  // -------------------------------
   ngOnInit(): void {
-    // Load existing users from API (paginated)
     this.loadExistingUsersFromApi();
-
-    // Load pending users from API
     this.loadPendingUsersFromApi();
-
-    // Load compliance metrics from API
     this.loadComplianceMetrics();
-
-    // Populate currentUser for Profile UI
     this.currentUser = this.tryGetCurrentUserFromAuth() ?? this.deriveCurrentUser();
 
-    // Populate myDetailsForm with current user data
     if (this.currentUser) {
       this.myDetailsForm.patchValue({
         name: this.currentUser.name,
@@ -192,7 +171,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Accurate sizing across layout/container changes
     setTimeout(() => {
       const el = this.chartWrap?.nativeElement;
       if (!el) return;
@@ -215,11 +193,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.resizeObs?.disconnect();
   }
 
-  // -------------------------------
-  //  Auth ↔ UI mapping & loading
-  // -------------------------------
-
-  /** Load pending users from API */
   private loadPendingUsersFromApi(): void {
     this.adminService.getPendingUsers().subscribe({
       next: (arr) => {
@@ -233,21 +206,16 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         }));
       },
       error: () => {
-        console.error('Failed to load pending users from API');
         alert('Failed to load pending users. Please refresh the page.');
       }
     });
   }
 
-  /** Load existing users (Active/Inactive) from API with pagination */
   private loadExistingUsersFromApi(pageNumber?: number): void {
     const page = pageNumber || this.currentPage;
-    console.log('Loading existing users - requesting page:', page, 'pageSize:', this.pageSize);
 
     this.adminService.getAllUsers(page, this.pageSize).subscribe({
       next: (paged) => {
-        console.log('Existing users API normalized page:', paged);
-
         const items = paged.items ?? [];
         this.users = items.map((u: any) => ({
           userId: u.userId,
@@ -262,22 +230,16 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         this.currentPage = paged.pageNumber;
         this.pageSize    = paged.pageSize;
         this.totalPages  = paged.totalPages;
-
-        console.log('Loaded users:', this.users.length, 'Current page:', this.currentPage, 'Total pages:', this.totalPages);
       },
       error: (error) => {
-        console.error('Failed to load approved users from API', error);
         alert('Failed to load users. Please refresh the page.');
       }
     });
   }
 
-  /** Load compliance metrics from API */
   private loadComplianceMetrics(): void {
-    console.log('Loading compliance metrics from API...');
     this.adminService.getComplianceMetrics().subscribe({
       next: (metrics) => {
-        console.log('Compliance metrics received from API:', metrics);
         this.compliance = {
           totalTransactions: metrics.totalTransactions,
           highValueCount: metrics.highValueCount,
@@ -287,21 +249,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           monthlySuspicious: metrics.monthlySuspicious,
           amountBuckets: metrics.amountBuckets
         };
-        console.log('Compliance metrics updated:', this.compliance);
       },
       error: (error) => {
-        console.error('Failed to load compliance metrics:', error);
-        console.error('Error details:', {
-          message: error.message,
-          status: error.status,
-          url: 'https://localhost:7021/api/admin/compliance-metrics'
-        });
         alert(`Failed to load compliance metrics: ${error.message}\n\nPlease ensure:\n1. Backend API is running on port 7021\n2. You are logged in as Admin\n3. JWT token is valid`);
       }
     });
   }
 
-  /** Attempt to read current/logged-in user from AuthService and map to UI model */
   private tryGetCurrentUserFromAuth(): User | null {
     try {
       const authUser = (this.auth as any).getCurrentUser?.();
@@ -319,17 +273,14 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  /** Fallback current user: prefer first active user */
   private deriveCurrentUser(): User | null {
     if (this.users?.length) {
       const u = this.users.find(x => x.status === 'Active') ?? this.users[0];
       return u ? { ...u } : null;
     }
-    // Return null if no users - will be populated when API loads
     return null;
   }
 
-  /** Map auth/backend roles to UI roles */
   private mapRole(r: string): Role {
     switch (r) {
       case 'admin':        return 'Admin';
@@ -344,7 +295,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  /** Map auth/backend statuses to UI statuses */
   private mapStatus(s: string): Status {
     switch ((s ?? '').toLowerCase()) {
       case 'active':   return 'Active';
@@ -354,22 +304,14 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  // -------------------------------
-  //  Selection & filters
-  // -------------------------------
-  /** Select a user to show in the details panel */
   selectUser(u: User): void {
     this.selectedUser = { ...u };
   }
 
-  /** Clear selection */
   clearSelected(): void {
     this.selectedUser = undefined;
   }
 
-  // -------------------------------
-  //  Chart helpers
-  // -------------------------------
   trendPath(width: number, height: number): string {
     const values = this.compliance.monthlyTxnVolume;
     if (!values.length) return '';
@@ -395,7 +337,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return 'M ' + pts.map(p => p.replace(',', ' ')).join(' L ');
   }
 
-  // Pie chart colors
   private pieColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'];
   getPieColors(): string[] { return this.pieColors; }
 
@@ -405,7 +346,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const total = buckets.reduce((sum, b) => sum + b.count, 0);
     const slices: any[] = [];
-    let currentAngle = -90; // Start at top
+    let currentAngle = -90;
 
     buckets.forEach((bucket, i) => {
       const percent = Math.round((bucket.count / total) * 100);
@@ -444,18 +385,13 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return slices;
   }
 
-  // -------------------------------
-  //  Pending approvals
-  // -------------------------------
   approveUser(u: User): void {
     this.adminService.approveUser(u.userId).subscribe({
       next: () => {
-        // Refresh both lists from API
         this.loadPendingUsersFromApi();
         this.loadExistingUsersFromApi();
       },
       error: (error) => {
-        console.error('Failed to approve user');
         alert(`Failed to approve user: ${error.message}`);
       }
     });
@@ -464,20 +400,15 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   rejectUser(u: User): void {
     this.adminService.deactivateUser(u.userId).subscribe({
       next: () => {
-        // Refresh both lists from API
         this.loadPendingUsersFromApi();
         this.loadExistingUsersFromApi();
       },
       error: (error) => {
-        console.error('Failed to reject user');
         alert(`Failed to reject user: ${error.message}`);
       }
     });
   }
 
-  // -------------------------------
-  //  Inline edit (parent panel)
-  // -------------------------------
   startEdit(u: User): void {
     this.editingUserId = u.userId;
     this.selectedUser = { ...u };
@@ -490,7 +421,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  /** Open modal for editing user */
   openEditModal(u: User): void {
     this.editingUser = { ...u };
     this.editUserForm.setValue({
@@ -502,16 +432,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  /** Save changes from modal and update user in list */
   saveEditedUser(): void {
-    if (!this.editingUser || this.editUserForm.invalid) {
-      console.warn('Cannot save: editingUser or form invalid', {
-        editingUser: this.editingUser,
-        formValid: this.editUserForm.valid,
-        formValue: this.editUserForm.value
-      });
-      return;
-    }
+    if (!this.editingUser || this.editUserForm.invalid) return;
 
     const formValue = this.editUserForm.value;
     const userId = this.editingUser.userId;
@@ -525,10 +447,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.adminService.editUser(userId, editRequest).subscribe({
       next: (response) => {
-        // Refresh the existing users table from API
         this.loadExistingUsersFromApi();
 
-        // Update selected user if it was this one
         if (this.selectedUser?.userId === userId && response?.user) {
           this.selectedUser = {
             userId: response.user.userId,
@@ -540,14 +460,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           };
         }
 
-        // Close modal
         this.editingUser = undefined;
         this.editUserForm.reset();
 
         alert('User updated successfully!');
       },
       error: (error) => {
-        console.error('Failed to update user');
         alert(`Failed to update user: ${error.message}`);
       }
     });
@@ -559,14 +477,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   updateUser(): void {
-    if (!this.selectedUser || this.editUserForm.invalid) {
-      console.warn('Cannot update: selectedUser or form invalid', {
-        selectedUser: this.selectedUser,
-        formValid: this.editUserForm.valid,
-        formValue: this.editUserForm.value
-      });
-      return;
-    }
+    if (!this.selectedUser || this.editUserForm.invalid) return;
 
     const formValue = this.editUserForm.value;
     const userId = this.selectedUser.userId;
@@ -580,10 +491,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.adminService.editUser(userId, editRequest).subscribe({
       next: (response) => {
-        // Refresh the existing users table from API
         this.loadExistingUsersFromApi();
 
-        // Update selected user
         if (response?.user) {
           this.selectedUser = {
             userId: response.user.userId,
@@ -599,24 +508,18 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         alert('User updated successfully!');
       },
       error: (error) => {
-        console.error('Failed to update user');
         alert(`Failed to update user: ${error.message}`);
       }
     });
   }
 
-  // -------------------------------
-  //  Existing Users table events
-  // -------------------------------
   onExistingUserUpdated(updated: ExistingUser): void {
     const u = updated as User;
 
-    // Check if status changed
     const originalUser = this.users.find(user => user.userId === u.userId);
     const statusChanged = originalUser && originalUser.status !== u.status;
 
     if (statusChanged) {
-      // Status change - use approve/deactivate endpoint
       if (u.status === 'Inactive') {
         this.adminService.deactivateUser(u.userId).subscribe({
           next: () => {
@@ -624,7 +527,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
             alert('User status updated to Inactive!');
           },
           error: (error) => {
-            console.error('Failed to deactivate user');
             alert(`Failed to update status: ${error.message}`);
             this.loadExistingUsersFromApi();
           }
@@ -637,7 +539,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
             alert('User status updated to Active!');
           },
           error: (error) => {
-            console.error('Failed to activate user');
             alert(`Failed to update status: ${error.message}`);
             this.loadExistingUsersFromApi();
           }
@@ -646,7 +547,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    // Regular field update (name, email, role, branch)
     this.adminService.editUser(u.userId, {
       name: u.name,
       email: u.email,
@@ -654,10 +554,8 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
       role: u.role
     }).subscribe({
       next: (response) => {
-        // Refresh the existing users table from API
         this.loadExistingUsersFromApi();
 
-        // Update selected user if it was this one
         if (this.selectedUser?.userId === u.userId && response?.user) {
           this.selectedUser = {
             userId: response.user.userId,
@@ -672,10 +570,7 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         alert('User updated successfully!');
       },
       error: (error) => {
-        console.error('Failed to update user in database');
         alert(`Failed to update user: ${error.message}`);
-
-        // Reload from API to revert any UI changes
         this.loadExistingUsersFromApi();
       }
     });
@@ -685,9 +580,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectUser(u as User);
   }
 
-  // -------------------------------
-  //  View toggles
-  // -------------------------------
   showExistingOnly = false;
 
   showOnlyExisting(): void {
@@ -704,9 +596,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showOnlyExisting();
   }
 
-  // -------------------------------
-  //  Profile / offcanvas / modals
-  // -------------------------------
   pendingSelectedUser?: User | null = null;
 
   openProceed(u: User): void {
@@ -721,7 +610,6 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     } catch {}
   }
 
-  /** Create avatar initials from full name (handles spaces/commas/hyphens). */
   initials(fullName: string): string {
     if (!fullName) return 'U';
     const cleaned = fullName.replace(/[,]+/g, ' ').trim();
@@ -742,15 +630,10 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       this.auth.signout();
       this.router.navigate(['/home']);
-    } catch (e) {
-      console.error('Sign out failed', e);
-    }
+    } catch { }
   }
 
-  goToSettings(): void {
-    console.log('Go to settings...');
-    // this.router.navigate(['/settings']);
-  }
+  goToSettings(): void { }
 
   submitDetailsChangeRequest(): void {
     if (this.myDetailsForm.invalid) {
@@ -759,18 +642,12 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const formValue = this.myDetailsForm.value;
-    console.log('Details change request submitted:', formValue);
-
-    // TODO: Implement API call to submit profile change request
     alert('Profile update request submitted successfully!');
 
     // Close the profile sidebar
     this.closeProfile();
   }
 
-  // -------------------------------
-  //  Tracking helpers
-  // -------------------------------
   trackByUserId(index: number, u: User): string {
     return (u.userId ?? '').toString();
   }
@@ -784,24 +661,19 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
     return Array.from(map.values());
   }
 
-  /** Existing users = everyone except Pending (Active + Inactive) */
   existingUsers(): User[] {
     return this.users.filter(u => u.status !== 'Pending');
   }
 
-  /** Filter pending users by search term */
   getFilteredPendingUsers(): User[] {
-    // Return in reverse order so newest requests appear at the top
     return this.pendingUsers.slice().reverse();
   }
 
-  /** Clear pending users search */
   clearPendingSearch(): void {
     this.pendingSearchTerm = '';
-    this.loadPendingUsersFromApi(); // Reload all pending users
+    this.loadPendingUsersFromApi();
   }
 
-  /** Search pending users via API */
   onPendingSearchChange(): void {
     const query = this.pendingSearchTerm.trim();
 
@@ -822,13 +694,11 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
         }));
       },
       error: (error) => {
-        console.error('Failed to search pending users');
         alert(`Search failed: ${error.message}`);
       }
     });
   }
 
-  /** Search existing users via API with pagination */
   onExistingSearchChange(query?: string): void {
     const searchQuery = query !== undefined ? query : this.existingSearchTerm.trim();
 
@@ -848,47 +718,35 @@ export class AdminComponent implements OnInit, AfterViewInit, OnDestroy {
           role: this.mapRole(u.role),
           status: this.mapStatus(u.status)
         }));
-        // Reset pagination when searching
         this.currentPage = 1;
         this.totalUsers  = paged.totalCount;
         this.totalPages  = paged.totalPages;
       },
       error: (error) => {
-        console.error('Failed to search approved users');
         alert(`Search failed: ${error.message}`);
       }
     });
   }
 
-  /** Clear existing users search */
   clearExistingSearch(): void {
     this.existingSearchTerm = '';
-    this.loadExistingUsersFromApi(); // Reload all existing users
+    this.loadExistingUsersFromApi();
   }
 
-  // -------------------------------
-  //  Pagination methods for Existing Users
-  // -------------------------------
   goToPage(page: number): void {
-    console.log('goToPage called with page:', page, 'totalPages:', this.totalPages);
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      console.log('Calling loadExistingUsersFromApi for page:', page);
       this.loadExistingUsersFromApi(page);
-    } else {
-      console.log('Page out of range:', page);
     }
   }
 
   nextPage(): void {
-    console.log('nextPage called - currentPage:', this.currentPage, 'totalPages:', this.totalPages);
     if (this.currentPage < this.totalPages) {
       this.goToPage(this.currentPage + 1);
     }
   }
 
   previousPage(): void {
-    console.log('previousPage called - currentPage:', this.currentPage);
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage - 1);
     }

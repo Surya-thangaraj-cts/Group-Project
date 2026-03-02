@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-// import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { DashboardOverviewComponent } from './components/dashboard-overview/dashboard-overview.component';
@@ -10,39 +9,23 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { ReportsComponent } from './components/reports/reports.component';
 import { ProfileService } from './services/profile.service';
 
-/**
- * Manager Dashboard Component
- * 
- * Central hub for bank managers to monitor transactions, approvals, and reports.
- * Provides navigation between dashboard, approvals, and reports views.
- * 
- * Features:
- * - Transaction oversight
- * - Pending approval management
- * - Financial reporting
- * - Notifications and alerts
- * - Profile management
- * 
- * @component
- * @standalone
- * @selector app-manager
- */
 @Component({
   selector: 'app-manager',
   standalone: true,
-  imports: [CommonModule,
+  imports: [
+    CommonModule,
     NavbarComponent,
     DashboardOverviewComponent,
     TransactionTableComponent,
     NotificationsComponent,
     ApprovalsComponent,
     ProfileComponent,
-    ReportsComponent],
+    ReportsComponent
+  ],
   templateUrl: './manager.component.html',
   styleUrl: './manager.component.css'
 })
 export class ManagerComponent implements OnInit {
-  title = 'manager';
   activeSection = 'dashboard';
   showProfileSidebar = false;
   managerProfile: any = {};
@@ -50,7 +33,6 @@ export class ManagerComponent implements OnInit {
   constructor(private profileService: ProfileService) {}
 
   ngOnInit(): void {
-    // Refresh profile to load current logged-in user data
     this.profileService.refreshProfile();
     this.fetchManagerProfile();
   }
@@ -77,4 +59,3 @@ export class ManagerComponent implements OnInit {
     this.showProfileSidebar = true;
   }
 }
-

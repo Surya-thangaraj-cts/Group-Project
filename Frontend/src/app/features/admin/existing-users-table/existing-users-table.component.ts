@@ -1,5 +1,3 @@
- 
-// existing-users-table.component.ts
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -24,13 +22,11 @@ export interface User {
   styleUrls: ['./existing-users-table.component.css']
 })
 export class ExistingUsersTableComponent implements OnInit {
-  /** Parent supplies the non-Pending rows */
   @Input() rows: User[] = [];
- 
-  /** Emit events back to parent */
+
   @Output() selectUser = new EventEmitter<User>();
   @Output() updateUser = new EventEmitter<User>();
-  @Output() searchChange = new EventEmitter<string>(); // New: emit search queries
+  @Output() searchChange = new EventEmitter<string>();
  
   editingUserId?: string;
   editForm!: FormGroup;
@@ -48,10 +44,8 @@ export class ExistingUsersTableComponent implements OnInit {
     });
   }
  
-  /** OPTIONAL: smoother DOM updates */
   trackByUserId = (_: number, u: User) => u.userId;
- 
-  /** Row click/select button can call this */
+
   onSelect(u: User): void {
     this.selectUser.emit(u);
   }
@@ -66,8 +60,7 @@ export class ExistingUsersTableComponent implements OnInit {
       status: u.status
     });
   }
- 
- 
+
   cancelEdit(): void {
     this.editingUserId = undefined;
     this.editForm.reset();
@@ -90,22 +83,16 @@ export class ExistingUsersTableComponent implements OnInit {
     this.cancelEdit();
   }
  
-  /** Get filtered rows based on search term */
   getFilteredRows(): User[] {
-    // Just return all rows - filtering is now done at parent level via API
     return this.rows;
   }
- 
-  /** Handle search input changes */
+
   onSearchInput(): void {
     this.searchChange.emit(this.searchTerm);
   }
 
-  /** Clear search */
   clearSearch(): void {
     this.searchTerm = '';
     this.searchChange.emit('');
   }
 }
- 
- 

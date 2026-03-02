@@ -7,31 +7,26 @@
   </div>
   
   <div class="charts-row">
-    <!-- Account Growth Line Chart -->
     <div class="chart-card">
       <h3>Account Growth Trends</h3>
       <svg [attr.width]="lineChartWidth" [attr.height]="lineChartHeight" [attr.viewBox]="`0 0 ${lineChartWidth} ${lineChartHeight}`" class="line-chart">
         <rect x="0" y="0" [attr.width]="lineChartWidth" [attr.height]="lineChartHeight" fill="transparent"></rect>
         <path [attr.d]="lineChartPath" stroke="#ffd166" stroke-width="3" fill="none" stroke-linejoin="round" stroke-linecap="round"></path>
-        <!-- Points -->
         <g *ngFor="let p of lineChartPoints">
           <circle [attr.cx]="p.x" [attr.cy]="p.y" r="4" fill="#ffd166"></circle>
           <text [attr.x]="p.x" [attr.y]="p.y - 8" text-anchor="middle" class="chart-label">{{ p.val }}</text>
         </g>
-        <!-- X labels -->
         <g *ngFor="let label of getLineChartLabels(); let i = index">
           <text [attr.x]="30 + i * ((lineChartWidth - 60) / (getLineChartLabels().length - 1 || 1))" [attr.y]="lineChartHeight - 6" text-anchor="middle" class="chart-x-label">{{ label }}</text>
         </g>
       </svg>
     </div>
 
-    <!-- Account Volume Bar Chart -->
     <div class="chart-card">
       <h3>Account Volume Analysis</h3>
       <svg [attr.width]="barChartWidth" [attr.height]="barChartHeight" [attr.viewBox]="`0 0 ${barChartWidth} ${barChartHeight}`" class="bar-chart">
         <rect x="0" y="0" [attr.width]="barChartWidth" [attr.height]="barChartHeight" fill="transparent"></rect>
         <g *ngFor="let t of accountGrowth; let i = index">
-          <!-- value label above bar -->
           <text
             [attr.x]="20 + i * ((barChartWidth - 40) / accountGrowth.length) + (((barChartWidth - 40) / accountGrowth.length) - 12) / 2"
             [attr.y]="(barChartHeight - 30) - ((t.newAccounts / getBarChartMax()) * (barChartHeight - 60)) - 8"

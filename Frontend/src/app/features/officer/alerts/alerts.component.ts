@@ -1,5 +1,3 @@
- 
-// src/app/features/officer/alerts/alerts.component.ts
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { OfficerService } from '../officer.service';
@@ -10,7 +8,6 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
  
 type ReadFilter = 'ALL' | 'UNREAD' | 'READ';
-// Removed 'TXN_FLAGGED' from the type filter options
 type TypeFilter = 'ALL' | 'UPDATE_REQUEST' | 'TRANSACTION';
  
 @Component({
@@ -23,16 +20,13 @@ type TypeFilter = 'ALL' | 'UPDATE_REQUEST' | 'TRANSACTION';
 export class AlertsComponent {
   private officerSvc = inject(OfficerService);
  
-  // Streams
   notifications$ = this.officerSvc.notifications$;
- 
-  // Filters
+
   readFilter: ReadFilter = 'ALL';
   typeFilter: TypeFilter = 'ALL';
   private readFilter$ = new BehaviorSubject<ReadFilter>('ALL');
   private typeFilter$ = new BehaviorSubject<TypeFilter>('ALL');
  
-  // Search
   searchTerm = '';
   private searchTerm$ = new BehaviorSubject<string>('');
  
@@ -50,7 +44,6 @@ export class AlertsComponent {
     this.pageIndex$.next(1);
   }
  
-  // When typing: if user clears the field, reset search immediately
   onSearchChange(val: string) {
     this.searchTerm = val ?? '';
     if ((this.searchTerm || '').trim() === '') {
@@ -59,7 +52,6 @@ export class AlertsComponent {
     }
   }
  
-  // Explicit search by button or Enter
   onSearchSubmit() {
     const val = (this.searchTerm || '').trim();
     this.searchTerm$.next(val);
@@ -72,9 +64,8 @@ export class AlertsComponent {
     this.pageIndex$.next(1);
   }
  
-  // Pagination
   pageSizeOptions = [5, 10, 20];
-  private pageIndex$ = new BehaviorSubject<number>(1); // 1-based
+  private pageIndex$ = new BehaviorSubject<number>(1);
   private pageSize$ = new BehaviorSubject<number>(10);
  
   onPageSizeChange(ev: Event) {
@@ -86,7 +77,6 @@ export class AlertsComponent {
   prevPage() { this.pageIndex$.next(Math.max(1, this.pageIndex$.getValue() - 1)); }
   nextPage() { this.pageIndex$.next(this.pageIndex$.getValue() + 1); }
  
-  // View model
   vm$: Observable<{
     total: number;
     totalPages: number;
@@ -106,23 +96,15 @@ export class AlertsComponent {
   ]).pipe(
     map(([list, rFilter, tFilter, search, pageIndex, pageSize]) => {
       const data = Array.isArray(list) ? [...list] : [];
- 
-      // latest first
       data.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
- 
-      // Normalizer: handle numbers, spaces, hyphens
+
       const norm = (s: unknown) => String(s ?? '').replace(/[\s-]/g, '').toLowerCase();
       const q = norm(search);
  
       const filtered = data.filter(n => {
-        // Remove Manual Flag from filtering: the UI doesn't expose it anymore.
-        // If a notification with type 'TXN_FLAGGED' exists, it will only show when Type = ALL.
         if (rFilter === 'UNREAD' && n.read) return false;
         if (rFilter === 'READ' && !n.read) return false;
- 
-        if (tFilter !== 'ALL') {
-          if (n.type !== tFilter) return false;
-        }
+        if (tFilter !== 'ALL' && n.type !== tFilter) return false;
  
         if (q) {
           const acct = norm(n.meta?.accountId);

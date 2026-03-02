@@ -39,7 +39,6 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
         this.unreadCount = this.notifications.filter(n => !n.read).length;
       });
 
-    // Check for approval updates whenever the dropdown opens
     this.officerSvc.checkApprovalUpdates();
   }
 
@@ -48,9 +47,6 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Opens detail modal with relevant data
-   */
   handleNotificationClick(notification: Notification): void {
     this.officerSvc.markAsRead(notification.id);
     this.selectedNotification = notification;
@@ -108,33 +104,21 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
     this.showDetailModal = true;
   }
 
-  /**
-   * Closes the detail modal
-   */
   closeDetailModal(): void {
     this.showDetailModal = false;
     this.selectedNotification = null;
     this.detailData = {};
   }
 
-  /**
-   * Closes the dropdown
-   */
   closeDropdown(): void {
     this.close.emit();
   }
 
-  /**
-   * Delete a single notification
-   */
   onDelete(id: string, event: Event): void {
     event.stopPropagation();
     this.officerSvc.deleteNotification(id);
   }
 
-  /**
-   * Delete the notification currently open in the modal
-   */
   onDeleteFromModal(): void {
     if (this.selectedNotification) {
       this.officerSvc.deleteNotification(this.selectedNotification.id);
@@ -142,25 +126,15 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Clear all notifications
-   */
   onClearAll(): void {
     this.officerSvc.clearAllNotifications();
   }
 
-  /**
-   * Mark all notifications as read
-   */
   onMarkAllRead(): void {
     this.officerSvc.markAllAsRead();
   }
 
-  /**
-   * Gets a short description for dropdown display
-   */
   getNotificationDescription(notification: Notification): string {
-    // Check if this is an approval/rejection notification
     if (notification.meta?.decision) {
       const decision = notification.meta.decision.toLowerCase();
       if (decision === 'approved') {
@@ -182,7 +156,6 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Default descriptions for pending requests
     if (notification.type === 'ACCOUNT_CREATION') {
       return 'Account creation request submitted';
     } else if (notification.type === 'UPDATE_REQUEST') {
@@ -193,9 +166,6 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
     return notification.title || 'Notification';
   }
 
-  /**
-   * Format currency
-   */
   formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -203,9 +173,6 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
     }).format(amount);
   }
 
-  /**
-   * Format date
-   */
   formatDate(date: string | Date | undefined): string {
     if (!date) return 'N/A';
     return new Date(date).toLocaleString('en-IN', {
@@ -217,9 +184,6 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Returns a human-friendly relative time string (e.g. "Just now", "5 min ago")
-   */
   timeAgo(dateStr: string | Date | undefined): string {
     if (!dateStr) return '';
     const now = Date.now();
@@ -235,15 +199,11 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
     const diffDay = Math.floor(diffHr / 24);
     if (diffDay === 1) return 'Yesterday';
     if (diffDay < 7) return `${diffDay} days ago`;
-    // Older than a week — show the actual date
     return new Date(dateStr).toLocaleDateString('en-IN', {
       day: 'numeric', month: 'short', year: 'numeric'
     });
   }
 
-  /**
-   * Get status class based on notification type and decision
-   */
   getStatusClass(type: string, meta?: any): string {
     if (meta?.decision === 'Approved') return 'status-approved';
     if (meta?.decision === 'Rejected') return 'status-rejected';

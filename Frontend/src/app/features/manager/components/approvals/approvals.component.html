@@ -1,5 +1,4 @@
 <div class="approvals-container">
-  <!-- Success/Error Alert -->
   <div class="alert-container" *ngIf="showAlert" [ngClass]="'alert-' + alertType">
     <div class="alert-content">
       <span class="alert-message">{{ alertMessage }}</span>
@@ -7,7 +6,6 @@
     </div>
   </div>
 
-  <!-- Tab Navigation -->
   <div class="tabs-container">
     <button 
       class="tab-button"
@@ -30,16 +28,8 @@
       Rejected
       <span class="tab-count">{{ rejectedCount }}</span>
     </button>
-    <!-- High-Value tab removed -->
   </div>
 
-  <!-- Pending Tab Filters removed: server-side filtering only -->
-
-  <!-- Approved Tab Filters removed: server-side filtering only -->
-
-  <!-- Rejected Tab Filters removed: server-side filtering only -->
-
-  <!-- Filters and Search -->
   <div class="filters-container">
     <div class="search-box">
       <input 
@@ -52,7 +42,6 @@
     </div>
   </div>
 
-  <!-- Approval Items Table -->
   <div class="approvals-table-wrapper" *ngIf="filteredItems.length > 0; else noApprovals">
     <table class="approvals-table">
       <thead>
@@ -83,9 +72,6 @@
         </tr>
       </tbody>
     </table>
-
-    <!-- All other tables removed: only show main approvals table above -->
-              <!-- Removed invalid/duplicate rows and references to approvalType, approval.changeId -->
   </div>
 
   <ng-template #noApprovals>
@@ -95,7 +81,6 @@
     </div>
   </ng-template>
 
-  <!-- Approval Modal -->
   <div class="modal-overlay" *ngIf="showApprovalModal" (click)="closeApprovalModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -103,7 +88,6 @@
         <button class="btn-close" (click)="closeApprovalModal()">×</button>
       </div>
 
-      <!-- Transaction approval modal -->
       <div *ngIf="selectedApproval" class="modal-body">
         <div class="transaction-details-section">
           <h4>Approval Details</h4>

@@ -43,19 +43,15 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
         this.managerName = `${profile.firstName} ${profile.lastName}`;
       });
 
-    // Fetch manager dashboard overview from backend
     this.managerService.getManagerDashboardOverview()
       .pipe(takeUntil(this.destroy$))
       .subscribe((overview) => {
-        console.log('Manager Dashboard Overview from backend:', overview);
         this.dashboardOverview = overview;
-        // Use pendingApprovalsCount from overview (no separate API call needed)
         this.pendingApprovalsCount = overview.pendingApprovalsCount;
         this.monthlyLabels = overview.monthlyLabels;
         this.monthlyTxnVolume = overview.monthlyTxnVolume;
         this.monthlySuspicious = overview.monthlySuspicious;
         this.amountBuckets = overview.amountBuckets;
-        // Build account growth array for chart
         this.accountGrowth = overview.monthlyLabels.map((label: string, idx: number) => ({
           month: label,
           newAccounts: overview.monthlyNewAccounts[idx],
@@ -89,7 +85,6 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
 
     this.lineChartPoints = points;
 
-    // build svg path
     let d = '';
     points.forEach((p, i) => {
       d += (i === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`);
@@ -97,7 +92,6 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
     this.lineChartPath = d;
   }
 
-  // Helpers for template bindings
   getLineChartLabels(): string[] {
     return this.monthlyLabels;
   }

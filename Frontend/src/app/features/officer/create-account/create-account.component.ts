@@ -27,7 +27,7 @@ export class CreateAccountComponent {
   private router = inject(Router);
  
   createForm: FormGroup = this.fb.group({
-    accountId: ['', [Validators.required, Validators.pattern(/^ACC\d{4,}$/)]],  // ACC + 4 or more digits
+    accountId: ['', [Validators.required, Validators.pattern(/^ACC\d{4,}$/)]],
     customerName: ['', [Validators.required]],
     customerId: ['', [Validators.required, Validators.minLength(7)]],
     accountType: ['SAVINGS' as AccountType, [Validators.required]],
@@ -35,10 +35,8 @@ export class CreateAccountComponent {
  
   submitted = false;
  
-  // Source stream alias
   accounts$ = this.officerSvc.accounts$;
- 
- 
+
   statusFilter: StatusFilter = 'ALL';
   private statusFilter$ = new BehaviorSubject<StatusFilter>('ALL');
  
@@ -55,7 +53,6 @@ export class CreateAccountComponent {
   onSearchChange(val: string) {
     this.searchTerm = val ?? '';
     if ((this.searchTerm || '').trim() === '') {
-      // auto reset when cleared
       this.searchTerm$.next('');
       this.pageIndex$.next(1);
     }
@@ -73,12 +70,10 @@ export class CreateAccountComponent {
     this.pageIndex$.next(1);
   }
  
-  // -------- Pagination state --------
   pageSizeOptions = [5, 10, 20];
-  private pageIndex$ = new BehaviorSubject<number>(1);   // 1-based index
-  private pageSize$ = new BehaviorSubject<number>(10);   // ideal default rows
- 
-  // ViewModel stream with filter + pagination
+  private pageIndex$ = new BehaviorSubject<number>(1);
+  private pageSize$ = new BehaviorSubject<number>(10);
+
   vm$: Observable<{
     total: number;
     totalPages: number;
@@ -92,7 +87,6 @@ export class CreateAccountComponent {
     map(([accounts, sFilter, search, pageIndex, pageSize]) => {
       const list: any[] = Array.isArray(accounts) ? [...accounts] : [];
  
-      // Normalize search (accountId, customerName, customerId)
       const norm = (v: unknown) => String(v ?? '').toLowerCase().trim();
       const q = norm(search);
  
@@ -110,7 +104,6 @@ export class CreateAccountComponent {
         return true;
       });
  
-      // Sort: latest opened first
       filtered.sort((a, b) => new Date(b.openedAt).getTime() - new Date(a.openedAt).getTime());
  
       const total = filtered.length;
@@ -127,7 +120,6 @@ export class CreateAccountComponent {
     })
   );
  
-  // -------- Form helpers --------
   defaultCreateForm() {
     return {
       accountId: '',
@@ -159,7 +151,6 @@ export class CreateAccountComponent {
     this.router.navigate(['/officer/update'], { queryParams: { accountId } });
   }
  
-  // -------- Pagination handlers --------
   setPage(page: number): void {
     this.pageIndex$.next(page);
   }
@@ -179,9 +170,7 @@ export class CreateAccountComponent {
     this.pageIndex$.next(1);
   }
  
-  // TrackBy for performance
   trackByAccountId(index: number, a: any) {
     return a?.accountId ?? index;
   }
 }
- 

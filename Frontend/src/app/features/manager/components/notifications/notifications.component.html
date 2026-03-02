@@ -1,67 +1,56 @@
 <div class="notifications-dropdown">
-  <!-- Dropdown Header -->
   <div class="dropdown-header">
     <h3 class="dropdown-title">Notifications</h3>
-    <span class="unread-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
     <button class="close-btn" (click)="closeDropdown()" title="Close">×</button>
   </div>
 
-  <!-- Notifications List -->
   <div class="notifications-list">
     <div *ngIf="notifications.length === 0" class="no-notifications">
       <span class="empty-icon">🔔</span>
       <p>No notifications</p>
     </div>
 
-    <div 
-      *ngFor="let notification of notifications" 
+    <div
+      *ngFor="let notification of notifications"
       class="notification-item"
-      [class.unread]="isUnread(notification)"
-      (click)="handleNotificationClick(notification)">
-      
-      <!-- Notification Icon -->
+      [class.unread]="isUnread(notification)">
+
       <div class="notification-icon" [ngClass]="'type-' + notification.type">
-        <span *ngIf="notification.type === 1">✓</span>
-        <span *ngIf="notification.type === 0">⚠</span>
-        <span *ngIf="notification.type === 2">ℹ</span>
+        <span>{{ getNotificationIcon(notification) }}</span>
       </div>
 
-      <!-- Notification Content -->
-      <div class="notification-content">
-        <p class="notification-type">{{ getNotificationTypeLabel(notification.type) }}</p>
+      <div class="notification-content" (click)="handleNotificationClick(notification)">
+        <p class="notification-type">
+          {{ notification._fromApproval ? getApprovalTypeLabel(notification) : getNotificationTypeLabel(notification.type) }}
+        </p>
         <p class="notification-description">{{ getNotificationDescription(notification) }}</p>
-        <p class="notification-time">{{ formatDate(notification.createdDate) }}</p>
+        <p class="notification-time" [title]="formatDate(notification.createdDate)">{{ timeAgo(notification.createdDate) }}</p>
       </div>
 
-      <!-- Delete Button -->
-      <button class="delete-btn" (click)="deleteNotification(notification, $event)" title="Delete">🗑</button>
-
-      <!-- Unread Indicator -->
+      <button class="delete-btn" (click)="onDelete(notification, $event)" title="Delete notification">×</button>
       <div class="unread-indicator" *ngIf="isUnread(notification)"></div>
     </div>
   </div>
 
-  <!-- Dropdown Footer -->
-  <div class="dropdown-footer">
-    <p class="scroll-indicator" *ngIf="notifications.length > 5">↓ Scroll for more</p>
+  <div class="dropdown-footer" *ngIf="notifications.length > 0">
+    <button class="footer-btn" (click)="onMarkAllRead()" title="Mark all as read">✓ Mark all read</button>
+    <button class="footer-btn danger" (click)="onClearAll()" title="Delete all notifications">✕ Clear all</button>
   </div>
 </div>
 
-<!-- NOTIFICATION DETAIL MODAL -->
 <div class="notification-modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
   <div class="notification-modal" (click)="$event.stopPropagation()">
-    <!-- Modal Header -->
     <div class="modal-header">
       <h2 class="modal-title">Notification Details</h2>
       <button class="modal-close-btn" (click)="closeDetailModal()" title="Close">×</button>
     </div>
 
-    <!-- Modal Content -->
     <div class="modal-content" *ngIf="selectedNotification">
       <div class="detail-section">
         <div class="detail-header">
-          <h3>{{ getNotificationTypeLabel(selectedNotification.type) }}</h3>
-          <span class="detail-type-badge" [ngClass]="'type-' + selectedNotification.type">
+          <h3>{{ selectedNotification._fromApproval ? getApprovalTypeLabel(selectedNotification) : getNotificationTypeLabel(selectedNotification.type) }}</h3>
+          <span class="detail-type-badge"
+                [ngClass]="isUnread(selectedNotification) ? 'status-unread' : 'status-read'">
             {{ getStatusLabel(selectedNotification.status) }}
           </span>
         </div>
@@ -77,7 +66,7 @@
           </div>
           <div class="detail-item">
             <label>Type</label>
-            <span class="detail-value">{{ getNotificationTypeLabel(selectedNotification.type) }}</span>
+            <span class="detail-value">{{ selectedNotification._fromApproval ? getApprovalTypeLabel(selectedNotification) : getNotificationTypeLabel(selectedNotification.type) }}</span>
           </div>
           <div class="detail-item">
             <label>Created Date</label>
@@ -85,25 +74,43 @@
           </div>
           <div class="detail-item">
             <label>Status</label>
-            <span class="detail-value" [ngClass]="isUnread(selectedNotification) ? 'status-unread' : 'status-read'">
+            <span class="detail-value"
+                  [ngClass]="isUnread(selectedNotification) ? 'status-unread' : 'status-read'">
               {{ getStatusLabel(selectedNotification.status) }}
             </span>
           </div>
           <div class="detail-item" *ngIf="selectedNotification.approvalId">
-            <label>Related Approval ID</label>
+            <label>Approval ID</label>
             <span class="detail-value">{{ selectedNotification.approvalId }}</span>
           </div>
           <div class="detail-item" *ngIf="selectedNotification.transactionId">
-            <label>Related Transaction ID</label>
+            <label>Transaction ID</label>
             <span class="detail-value">{{ selectedNotification.transactionId }}</span>
+          </div>
+          <div class="detail-item" *ngIf="selectedNotification._customerName">
+            <label>Customer Name</label>
+            <span class="detail-value">{{ selectedNotification._customerName }}</span>
+          </div>
+          <div class="detail-item" *ngIf="selectedNotification._accountId">
+            <label>Account ID</label>
+            <span class="detail-value">{{ selectedNotification._accountId }}</span>
+          </div>
+          <div class="detail-item detail-item-full" *ngIf="selectedNotification._pendingChanges">
+            <label>Pending Changes</label>
+            <div class="pending-changes-list">
+              <div class="change-row" *ngFor="let entry of getPendingChangesEntries(selectedNotification)">
+                <span class="change-label">{{ entry.label }}</span>
+                <span class="change-value">{{ entry.value }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal Footer -->
     <div class="modal-footer">
-      <button class="close-btn" (click)="closeDetailModal()">Close</button>
+      <button class="btn btn-danger" (click)="onDeleteFromModal()" title="Delete this notification">✕ Delete</button>
+      <button class="btn btn-primary" (click)="closeDetailModal()">Close</button>
     </div>
   </div>
 </div>

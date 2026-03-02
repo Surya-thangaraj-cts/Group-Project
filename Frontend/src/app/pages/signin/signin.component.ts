@@ -92,8 +92,6 @@ export class SigninComponent implements OnInit {
         } else {
           this.displayMessage(errorMsg, 'error');
         }
-        
-        console.error('Login error:', error);
       }
     });
   }
