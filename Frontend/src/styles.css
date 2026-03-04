@@ -3,33 +3,33 @@
 
 /* Theme Colors */
 :root {
-  /* Primary Colors - Purple Theme */
-  --primary-300: #a78bfa;
-  --primary-400: #8b5cf6;
-  --primary-500: #7c3aed;
-  --primary-600: #6d28d9;
-  --primary-700: #5b21b6;
+  /* Primary Colors - Orange + Black Glossy Theme */
+  --primary-300: #ff8a5e;
+  --primary-400: #ff662f;
+  --primary-500: #FF4603; /* requested */
+  --primary-600: #e23f02;
+  --primary-700: #b03502;
 
   /* Background & Surface Colors */
-  --bg: #f5f7ff;
+  --bg: #ffffff; /* switched to white per request */
   --surface: #ffffff;
-  --muted: #f0f3ff;
-  --subtle: #eef1fb;
+  --muted: #fafafa;
+  --subtle: #f6f7fb;
 
   /* Text Colors */
-  --text: #1f2937;
-  --text-muted: #4b5563;
-  --heading: #213c77;
+  --text: #0b0b0b; /* black text */
+  --text-muted: rgba(11,11,11,0.65);
+  --heading: #0b0b0b;
 
   /* Border & Shadow */
-  --border: #e5e8f5;
-  --border-strong: #d9def0;
-  --shadow-sm: 0 2px 8px rgba(31, 41, 55, .06);
-  --shadow-md: 0 6px 18px rgba(31, 41, 55, .08);
-  --shadow-lg: 0 16px 32px rgba(31, 41, 55, .12);
+  --border: rgba(255,255,255,0.04);
+  --border-strong: rgba(255,255,255,0.06);
+  --shadow-sm: 0 6px 18px rgba(0,0,0,0.6);
+  --shadow-md: 0 10px 30px rgba(0,0,0,0.7);
+  --shadow-lg: 0 20px 50px rgba(0,0,0,0.75);
 
   /* Accent Color */
-  --accent: #f59e0b;
+  --accent: #FF4603;
 
   /* Status Colors */
   --success: #10b981;
@@ -38,17 +38,22 @@
   --info: #3b82f6;
 
   /* Gradients */
-  --header-gradient: linear-gradient(90deg, #7c3aed, #6d28d9, #4f46e5);
-  --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  --header-gradient: linear-gradient(90deg, #FF4603 0%, #b03502 60%, #0d0d0d 100%);
+  --primary-gradient: linear-gradient(135deg, #FF4603 0%, #ff8a5e 100%);
 
   /* Font */
   --font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, 'Noto Sans', sans-serif;
 }
 
-html, body { height: 100%; }
+html { 
+  height: 100%; 
+}
 body { 
+  height: 100%;
   margin: 0; 
   font-family: var(--font-family);
   background-color: var(--bg);
   color: var(--text);
+  overflow-x: hidden;
+  overflow-y: auto;
 }

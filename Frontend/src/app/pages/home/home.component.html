@@ -1,36 +1,166 @@
 <div class="home-wrapper min-vh-100 d-flex flex-column">
+  <!-- Decorative blurred orange blobs (generated in TS) -->
+  <div class="decor-blobs" aria-hidden="true"></div>
+
+  <!-- 3D squared grid lines overlay -->
+  <div class="lines-3d-grid" aria-hidden="true"></div>
   <nav class="navbar">
     <div class="d-flex align-items-center">
-      <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" class="bi bi-bank me-2" viewBox="0 0 16 16" fill="white" aria-hidden="true">
-        <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"></path>
-      </svg>
-      <span class="fw-bold logo-text">MyBank</span>
+      <div class="logo-container">
+        <div class="logo-circle">MY</div>
+        <span class="logo-text">Portal</span>
+      </div>
     </div>
 
     <div class="ms-auto d-flex gap-3 align-items-center">
-      <a class="btn btn-light" routerLink="/signin">Sign In</a>
-      <a class="btn btn-outline-light" routerLink="/register">Register</a>
+      <a class="btn btn-outline-light" routerLink="/signin">Sign In</a>
+      <a class="btn btn-primary" routerLink="/register">Register</a>
     </div>
   </nav>
 
-  <div class="container flex-grow-1 d-flex align-items-center">
-    <div class="row w-100 align-items-center gx-4">
-      <div class="col-12 col-lg-6">
-        <div class="home-hero-text">
-          <h1 class="headline">Banking Made Easier For You</h1>
-          <p class="subtle-lead">A secure and efficient internal customer account management system for branches, managers, and officers—simplifying your banking operations.</p>
-          <div class="cta-buttons mt-4 d-flex gap-3">
-            <a class="btn btn-primary btn-lg" routerLink="/signin">Sign In</a>
-            <a class="btn btn-outline-primary btn-lg" routerLink="/register">Create Account</a>
+  <!-- HERO -->
+  <header class="hero">
+    <!-- Floating coins -->
+    <div class="floating-coins hero-coins" aria-hidden="true"></div>
+    <div class="hero-inner container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 text-center">
+          <div class="hero-copy mx-auto">
+            <h1 class="hero-title">Modern Bank Management Portal<br/><span>for branches, <span id="anim-text" class="anim-text">managers &amp; officers</span></span></h1>
+            <p class="hero-sub">Secure, fast and delightfully simple internal account management — built for teams who move quickly.</p>
+            <div class="hero-ctas justify-content-center d-flex">
+              <a class="btn btn-cta" routerLink="/register">Get Started</a>
+              <a class="btn btn-ghost" routerLink="/signin">Learn More</a>
+            </div>
+            <!-- wrap the feature points in its own container for centering -->
+            <div class="hero-features-wrapper d-flex justify-content-center">
+              <ul class="hero-features d-flex align-items-center">
+                <li><span><strong>Fast approvals</strong> • streamlined workflows</span></li>
+                <li><span><strong>Clear audits</strong> • role-based access</span></li>
+                <li><span><strong>Secure</strong> • enterprise-grade controls</span></li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </header>
 
-      <div class="col-12 col-lg-6">
-        <div class="home-hero-image">
-          <img src="/assets/landing-pic-removebg-preview.png" alt="Landing (PNG)" class="hero-img"/>
+  <!-- ABOUT / FEATURES -->
+  <section class="about container py-5 pb-5 mb-5 position-relative">
+    <!-- Floating coins -->
+    <div class="floating-coins about-coins" aria-hidden="true"></div>
+
+    <div class="row gy-4">
+      <div class="col-12">
+        <h2 class="section-title section-title-highlight">Why teams choose My Portal</h2>
+        <p class="section-lead">My Portal helps teams move faster with role-based controls, real-time approvals, notifications, and a concise transactions overview that keeps branch operations flowing. Built with secure, auditable storage and role-specific dashboards so branches, managers and officers can act quickly and with confidence. Explore the demo to see common workflows.</p>
+      </div>
+    </div>
+
+    <!-- 4 feature boxes in 2x2 grid -->
+    <div class="row mt-5 gy-4">
+      <div class="col-12 col-md-6">
+        <div class="feature-box box-blue">
+          <h4>Role-based Controls</h4>
+          <p>Manage different access levels and permissions based on user roles for enhanced security.</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="feature-box box-orange">
+          <h4>Approvals & Notifications</h4>
+          <p>Get instant notifications for approvals and important transactions in real-time.</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="feature-box box-orange">
+          <h4>Real-time Overview</h4>
+          <p>Monitor all activities and transactions in real-time with live updates and insights.</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-6">
+        <div class="feature-box box-blue">
+          <h4>Secure Storage</h4>
+          <p>All data is encrypted and stored securely with industry-standard protocols.</p>
         </div>
       </div>
     </div>
-  </div>
+    <!-- About blobs container (generated in TS) -->
+    <div class="about-blobs" aria-hidden="true"></div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer mt-auto">
+    <div class="container py-5">
+      <div class="row gy-4">
+        <!-- Company Info -->
+        <div class="col-12 col-md-4">
+          <h5 class="footer-heading">My Portal</h5>
+          <p class="footer-text">Modern banking solution for branch operations, managers, and officers. Secure, fast, and delightfully simple.</p>
+          <div class="footer-social mt-3">
+            <a href="#" class="footer-social-link">Twitter</a>
+            <a href="#" class="footer-social-link">LinkedIn</a>
+            <a href="#" class="footer-social-link">Facebook</a>
+          </div>
+        </div>
+
+        <!-- Product & Pages -->
+        <div class="col-12 col-md-2">
+          <h6 class="footer-subheading">Product</h6>
+          <ul class="footer-nav">
+            <li><a routerLink="/home" class="footer-link">Home</a></li>
+            <li><a routerLink="/admin" class="footer-link">Admin</a></li>
+            <li><a routerLink="/manager" class="footer-link">Manager</a></li>
+            <li><a routerLink="/officer" class="footer-link">Officer</a></li>
+          </ul>
+        </div>
+
+        <!-- Account Section -->
+        <div class="col-12 col-md-2">
+          <h6 class="footer-subheading">Account</h6>
+          <ul class="footer-nav">
+            <li><a routerLink="/signin" class="footer-link">Sign In</a></li>
+            <li><a routerLink="/register" class="footer-link">Register</a></li>
+            <li><a routerLink="/profile" class="footer-link">Profile</a></li>
+            <li><a routerLink="/settings" class="footer-link">Settings</a></li>
+          </ul>
+        </div>
+
+        <!-- Support & Legal -->
+        <div class="col-12 col-md-2">
+          <h6 class="footer-subheading">Support</h6>
+          <ul class="footer-nav">
+            <li><a routerLink="/help" class="footer-link">Help Center</a></li>
+            <li><a routerLink="/contact" class="footer-link">Contact Us</a></li>
+            <li><a routerLink="/privacy" class="footer-link">Privacy Policy</a></li>
+            <li><a routerLink="/terms" class="footer-link">Terms of Service</a></li>
+          </ul>
+        </div>
+
+        <!-- Additional Links -->
+        <div class="col-12 col-md-2">
+          <h6 class="footer-subheading">More</h6>
+          <ul class="footer-nav">
+            <li><a routerLink="/about" class="footer-link">About Us</a></li>
+            <li><a routerLink="/features" class="footer-link">Features</a></li>
+            <li><a routerLink="/security" class="footer-link">Security</a></li>
+            <li><a routerLink="/blog" class="footer-link">Blog</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Footer Bottom -->
+      <div class="footer-bottom mt-5 pt-4 border-top border-secondary">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+          <p class="footer-text mb-0">© <span id="year">2026</span> My Portal. All rights reserved.</p>
+          <div class="footer-bottom-links d-flex gap-3">
+            <a routerLink="/privacy" class="footer-link-small">Privacy</a>
+            <a routerLink="/terms" class="footer-link-small">Terms</a>
+            <a routerLink="/cookies" class="footer-link-small">Cookies</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
 </div>

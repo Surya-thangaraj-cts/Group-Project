@@ -3,11 +3,10 @@
   <nav class="navbar app-navbar">
     <div class="brand">
       <a routerLink="/home" class="d-flex align-items-center text-decoration-none">
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
-             class="bi bi-bank me-2" viewBox="0 0 16 16" fill="white" aria-hidden="true">
-          <path d="M8 .95l6.364 3.182v1.09H1.636v-1.09L8 .95zm0 1.09L2.636 5.223h10.728L8 2.04zM1 6h14v1H1V6zm1 2h1v6H2V8zm2 0h1v6H4V8zm2 0h1v6H6V8zm2 0h1v6H8V8zm2 0h1v6h-1V8zm2 0h1v6h-1V8z"></path>
-        </svg>
-        <span class="fw-bold logo-text ms-1">MyBank</span>
+        <div class="logo-container">
+          <div class="logo-circle">MY</div>
+          <span class="logo-text">Portal</span>
+        </div>
       </a>
     </div>
 
@@ -16,20 +15,12 @@
     </div>
   </nav>
 
-  <div class="container my-3 my-md-4 flex-grow-1 d-flex align-items-center">
+  <!-- Centered body area below fixed navbar -->
+  <div class="container auth-body d-flex align-items-center">
     <div class="rounded-4 shadow-lg overflow-hidden w-100">
       <div class="row g-0">
-        <div class="col-12 col-lg-6 auth-layout">
-          <div class="hero-panel">
-            <img src="../../assets/bg.png" alt="Banking" class="left-img">
-            <div class="hero-overlay"></div>
-            <div class="hero-content">
-              <h1 class="display-5 fw-bold mb-2">Get Started</h1>
-              <p class="lead">Create your account and join our banking platform</p>
-            </div>
-          </div>
-        </div>
 
+        <!-- LEFT: Auth panel (form) -->
         <div class="col-12 col-lg-6 d-flex">
           <div class="auth-panel mx-auto w-100">
             <div class="title">
@@ -160,6 +151,19 @@
             </form>
           </div>
         </div>
+
+        <!-- RIGHT: Image / hero -->
+        <div class="col-12 col-lg-6 auth-layout">
+          <div class="hero-panel">
+            <img src="../../assets/bg.png" alt="Banking" class="left-img">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+              <h1 class="display-5 fw-bold mb-2">Get Started</h1>
+              <p class="lead">Create your account and join our banking platform</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
