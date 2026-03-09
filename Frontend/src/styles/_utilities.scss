@@ -1,0 +1,71 @@
+// Utility classes for banking color system
+@import './_tokens.scss';
+
+.btn-primary {
+  background: $color-primary;
+  color: #fff;
+  border-radius: $radius-sm;
+  padding: 0.6rem 1rem;
+  border: 1px solid transparent;
+  transition: background .2s ease;
+  &:hover { background: $color-primary-600; }
+  &:active { background: $color-primary-700; }
+  &:disabled { opacity: .6; cursor: not-allowed; }
+}
+
+.card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+}
+
+.text-muted { color: $color-text; }
+
+.alert-success {
+  background: #ECFDF5;
+  border-color: #BBF7D0;
+  color: $color-success;
+}
+.alert-warning {
+  background: #FFFBEB;
+  border-color: #FDE68A;
+  color: $color-warning;
+}
+.alert-error {
+  background: #FEF2F2;
+  border-color: #FCA5A5;
+  color: $color-error;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: $color-surface;
+  border: 1px solid $color-border;
+}
+.table th, .table td {
+  padding: .75rem 1rem;
+  border-bottom: 1px solid $color-border;
+  color: $color-text;
+}
+.table thead th {
+  color: $color-navy;
+  font-weight: 700;
+}
+.table tr:hover {
+  background: #F9FAFB;
+}
+
+.input, .select {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  color: $color-text-strong;
+  border-radius: $radius-sm;
+  padding: .6rem .75rem;
+}
+.input:focus, .select:focus {
+  outline: 2px solid $color-primary;
+  outline-offset: 1px;
+}
+.label { color: $color-text; }
