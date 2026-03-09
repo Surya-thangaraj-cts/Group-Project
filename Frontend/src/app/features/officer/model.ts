@@ -21,7 +21,7 @@ export interface Transaction {
   toAccountId?: string;
   flagged?: boolean;
   narrative?: string;
-  status?: 'Completed' | 'Pending' | 'Rejected';
+  status?: 'Completed' | 'Pending' | 'Rejected' | number; // Allow both string and numeric status
   flag?: 'Normal' | 'High' | 'Suspicious';
 }
  
@@ -68,6 +68,7 @@ export interface Notification {
     status?: string;
     decision?: string;
     comments?: string;
+    narrative?: string;
   };
 }
 

@@ -32,11 +32,22 @@ export class TransactionsComponent {
     narrative: ['']
   });
 
-  selectedHistoryAccountId?: string;
   highValueThreshold = this.officerSvc.highValueThreshold;
   toAccountStatus: 'internal' | 'external' | null = null;
   filteredToAccounts: any[] = [];
   showToSuggestions = false;
+
+  // Record Transaction - Account selection with autocomplete
+  recordTxnAccountInput = '';
+  filteredRecordTxnAccounts: any[] = [];
+  showRecordTxnSuggestions = false;
+
+  // Balance checking properties with autocomplete
+  balanceCheckAccountInput = '';
+  filteredBalanceAccounts: any[] = [];
+  showBalanceSuggestions = false;
+  selectedBalanceAccount: any = null;
+  balanceLoading = false;
 
   historyFilterAccountId?: string;
   fromDate?: string;
@@ -64,6 +75,31 @@ export class TransactionsComponent {
     this.txPageIndex$.next(1);
   }
 
+  /**
+   * Format transaction status from numeric or string value to readable text
+   * 0 or 'Completed' = Completed
+   * 1 or 'Pending' = Pending
+   * 2 or 'Rejected' = Rejected
+   */
+  formatTransactionStatus(status: string | number | null | undefined): string {
+    if (!status) return 'Completed';
+    
+    // If it's already a string, return as-is (already formatted)
+    if (typeof status === 'string') return status;
+    
+    // Convert numeric status to text
+    switch (status) {
+      case 0:
+        return 'Completed';
+      case 1:
+        return 'Pending';
+      case 2:
+        return 'Rejected';
+      default:
+        return 'Completed';
+    }
+  }
+
   txPageSizeOptions = [5, 10, 20];
   private txPageIndex$ = new BehaviorSubject<number>(1);
   private txPageSize$ = new BehaviorSubject<number>(10);
@@ -89,7 +125,7 @@ export class TransactionsComponent {
       const list: Transaction[] = Array.isArray(all) ? [...all] : [];
 
       const filtered = list.filter(t => {
-        if (t.status === 'Pending') return false;
+        // Include all transactions (both pending and completed)
         if (accountId && t.accountId !== accountId) return false;
 
         const txDate = new Date(t.time).setHours(0, 0, 0, 0);
@@ -155,7 +191,7 @@ export class TransactionsComponent {
     const active = accounts.filter((a: any) => a.status === 'ACTIVE');
     const query = toId.toUpperCase();
     this.filteredToAccounts = active.filter((a: any) =>
-      a.accountId !== this.selectedHistoryAccountId &&
+      a.accountId !== this.recordTxnAccountInput.trim() &&
       (a.accountId.toUpperCase().includes(query) || a.customerName.toUpperCase().includes(query))
     );
     this.showToSuggestions = this.filteredToAccounts.length > 0;
@@ -176,6 +212,9 @@ export class TransactionsComponent {
 
   resetTxnForm(): void {
     this.txnForm.reset({ type: 'DEPOSIT', amount: 0, toAccountId: undefined, narrative: '' });
+    this.recordTxnAccountInput = '';
+    this.filteredRecordTxnAccounts = [];
+    this.showRecordTxnSuggestions = false;
   }
 
   recordTransaction(): void {
@@ -186,7 +225,7 @@ export class TransactionsComponent {
         this.officerSvc.setError('Please enter a destination Account ID for the transfer.');
         return;
       }
-      if (toId === this.selectedHistoryAccountId) {
+      if (toId === this.recordTxnAccountInput.trim()) {
         this.officerSvc.setError('Cannot transfer to the same account.');
         return;
       }
@@ -194,7 +233,7 @@ export class TransactionsComponent {
     }
     try {
       this.officerSvc.recordTransaction(
-        this.selectedHistoryAccountId!,
+        this.recordTxnAccountInput.trim()!,
         formVal
       );
       this.resetTxnForm();
@@ -206,6 +245,104 @@ export class TransactionsComponent {
 
   trackByTxnId(index: number, t: Transaction) {
     return t?.id ?? index;
+  }
+
+  /**
+   * Check balance for the selected account
+   */
+  checkBalance(): void {
+    const accountId = this.balanceCheckAccountInput.trim();
+    
+    if (!accountId) {
+      this.officerSvc.setError('Please select an account to check balance');
+      return;
+    }
+
+    this.balanceLoading = true;
+    const accounts = (this.officerSvc as any).accountsSubject?.value || [];
+    const account = accounts.find((a: any) => a.accountId === accountId);
+    
+    if (account) {
+      this.selectedBalanceAccount = account;
+      this.balanceLoading = false;
+    } else {
+      this.officerSvc.setError('Account not found');
+      this.balanceLoading = false;
+      this.selectedBalanceAccount = null;
+    }
+  }
+
+  /**
+   * Clear balance display
+   */
+  clearBalance(): void {
+    this.selectedBalanceAccount = null;
+    this.balanceCheckAccountInput = '';
+    this.filteredBalanceAccounts = [];
+    this.showBalanceSuggestions = false;
+  }
+
+  /**
+   * Autocomplete for Record Transaction Account
+   */
+  onRecordTxnAccountInput(): void {
+    const input = this.recordTxnAccountInput.trim();
+    if (!input) {
+      this.filteredRecordTxnAccounts = [];
+      this.showRecordTxnSuggestions = false;
+      return;
+    }
+
+    const accounts = (this.officerSvc as any).accountsSubject?.value || [];
+    const active = accounts.filter((a: any) => a.status === 'ACTIVE');
+    const query = input.toUpperCase();
+    
+    this.filteredRecordTxnAccounts = active.filter((a: any) =>
+      a.accountId.toUpperCase().includes(query) || 
+      a.customerName.toUpperCase().includes(query)
+    );
+    this.showRecordTxnSuggestions = this.filteredRecordTxnAccounts.length > 0;
+  }
+
+  selectRecordTxnAccount(accountId: string): void {
+    this.recordTxnAccountInput = accountId;
+    this.showRecordTxnSuggestions = false;
+    this.filteredRecordTxnAccounts = [];
+  }
+
+  hideRecordTxnSuggestions(): void {
+    setTimeout(() => { this.showRecordTxnSuggestions = false; }, 200);
+  }
+
+  /**
+   * Autocomplete for Balance Check Account
+   */
+  onBalanceAccountInput(): void {
+    const input = this.balanceCheckAccountInput.trim();
+    if (!input) {
+      this.filteredBalanceAccounts = [];
+      this.showBalanceSuggestions = false;
+      return;
+    }
+
+    const accounts = (this.officerSvc as any).accountsSubject?.value || [];
+    const query = input.toUpperCase();
+    
+    this.filteredBalanceAccounts = accounts.filter((a: any) =>
+      a.accountId.toUpperCase().includes(query) || 
+      a.customerName.toUpperCase().includes(query)
+    );
+    this.showBalanceSuggestions = this.filteredBalanceAccounts.length > 0;
+  }
+
+  selectBalanceAccount(accountId: string): void {
+    this.balanceCheckAccountInput = accountId;
+    this.showBalanceSuggestions = false;
+    this.filteredBalanceAccounts = [];
+  }
+
+  hideBalanceSuggestions(): void {
+    setTimeout(() => { this.showBalanceSuggestions = false; }, 200);
   }
 }
  

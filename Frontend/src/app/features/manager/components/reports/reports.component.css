@@ -47,22 +47,22 @@
 /* Filters Section */
 .filters-section {
   background: white;
-  border-radius: 16px;
-  padding: 30px;
-  margin-bottom: 40px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(124, 58, 237, 0.1);
+  border-radius: 18px;
+  padding: 36px 32px;
+  margin-bottom: 48px;
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.12);
   animation: slideInUp 0.5s ease-out;
 }
 
 .section-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: #1f2937;
-  margin-bottom: 25px;
+  margin-bottom: 28px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .section-title::before {
@@ -76,37 +76,38 @@
 
 .filters-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 30px;
-  margin-bottom: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 36px;
+  margin-bottom: 28px;
 }
 
 .filter-column {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 18px;
 }
 
 .filter-label {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #374151;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-bottom: 6px;
 }
 
 .form-control {
-  padding: 12px 15px;
+  padding: 14px 18px;
   border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: 12px;
+  font-size: 15px;
   transition: all 0.3s ease;
   background: white;
 }
 
 .form-control:focus {
   border-color: #7c3aed;
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
   outline: none;
 }
 
@@ -116,20 +117,21 @@
 
 .filter-actions {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: flex-end;
 }
 
 .btn {
-  padding: 12px 24px;
+  padding: 14px 28px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
 }
 
 .btn:disabled {
@@ -140,12 +142,12 @@
 .btn-generate {
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
   color: white;
-  box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 5px 15px rgba(124, 58, 237, 0.18);
 }
 
 .btn-generate:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.22);
 }
 
 .btn-reset {
@@ -161,48 +163,48 @@
 
 /* Summary Statistics */
 .summary-section {
-  margin-bottom: 40px;
+  margin-bottom: 48px;
   animation: slideInUp 0.6s ease-out;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
 }
 
 .stat-card {
   background: white;
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   text-align: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(124, 58, 237, 0.1);
+  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.12);
   transition: all 0.3s ease;
   animation: fadeIn 0.5s ease-out;
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 30px rgba(124, 58, 237, 0.16);
 }
 
 .stat-emoji {
-  font-size: 32px;
-  margin-bottom: 10px;
+  font-size: 36px;
+  margin-bottom: 12px;
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 14px;
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .stat-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
   -webkit-background-clip: text;
@@ -210,52 +212,54 @@
   background-clip: text;
 }
 
-.stat-total { border-top: 4px solid #7c3aed; }
-.stat-amount { border-top: 4px solid #6d28d9; }
-.stat-average { border-top: 4px solid #4facfe; }
-.stat-completed { border-top: 4px solid #10b981; }
-.stat-pending { border-top: 4px solid #ff9800; }
-.stat-deposit { border-top: 4px solid #f093fb; }
-.stat-withdrawal { border-top: 4px solid #f5576c; }
-.stat-transfer { border-top: 4px solid #00f2fe; }
-
 /* Download Section */
 .download-section {
   background: white;
-  border-radius: 16px;
-  padding: 25px 30px;
-  margin-bottom: 40px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(124, 58, 237, 0.1);
+  border-radius: 18px;
+  padding: 32px 36px;
+  margin-bottom: 48px;
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.12);
   animation: slideInUp 0.6s ease-out;
 }
 
 .download-buttons {
   display: flex;
-  gap: 15px;
+  gap: 18px;
   flex-wrap: wrap;
 }
 
 .btn-pdf {
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
   color: white;
-  box-shadow: 0 5px 15px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 5px 15px rgba(124, 58, 237, 0.18);
 }
 
 .btn-pdf:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 10px 25px rgba(124, 58, 237, 0.22);
 }
 
 .btn-csv {
   background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   color: white;
-  box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+  box-shadow: 0 5px 15px rgba(245, 87, 108, 0.18);
 }
 
 .btn-csv:hover:not(:disabled) {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
+  box-shadow: 0 10px 25px rgba(245, 87, 108, 0.22);
+}
+
+.btn-excel {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: white;
+  box-shadow: 0 5px 15px rgba(67, 233, 123, 0.18);
+}
+
+.btn-excel:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(67, 233, 123, 0.22);
 }
 
 /* Table Section */
@@ -505,19 +509,18 @@
 
   .table thead th,
   .table tbody td {
-    padding: 12px 10px;
+    padding: 7px 16px;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-}
-
-@media (max-width: 768px) {
-  .reports-container {
-    padding: 20px;
-  }
-
   .reports-title {
     font-size: 24px;
   }
-
   .reports-subtitle {
     font-size: 14px;
   }

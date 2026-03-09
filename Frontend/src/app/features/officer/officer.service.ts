@@ -244,6 +244,7 @@ export class OfficerService implements OnDestroy {
 
       const localNotifications = this.localNotificationsSubject.value;
       let hasUpdates = false;
+      let hasTransactionUpdates = false;
 
       const updatedLocal = localNotifications.map(notification => {
         if (!notification.meta?.approvalId) return notification;
@@ -261,6 +262,12 @@ export class OfficerService implements OnDestroy {
         if (decision === 'Pending') return notification; // Still pending
 
         hasUpdates = true;
+        
+        // Track if any transaction approval was updated
+        if (notification.type === 'TRANSACTION') {
+          hasTransactionUpdates = true;
+        }
+        
         const isApproved = decision === 'Approve';
         const decisionStr = isApproved ? 'Approved' : 'Rejected';
 
@@ -303,7 +310,11 @@ export class OfficerService implements OnDestroy {
 
         // Also refresh accounts in case approval changed account status
         this.loadAccounts();
-        this.loadTransactions();
+        
+        // If any transaction approval was updated, reload transactions from backend
+        if (hasTransactionUpdates) {
+          this.loadTransactions();
+        }
       }
     });
   }
@@ -389,18 +400,20 @@ export class OfficerService implements OnDestroy {
   }
 
   private mapTransactionsFromApi(apiTransactions: any[]): Transaction[] {
-    return apiTransactions.map(apiTxn => ({
-      id: apiTxn.transactionId?.toString() || cryptoRandomId(),
-      time: apiTxn.date || new Date().toISOString(),
-      type: this.mapTransactionType(apiTxn.type),
-      amount: apiTxn.amount || 0,
-      accountId: apiTxn.accountId?.toString() || '',
-      toAccountId: apiTxn.toAccountId?.toString(),
-      flagged: apiTxn.flag === 'High' || apiTxn.flag === 'Suspicious',
-      narrative: apiTxn.narrative || '',
-      status: apiTxn.status || 'Completed',
-      flag: apiTxn.flag || 'Normal'
-    }));
+    return apiTransactions
+      .map(apiTxn => ({
+        id: apiTxn.transactionId?.toString() || cryptoRandomId(),
+        time: apiTxn.date || new Date().toISOString(),
+        type: this.mapTransactionType(apiTxn.type),
+        amount: apiTxn.amount || 0,
+        accountId: apiTxn.accountId?.toString() || '',
+        toAccountId: apiTxn.toAccountId?.toString(),
+        flagged: apiTxn.flag === 'High' || apiTxn.flag === 'Suspicious',
+        narrative: apiTxn.narrative || '',
+        status: apiTxn.status || 'Completed',
+        flag: apiTxn.flag || 'Normal'
+      }))
+      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()); // Sort by time descending (newest first)
   }
 
   private mapTransactionType(type: string): TxnType {
@@ -578,38 +591,76 @@ export class OfficerService implements OnDestroy {
     this.transactionApi.createTransaction(dto).pipe(
       tap((response) => {
         // Show appropriate success message based on transaction status
-        const statusMsg = response.status === 'Pending' ? ' (Pending approval)' : '';
+        const requiresApproval = response.status === 'Pending' || response.status === 1 || response.approvalId || response.requiresApproval;
+        const statusMsg = requiresApproval ? ' (Pending manager approval)' : '';
 
         if (type === 'DEPOSIT') {
-          this.setSuccess(`Deposited ₹${amount.toFixed(2)} to ${source.accountId}.${statusMsg}`);
+          this.setSuccess(`Deposited ₹${amount.toFixed(2)} to ${source.accountId}${statusMsg}`);
         } else if (type === 'WITHDRAWAL') {
-          this.setSuccess(`Withdrew ₹${amount.toFixed(2)} from ${source.accountId}.${statusMsg}`);
+          this.setSuccess(`Withdrew ₹${amount.toFixed(2)} from ${source.accountId}${statusMsg}`);
         } else {
-          this.setSuccess(`Transferred ₹${amount.toFixed(2)} from ${source.accountId} to ${toAccountId}.${statusMsg}`);
+          this.setSuccess(`Transferred ₹${amount.toFixed(2)} from ${source.accountId} to ${toAccountId}${statusMsg}`);
         }
 
-        // Add notification if transaction requires approval
-        if (response.approvalId || response.requiresApproval || response.status === 'Pending') {
+        // If transaction requires approval, add it to the transaction list immediately
+        if (requiresApproval) {
+          const pendingTxn: Transaction = {
+            id: response.transactionId,
+            time: new Date().toISOString(),
+            type: type,
+            amount: amount,
+            accountId: sourceAccountId,
+            toAccountId: toAccountId,
+            narrative: narrative || '',
+            status: 'Pending',
+            flag: amount > this.highValueThreshold ? 'High' : 'Normal',
+            flagged: amount > this.highValueThreshold
+          };
+          // Add to the beginning of transactions list
+          const currentTransactions = this.transactionsSubject.value;
+          this.transactionsSubject.next([pendingTxn, ...currentTransactions]);
+        }
+
+        // Create notification with all transaction details
+        const notificationMeta = {
+          txnId: response.transactionId,
+          accountId: sourceAccountId,
+          amount: amount,
+          type: type,
+          toAccountId: toAccountId,
+          narrative: narrative || '',
+          approvalId: response.approvalId,
+          status: requiresApproval ? 'Pending' : 'Success',
+          createdAt: new Date().toISOString()
+        };
+
+        // Add notification for all transactions
+        if (requiresApproval) {
+          // High-value transaction notification
           this.addLocalNotification({
             type: 'TRANSACTION',
-            title: 'Transaction Pending Approval',
-            message: `${type} transaction of ₹${amount.toFixed(2)} on Account ${sourceAccountId} requires manager approval`,
+            title: 'High-Value Transaction - Pending Approval',
+            message: `${type} transaction of ₹${amount.toFixed(2)} on Account ${sourceAccountId} requires manager approval. ${narrative ? `Note: ${narrative}` : ''}`,
             severity: 'warning',
-            meta: {
-              txnId: response.transactionId,
-              accountId: sourceAccountId,
-              amount: amount,
-              type: type,
-              toAccountId: toAccountId,
-              approvalId: response.approvalId,
-              status: 'Pending'
-            }
+            meta: notificationMeta
+          });
+        } else {
+          // Regular transaction notification
+          this.addLocalNotification({
+            type: 'TRANSACTION',
+            title: `${type} Transaction Successful`,
+            message: `₹${amount.toFixed(2)} ${type.toLowerCase()} on Account ${sourceAccountId}. ${narrative ? `Note: ${narrative}` : ''}`,
+            severity: 'success',
+            meta: notificationMeta
           });
         }
 
         // Refresh data
         this.loadAccounts();
-        this.loadTransactions();
+        // Only reload transactions if NOT pending (to avoid overwriting our local state)
+        if (!requiresApproval) {
+          this.loadTransactions();
+        }
       }),
       catchError(error => {
         this.setError(error.message || 'Failed to record transaction');

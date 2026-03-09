@@ -40,6 +40,15 @@
         (ngModelChange)="filterApprovals()">
       <span class="search-icon"></span>
     </div>
+    <div class="filter-dropdown">
+      <select [(ngModel)]="typeFilter" (change)="filterApprovals()">
+        <option value="all">All Types</option>
+        <option value="AccountCreation">Account Creation</option>
+        <option value="AccountUpdate">Account Updation</option>
+        
+        <option value="HighValueTransaction">High Value Transaction</option>
+      </select>
+    </div>
   </div>
 
   <div class="approvals-table-wrapper" *ngIf="filteredItems.length > 0; else noApprovals">
@@ -59,12 +68,14 @@
       <tbody>
         <tr *ngFor="let approval of filteredItems" class="approval-row">
           <td>{{ approval.approvalId }}</td>
-          <td>{{ approval.type }}</td>
-          <td>{{ approval.accountId }}</td>
-          <td>{{ approval.customerName }}</td>
+          <td><span class="type-badge">{{ approval.type }}</span></td>
+          <td>{{ approval.accountId || '—' }}</td>
+          <td>{{ approval.customerName || '—' }}</td>
           <td>{{ approval.decision }}</td>
           <td>{{ formatDate(approval.approvalDate) }}</td>
-          <td>{{ approval.comments }}</td>
+          <td class="comment-cell" [title]="approval.comments">
+            <span class="comment-truncated">{{ approval.comments | slice:0:60 }}{{ approval.comments && approval.comments.length > 60 ? '...' : '' }}</span>
+          </td>
           <td>
             <button *ngIf="approval.decision === 'Pending'" class="btn-review" (click)="openApprovalModal(approval)">Review</button>
             <span *ngIf="approval.decision !== 'Pending'" class="status-text">Completed</span>
@@ -101,11 +112,15 @@
           </div>
           <div class="detail-row">
             <span class="label">Account ID:</span>
-            <span class="value">{{ selectedApproval.accountId }}</span>
+            <span class="value">{{ selectedApproval.accountId || 'N/A' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="label">Customer ID:</span>
+            <span class="value">{{ selectedApproval.customerId || 'N/A' }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Customer Name:</span>
-            <span class="value">{{ selectedApproval.customerName }}</span>
+            <span class="value">{{ selectedApproval.customerName || 'N/A' }}</span>
           </div>
           <div class="detail-row">
             <span class="label">Decision:</span>
@@ -117,7 +132,7 @@
           </div>
           <div class="detail-row">
             <span class="label">Comments:</span>
-            <span class="value">{{ selectedApproval.comments }}</span>
+            <span class="value comments-value">{{ selectedApproval.comments || 'No comments' }}</span>
           </div>
         </div>
         <div class="decision-buttons-section">

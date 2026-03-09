@@ -14,6 +14,7 @@ import { ApprovalDto, ApprovalDetailsDto, PagedApprovals, PagedApprovalDetails }
   styleUrls: ['./approvals.component.css']
 })
 export class ApprovalsComponent implements OnInit {
+    typeFilter: 'all' | 'AccountCreation' | 'AccountUpdate' | 'HighValue' = 'all';
   approvalDetails: ApprovalDetailsDto[] = [];
   pageNumber = 1;
   pageSize = 10;
@@ -60,10 +61,15 @@ export class ApprovalsComponent implements OnInit {
     else if (this.activeTab === 'rejected') decision = 'Reject';
     this.managerService.getApprovalDetails(this.pageNumber, this.pageSize, decision)
       .subscribe((paged: PagedApprovalDetails) => {
-        this.approvalDetails = paged.items || [];
+        let items = paged.items || [];
+        // Sort approved tab in descending order by approvalDate
+        if (this.activeTab === 'approved') {
+          items = items.slice().sort((a, b) => new Date(b.approvalDate).getTime() - new Date(a.approvalDate).getTime());
+        }
+        this.approvalDetails = items;
         this.totalCount = paged.totalCount;
         this.totalPages = paged.totalPages;
-        this.filteredItems = this.approvalDetails;
+        this.filterApprovals();
         // Update counts after each load to stay in sync
         this.loadAllCounts();
       });
@@ -99,21 +105,38 @@ export class ApprovalsComponent implements OnInit {
   // All references to getSelectedTransaction and related methods have been removed. Only backend DTO logic remains.
 
   filterApprovals(): void {
-    if (!this.searchQuery.trim()) {
-      this.filteredItems = this.approvalDetails;
-      return;
+    let items = this.approvalDetails;
+    // Filter by type
+    if (this.typeFilter !== 'all') {
+      items = items.filter(a => a.type === this.typeFilter);
     }
-    const query = this.searchQuery.toLowerCase();
-    this.filteredItems = this.approvalDetails.filter(a =>
-      (a.accountId && a.accountId.toString().includes(query)) ||
-      (a.customerName && a.customerName.toLowerCase().includes(query)) ||
-      (a.approvalId && a.approvalId.toString().includes(query)) ||
-      (a.decision && a.decision.toLowerCase().includes(query))
-    );
+    // Filter by search
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase();
+      items = items.filter(a =>
+        (a.accountId && a.accountId.toString().includes(query)) ||
+        (a.customerName && a.customerName.toLowerCase().includes(query)) ||
+        (a.approvalId && a.approvalId.toString().includes(query)) ||
+        (a.decision && a.decision.toLowerCase().includes(query))
+      );
+    }
+    this.filteredItems = items;
   }
 
   openApprovalModal(approval: ApprovalDetailsDto): void {
+    // Extract customerId from pendingChanges if not directly available
+    let customerId = approval.customerId;
+    if (!customerId && approval.pendingChanges) {
+      try {
+        const changes = JSON.parse(approval.pendingChanges);
+        customerId = changes['CustomerId'] || changes['customerId'];
+      } catch {}
+    }
+    
     this.selectedApproval = approval;
+    if (customerId) {
+      this.selectedApproval = { ...approval, customerId };
+    }
     this.showApprovalModal = true;
     this.approvalDecision = null;
     this.approvalComments = '';
