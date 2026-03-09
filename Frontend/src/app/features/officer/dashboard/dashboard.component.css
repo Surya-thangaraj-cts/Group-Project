@@ -12,8 +12,8 @@
   border-radius: 16px;
   padding: 2.5rem;
   margin-bottom: 2rem;
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  box-shadow: 0 8px 32px rgba(124, 58, 237, 0.2);
+  background: linear-gradient(135deg, #053B32 0%, #064A3E 100%);
+  box-shadow: 0 8px 32px rgba(5, 59, 50, 0.2);
 }
 
 .welcome-content {
@@ -48,8 +48,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(109, 40, 217, 0.05) 100%);
-  border: 1px solid rgba(124, 58, 237, 0.2);
+  background: linear-gradient(135deg, rgba(207, 174, 112, 0.1) 0%, rgba(207, 174, 112, 0.05) 100%);
+  border: 1px solid rgba(207, 174, 112, 0.2);
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   cursor: default;
@@ -72,7 +72,7 @@
 
 .card-label {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #CFAE70;
   margin-bottom: 0.5rem;
   font-weight: 500;
 }
@@ -80,7 +80,7 @@
 .card-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #000000;
 }
 
 /* Recent Activity Section */
@@ -91,7 +91,7 @@
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #000000;
   margin-bottom: 1.5rem;
 }
 
@@ -99,20 +99,20 @@
 .activity-table-wrapper {
   overflow-x: auto;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(109, 40, 217, 0.02) 100%);
-  border: 1px solid rgba(124, 58, 237, 0.15);
+  background: linear-gradient(135deg, rgba(238, 232, 217, 0.05) 0%, rgba(238, 232, 217, 0.02) 100%);
+  border: 1px solid rgba(207, 174, 112, 0.15);
   backdrop-filter: blur(10px);
 }
 
 .activity-table {
   width: 100%;
   border-collapse: collapse;
-  color: #1f2937;
+  color: #000000;
 }
 
 .activity-table thead {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(109, 40, 217, 0.05) 100%);
-  border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+  background: linear-gradient(135deg, rgba(5, 59, 50, 0.1) 0%, rgba(5, 59, 50, 0.05) 100%);
+  border-bottom: 1px solid rgba(5, 59, 50, 0.2);
 }
 
 .activity-table th {
@@ -120,24 +120,24 @@
   text-align: left;
   font-weight: 600;
   font-size: 0.875rem;
-  color: #5b21b6;
+  color: #CFAE70;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .activity-row {
-  border-bottom: 1px solid rgba(124, 58, 237, 0.1);
+  border-bottom: 1px solid rgba(207, 174, 112, 0.1);
   transition: background 0.2s ease;
 }
 
 .activity-row:hover {
-  background: rgba(124, 58, 237, 0.05);
+  background: rgba(207, 174, 112, 0.05);
 }
 
 .activity-row td {
   padding: 1rem;
   font-size: 0.95rem;
-  color: #374151;
+  color: #000000;
 }
 
 /* Transaction Type Badge */
@@ -188,12 +188,12 @@
 .account-number {
   font-family: 'Courier New', monospace;
   font-size: 0.9rem;
-  color: #6b7280;
+  color: #CFAE70;
 }
 
 .amount-cell {
   font-weight: 600;
-  color: #1e293b;
+  color: #000000;
 }
 
 .badge-completed {
@@ -217,8 +217,8 @@
 /* No Activity Message */
 .no-activity-message {
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(109, 40, 217, 0.02) 100%);
-  border: 1px solid rgba(124, 58, 237, 0.15);
+  background: linear-gradient(135deg, rgba(238, 232, 217, 0.05) 0%, rgba(238, 232, 217, 0.02) 100%);
+  border: 1px solid rgba(207, 174, 112, 0.15);
   backdrop-filter: blur(10px);
   color: rgba(0, 0, 0, 0.6);
   padding: 2rem;

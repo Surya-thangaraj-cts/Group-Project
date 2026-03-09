@@ -10,31 +10,25 @@
 
   <div class="filters-section">
     <h3 class="section-title">Generate Report</h3>
-    
     <div class="filters-grid">
       <div class="filter-column">
         <label class="filter-label">Start Date</label>
         <input type="date" class="form-control" [(ngModel)]="filterCriteria.startDate" (change)="generateReport()">
-
         <label class="filter-label">End Date</label>
         <input type="date" class="form-control" [(ngModel)]="filterCriteria.endDate" (change)="generateReport()">
       </div>
-
       <div class="filter-column">
         <label class="filter-label">Min Amount</label>
         <input type="number" class="form-control" [(ngModel)]="filterCriteria.minAmount" (change)="generateReport()" placeholder="0">
-
         <label class="filter-label">Max Amount</label>
         <input type="number" class="form-control" [(ngModel)]="filterCriteria.maxAmount" (change)="generateReport()" placeholder="999999">
       </div>
-
       <div class="filter-column">
         <label class="filter-label">Transaction Type</label>
         <select class="form-control" [(ngModel)]="filterCriteria.transactionType" (change)="generateReport()">
           <option value="">Select Transaction Type</option>
           <option *ngFor="let type of transactionTypes" [value]="type">{{ type }}</option>
         </select>
-
         <label class="filter-label">Status</label>
         <select class="form-control" [(ngModel)]="filterCriteria.status" (change)="generateReport()">
           <option value="">Select Status</option>
@@ -42,7 +36,6 @@
         </select>
       </div>
     </div>
-
     <div class="filter-actions">
       <button class="btn btn-generate" (click)="generateReport()">Generate Report</button>
       <button class="btn btn-reset" (click)="resetFilters()">Reset Filters</button>
@@ -51,50 +44,42 @@
 
   <div class="summary-section" *ngIf="reportSummary.totalCount > 0">
     <h3 class="section-title">Summary Statistics</h3>
-    
     <div class="stats-grid">
       <div class="stat-card stat-total">
         <div class="stat-emoji">📊</div>
         <div class="stat-label">Total Transactions</div>
         <div class="stat-value">{{ reportSummary.totalCount }}</div>
       </div>
-
       <div class="stat-card stat-amount">
         <div class="stat-emoji">💰</div>
         <div class="stat-label">Total Amount</div>
         <div class="stat-value">{{ formatCurrency(reportSummary.totalAmount) }}</div>
       </div>
-
       <div class="stat-card stat-average">
         <div class="stat-emoji">📈</div>
         <div class="stat-label">Average Amount</div>
         <div class="stat-value">{{ formatCurrency(reportSummary.averageAmount) }}</div>
       </div>
-
       <div class="stat-card stat-completed">
         <div class="stat-emoji">✅</div>
         <div class="stat-label">Completed</div>
         <div class="stat-value">{{ reportSummary.completedCount }}</div>
       </div>
-
       <div class="stat-card stat-pending">
         <div class="stat-emoji">⏳</div>
         <div class="stat-label">Pending</div>
         <div class="stat-value">{{ reportSummary.pendingCount }}</div>
       </div>
-
       <div class="stat-card stat-deposit">
         <div class="stat-emoji">📥</div>
         <div class="stat-label">Deposits</div>
         <div class="stat-value">{{ reportSummary.depositCount }}</div>
       </div>
-
       <div class="stat-card stat-withdrawal">
         <div class="stat-emoji">📤</div>
         <div class="stat-label">Withdrawals</div>
         <div class="stat-value">{{ reportSummary.withdrawalCount }}</div>
       </div>
-
       <div class="stat-card stat-transfer">
         <div class="stat-emoji">🔄</div>
         <div class="stat-label">Transfers</div>

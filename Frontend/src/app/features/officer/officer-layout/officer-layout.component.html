@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg fixed-top" style="background: linear-gradient(90deg, #7c3aed, #6d28d9); box-shadow: 0 6px 25px rgba(124, 58, 237, 0.35); padding: 0.6rem 1rem;" role="navigation" aria-label="Primary">
+<nav class="navbar navbar-expand-lg fixed-top" style="background: linear-gradient(135deg, #053B32 0%, #064A3E 100%); box-shadow: 0 8px 32px rgba(5, 59, 50, 0.2); padding: 0.6rem 1rem;" role="navigation" aria-label="Primary">
   <div class="container-fluid">
     <!-- Brand/Logo -->
     <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/officer/dashboard" (click)="handleNavigation('dashboard')" style="cursor: pointer; color: #ffffff; font-weight: 700; text-decoration: none;">
@@ -68,7 +68,7 @@
           (click)="toggleNotificationDropdown($event)"
           title="Notifications"
           type="button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: #7c3aed;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bell-fill" viewBox="0 0 16 16" style="color: #CFAE70;">
             <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
           </svg>
           <span *ngIf="(unreadCount$ | async) as count" class="badge badge-gradient animate-pulse" [hidden]="!count || count===0" 

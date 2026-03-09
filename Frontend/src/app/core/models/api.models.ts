@@ -63,7 +63,7 @@ export interface Transaction {
   amount: number;
   narrative: string;
   date: string;
-  status: string;
+  status: string | number; // Allow both string and numeric status from backend
   flag: string;
   toAccountId?: string;
 }
@@ -83,7 +83,7 @@ export interface TransactionDto {
   amount: number;
   narrative: string;
   date: string;
-  status: string;
+  status: string | number; // Allow both string and numeric status from backend
   flag: string;
   toAccountId?: string;
 }
@@ -91,6 +91,7 @@ export interface TransactionDto {
 export interface TransactionCreationResponse extends TransactionDto {
   approvalId?: string;
   requiresApproval?: boolean;
+  status: string | number; // Allow both string and numeric status from backend
 }
 
 export interface Approval {

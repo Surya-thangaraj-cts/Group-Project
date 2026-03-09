@@ -91,6 +91,10 @@
             <label>Customer Name</label>
             <span class="detail-value">{{ selectedNotification._customerName }}</span>
           </div>
+          <div class="detail-item" *ngIf="selectedNotification._customerId">
+            <label>Customer ID</label>
+            <span class="detail-value">{{ selectedNotification._customerId }}</span>
+          </div>
           <div class="detail-item" *ngIf="selectedNotification._accountId">
             <label>Account ID</label>
             <span class="detail-value">{{ selectedNotification._accountId }}</span>

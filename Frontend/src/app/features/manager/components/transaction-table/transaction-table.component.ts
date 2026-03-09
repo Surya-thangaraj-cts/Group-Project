@@ -64,7 +64,10 @@ export class TransactionTableComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
-          this.transactions = result.items;
+          // Sort transactions by date descending (newest first)
+          this.transactions = result.items.sort((a, b) => 
+            new Date(b.date).getTime() - new Date(a.date).getTime()
+          );
           this.totalCount = result.totalCount;
           this.totalPages = result.totalPages;
           this.loading = false;

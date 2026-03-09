@@ -87,6 +87,7 @@ export class OfficerNotificationsComponent implements OnInit, OnDestroy {
         amount: notification.meta?.amount,
         transactionType: notification.meta?.type,
         toAccountId: notification.meta?.toAccountId,
+        narrative: notification.meta?.narrative,
         approvalId: notification.meta?.approvalId,
         status: notification.meta?.status || 'Pending',
         decision: notification.meta?.decision,

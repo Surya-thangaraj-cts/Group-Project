@@ -1,8 +1,8 @@
 :host {
-  --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
-  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  --tertiary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  --accent-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  --primary-gradient: linear-gradient(135deg, #053B32 0%, #064A3E 100%);
+  --secondary-gradient: linear-gradient(135deg, #CFAE70 0%, #B89A5C 100%);
+  --tertiary-gradient: linear-gradient(135deg, #CFAE70 0%, #053B32 100%);
+  --accent-gradient: linear-gradient(135deg, #CFAE70 0%, #053B32 100%);
 
   display: block;
 }
@@ -15,14 +15,14 @@
 
 body {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, 'Noto Sans', sans-serif;
-  background: linear-gradient(135deg, #f5f7ff 0%, #eef1fb 100%);
+  background: linear-gradient(135deg, #EEE8D9 0%, #F5F0E5 100%);
   min-height: 100vh;
   color: #333;
 }
 
 .main-content {
   min-height: 100vh;
-  background: linear-gradient(to bottom, #ffffff 0%, #f5f7ff 50%, #eef1fb 100%);
+  background: linear-gradient(to bottom, #ffffff 0%, #EEE8D9 50%, #F5F0E5 100%);
 }
 
 /* Scrollbar styling */
@@ -32,21 +32,21 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #EEE8D9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: var(--primary-gradient);
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #064A3E 0%, #053B32 100%);
 }
 
 /* Selection styling */
 ::selection {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: var(--primary-gradient);
   color: white;
 }
 

@@ -78,7 +78,10 @@ export class OfficerDashboardComponent implements OnInit, OnDestroy {
         const accounts = (this.officerSvc as any).accountsSubject?.value || [];
         this.totalTxnCount = transactions.length;
 
-        this.recentTransactions = transactions.slice(0, 10).map(tx => {
+        // Get last 5 transactions (already sorted newest first from service)
+        const last5Transactions = transactions.slice(0, 5);
+
+        this.recentTransactions = last5Transactions.map(tx => {
           const accountId = tx.accountId || tx.toAccountId || 'N/A';
           const acc = accounts.find((a: any) => a.accountId === accountId) || null;
           return {

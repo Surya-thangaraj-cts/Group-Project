@@ -3,21 +3,21 @@
   min-height: 100vh;
 
   /* Light Background Theme */
-  --bg: #f5f7ff;
-  --surface: #ffffff;
+  --bg: #EEE8D9;
+  --surface: #FFFFFF;
 
   /* Text Colors */
-  --text: #1f2937;
-  --text-muted: #4b5563;
+  --text: #000000;
+  --text-muted: #053B32;
 
-  /* Primary Colors */
-  --primary-300: #a78bfa;
-  --primary-400: #8b5cf6;
-  --primary-500: #7c3aed;
-  --primary-600: #6d28d9;
-  --primary-700: #5b21b6;
+  /* Primary Colors - Gold Accent */
+  --primary-300: #E5CFA0;
+  --primary-400: #D9BC85;
+  --primary-500: #CFAE70;
+  --primary-600: #B89A5C;
+  --primary-700: #A08548;
 
-  --header-gradient: linear-gradient(90deg, #7c3aed, #6d28d9, #4f46e5);
+  --header-gradient: linear-gradient(90deg, #053B32, #064A3E);
 
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, 'Noto Sans', sans-serif;
   color: var(--text);
@@ -36,9 +36,9 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: linear-gradient(90deg, #7c3aed, #6d28d9);
+  background: linear-gradient(90deg, #053B32, #064A3E);
   color: #fff;
-  box-shadow: 0 6px 25px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 6px 25px rgba(5, 59, 50, 0.35);
   border: none;
   border-radius: 0 !important;
   padding: 0.7rem 1rem;
@@ -56,6 +56,11 @@
   font-size: 1.4rem;
 }
 
+.navbar .btn-light {
+  color: #053B32;
+  font-weight: 600;
+}
+
 /* HERO SECTION */
 
 /*** 🔥 UPDATED HEADLINE — Bigger, Stronger, More Highlighted ***/
@@ -63,12 +68,24 @@
   font-weight: 900;
   margin: 0 0 .8rem 0;
   line-height: 1.02;
-  color: #0b0f1f;
+  color: #000000;
   font-size: clamp(3.0rem, 7vw, 5.0rem); /* ⬅ More prominence */
   letter-spacing: -0.025em;
 
   /* Glow highlight */
-  text-shadow: 0 4px 18px rgba(124, 58, 237, 0.18);
+  text-shadow: 0 4px 18px rgba(207, 174, 112, 0.25);
+}
+
+/* Typing cursor animation */
+.typing-cursor {
+  color: #CFAE70;
+  font-weight: 400;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .hero-content {
@@ -104,7 +121,7 @@
 .hero-image-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(79, 70, 229, 0.1));
+  background: linear-gradient(135deg, rgba(207, 174, 112, 0.15), rgba(5, 59, 50, 0.1));
   border-radius: 20px;
 }
 
@@ -125,14 +142,14 @@
 .cta-buttons .btn-primary {
   background: var(--primary-500);
   border: none;
-  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.25);
-  color: white;
+  box-shadow: 0 4px 16px rgba(207, 174, 112, 0.35);
+  color: #000000;
 }
 
 .cta-buttons .btn-primary:hover {
   background: var(--primary-600);
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 8px 24px rgba(207, 174, 112, 0.45);
 }
 
 .cta-buttons .btn-outline-primary {

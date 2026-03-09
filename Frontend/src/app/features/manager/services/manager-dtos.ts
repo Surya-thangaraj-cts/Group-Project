@@ -46,6 +46,7 @@ export interface ApprovalDetailsDto {
   type: string;
   accountId: string | null;
   customerName: string | null;
+  customerId: string | null;
   reviewerId: string;
   decision: string;
   pendingChanges: string;

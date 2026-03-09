@@ -236,6 +236,10 @@
             <label>Submitted On</label>
             <span class="detail-value">{{ formatDate(selectedNotification!.timestamp || selectedNotification!.time) }}</span>
           </div>
+          <div class="detail-item full-width" *ngIf="detailData.narrative">
+            <label>Note</label>
+            <span class="detail-value">{{ detailData.narrative }}</span>
+          </div>
           <div class="detail-item full-width" *ngIf="detailData.decision">
             <label>Decision</label>
             <span class="detail-value"
@@ -248,14 +252,21 @@
             <label>Manager Comments</label>
             <span class="detail-value">{{ detailData.comments }}</span>
           </div>
-          <div class="detail-item full-width" *ngIf="!detailData.decision">
+          <div class="detail-item full-width" *ngIf="detailData.status === 'Pending'">
             <label>Status</label>
             <span class="detail-value status-pending">Pending Manager Approval</span>
           </div>
+          <div class="detail-item full-width" *ngIf="detailData.status === 'Success'">
+            <label>Status</label>
+            <span class="detail-value" style="color: #059669; font-weight: 700;">Completed</span>
+          </div>
         </div>
 
-        <div class="info-box warning" *ngIf="!detailData.decision">
+        <div class="info-box warning" *ngIf="!detailData.decision && detailData.status === 'Pending'">
           <p><strong>⚠️ Transaction:</strong> This transaction requires manager approval due to the high amount. The account balance will be updated once approved.</p>
+        </div>
+        <div class="info-box" *ngIf="!detailData.decision && detailData.status === 'Success'" style="background: #dcfce7; border-left-color: #16a34a;">
+          <p><strong>✅ Success:</strong> Your transaction has been completed successfully. The amount has been processed.</p>
         </div>
         <div class="info-box" *ngIf="detailData.decision === 'Approved'" style="background: #dcfce7; border-left-color: #16a34a;">
           <p><strong>✅ Approved:</strong> Your transaction has been approved by the manager. The amount has been processed.</p>

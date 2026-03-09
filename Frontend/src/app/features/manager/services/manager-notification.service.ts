@@ -8,6 +8,7 @@ export interface ManagerNotification extends NotificationDto {
   _fromApproval?: boolean;
   _approvalType?: string;
   _customerName?: string;
+  _customerId?: string;
   _accountId?: string | null;
   _pendingChanges?: string;
 }
@@ -93,6 +94,11 @@ export class ManagerNotificationService implements OnDestroy {
       || parsedChanges?.['customerName']
       || '';
 
+    const customerId = a.customerId
+      || parsedChanges?.['CustomerId']
+      || parsedChanges?.['customerId']
+      || '';
+
     const accountTypeLabel = this.mapAccountType(
       parsedChanges?.['AccountType'] ?? parsedChanges?.['accountType']
     );
@@ -147,6 +153,7 @@ export class ManagerNotificationService implements OnDestroy {
       _fromApproval: true,
       _approvalType: a.type,
       _customerName: customerName || undefined,
+      _customerId: customerId || undefined,
       _accountId: a.accountId ?? undefined,
       _pendingChanges: parsedChanges ? this.formatChangesForDisplay(parsedChanges) : (a.pendingChanges ?? undefined)
     };

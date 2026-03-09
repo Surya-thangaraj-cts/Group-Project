@@ -16,7 +16,7 @@
 
 /* Header */
 .card-header.existing-users-header {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, #053B32 0%, #064A3E 100%);
   border-bottom: none;
   padding: 1.25rem 1.5rem;
 }
@@ -80,9 +80,9 @@
 }
 
 .existing-users-table thead.existing-users-thead {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, #053B32 0%, #064A3E 100%);
   color: white;
-  border-bottom: 2px solid rgba(124, 58, 237, 0.3);
+  border-bottom: 2px solid rgba(207, 174, 112, 0.3);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -127,12 +127,12 @@
 }
 
 .existing-users-table tbody tr:hover {
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(207, 174, 112, 0.05) 0%, rgba(184, 154, 92, 0.05) 100%);
 }
 
 .existing-users-table tbody td {
   padding: 0.95rem 0.875rem;
-  color: #333;
+  color: #000000;
   vertical-align: middle;
   border: none;
   font-size: 0.95rem;
@@ -142,7 +142,7 @@
 .existing-users-table tbody td:first-child {
   padding-left: 1.25rem;
   font-weight: 700;
-  color: #7c3aed;
+  color: #CFAE70;
   font-size: 0.95rem;
 }
 
@@ -152,9 +152,9 @@
 
 /* Edit Button */
 .btn-edit {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  background: linear-gradient(135deg, #CFAE70 0%, #B89A5C 100%);
   border: none;
-  color: white;
+  color: #000000;
   padding: 0.65rem 1.15rem;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -168,7 +168,7 @@
   overflow: hidden;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 5px 15px rgba(207, 174, 112, 0.3);
 }
 
 .btn-edit::before {
@@ -184,7 +184,7 @@
 
 .btn-edit:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 10px 25px rgba(207, 174, 112, 0.4);
 }
 
 .btn-edit:hover::before {
@@ -193,7 +193,7 @@
 
 .btn-edit:active {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 2px 8px rgba(207, 174, 112, 0.3);
 }
 
 .edit-icon {
@@ -281,8 +281,8 @@
 .search-container .form-control {
   flex: 1;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 245, 245, 0.95) 100%);
-  color: #333 !important;
-  border: 2px solid rgba(124, 58, 237, 0.25) !important;
+  color: #000000 !important;
+  border: 2px solid rgba(207, 174, 112, 0.25) !important;
   font-size: 0.9rem;
   padding: 0.7rem 1rem;
   border-radius: 10px;
@@ -297,35 +297,35 @@
 
 .search-container .form-control:focus {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 250, 0.98) 100%) !important;
-  border-color: #7c3aed !important;
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12) !important;
-  color: #333 !important;
+  border-color: #CFAE70 !important;
+  box-shadow: 0 0 0 4px rgba(207, 174, 112, 0.12) !important;
+  color: #000000 !important;
 }
 
 .search-container .btn-outline-light {
   min-width: 38px;
   padding: 0.6rem 0.8rem;
   border-radius: 10px;
-  color: white;
+  color: #000000;
   border: none;
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, #CFAE70 0%, #B89A5C 100%);
   font-weight: 700;
   font-size: 1rem;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 4px 12px rgba(207, 174, 112, 0.25);
   cursor: pointer;
 }
 
 .search-container .btn-outline-light:hover {
-  color: white;
+  color: #000000;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 8px 20px rgba(207, 174, 112, 0.35);
 }
 
 /* Form styling */
 .form-control, .form-select {
-  border: 2px solid rgba(124, 58, 237, 0.2);
-  color: #333;
+  border: 2px solid rgba(207, 174, 112, 0.2);
+  color: #000000;
   border-radius: 10px;
   background: white;
   transition: all 0.3s ease;
@@ -339,15 +339,15 @@
 }
 
 .form-control:focus, .form-select:focus {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+  border-color: #CFAE70;
+  box-shadow: 0 0 0 4px rgba(207, 174, 112, 0.12);
   background: white;
   outline: none;
 }
 
 .form-label {
   font-weight: 700;
-  color: #333;
+  color: #000000;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.4px;

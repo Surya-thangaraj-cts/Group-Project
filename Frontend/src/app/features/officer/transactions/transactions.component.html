@@ -7,17 +7,26 @@
  
     <form [formGroup]="txnForm" (ngSubmit)="recordTransaction()" class="responsive-form" novalidate>
       <div class="grid-narrow">
-        <!-- Account Select -->
-        <label>
+        <!-- Account Select with Autocomplete -->
+        <label class="autocomplete-wrapper">
           Account ID
-          <select [(ngModel)]="selectedHistoryAccountId" [ngModelOptions]="{ standalone: true }" name="txnAcc">
-            <option [ngValue]="undefined">— Select Account —</option>
-            <ng-container *ngIf="(activeAccounts$ | async) as accounts">
-              <option *ngFor="let a of accounts" [ngValue]="a.accountId">
-                {{ a.accountId }} — {{ a.customerName }}
-              </option>
-            </ng-container>
-          </select>
+          <input type="text" 
+                 [(ngModel)]="recordTxnAccountInput"
+                 [ngModelOptions]="{ standalone: true }"
+                 name="txnAcc"
+                 placeholder="Type Account ID or Customer Name"
+                 (input)="onRecordTxnAccountInput()"
+                 (focus)="onRecordTxnAccountInput()"
+                 (blur)="hideRecordTxnSuggestions()"
+                 autocomplete="off" />
+          <!-- Suggestions dropdown -->
+          <ul class="autocomplete-list" *ngIf="showRecordTxnSuggestions">
+            <li *ngFor="let a of filteredRecordTxnAccounts"
+                class="autocomplete-item"
+                (mousedown)="selectRecordTxnAccount(a.accountId)">
+              <strong>{{ a.accountId }}</strong> — {{ a.customerName }}
+            </li>
+          </ul>
         </label>
  
         <!-- Type -->
@@ -66,10 +75,83 @@
       <br />
  
       <div class="actions">
-        <button class="primary" type="submit" [disabled]="txnForm.invalid || !selectedHistoryAccountId">Record Transaction</button>
+        <button class="primary" type="submit" [disabled]="txnForm.invalid || !recordTxnAccountInput">Record Transaction</button>
         <button class="secondary" type="button" (click)="resetTxnForm()">Reset</button>
       </div>
     </form>
+  </div>
+ 
+  <br />
+ 
+  <!-- Check Account Balance -->
+  <div class="card subtle">
+    <h3>Check Account Balance</h3>
+    
+    <div class="balance-check-container">
+      <div class="balance-check-input">
+        <label class="autocomplete-wrapper">
+          Account ID
+          <input type="text" 
+                 [(ngModel)]="balanceCheckAccountInput"
+                 [ngModelOptions]="{ standalone: true }"
+                 name="balanceAccount"
+                 placeholder="Type Account ID or Customer Name"
+                 (input)="onBalanceAccountInput()"
+                 (focus)="onBalanceAccountInput()"
+                 (blur)="hideBalanceSuggestions()"
+                 autocomplete="off" />
+          <!-- Suggestions dropdown -->
+          <ul class="autocomplete-list" *ngIf="showBalanceSuggestions">
+            <li *ngFor="let a of filteredBalanceAccounts"
+                class="autocomplete-item"
+                (mousedown)="selectBalanceAccount(a.accountId)">
+              <strong>{{ a.accountId }}</strong> — {{ a.customerName }}
+            </li>
+          </ul>
+        </label>
+        
+        <div class="balance-actions">
+          <button class="primary" (click)="checkBalance()" [disabled]="!balanceCheckAccountInput || balanceLoading">
+            <span *ngIf="!balanceLoading">Check Balance</span>
+            <span *ngIf="balanceLoading">Loading...</span>
+          </button>
+          <button class="secondary" (click)="clearBalance()" *ngIf="selectedBalanceAccount">Clear</button>
+        </div>
+      </div>
+
+      <!-- Balance Display -->
+      <div class="balance-display" *ngIf="selectedBalanceAccount">
+        <div class="balance-card">
+          <div class="balance-header">
+            <h4>Account Details</h4>
+          </div>
+          <div class="balance-content">
+            <div class="balance-row">
+              <span class="label">Account ID:</span>
+              <span class="value">{{ selectedBalanceAccount.accountId }}</span>
+            </div>
+            <div class="balance-row">
+              <span class="label">Customer Name:</span>
+              <span class="value">{{ selectedBalanceAccount.customerName }}</span>
+            </div>
+            <div class="balance-row">
+              <span class="label">Account Type:</span>
+              <span class="value">{{ selectedBalanceAccount.accountType }}</span>
+            </div>
+            <div class="balance-row">
+              <span class="label">Status:</span>
+              <span class="value" [ngClass]="'status-' + selectedBalanceAccount.status.toLowerCase()">
+                {{ selectedBalanceAccount.status }}
+              </span>
+            </div>
+            <div class="balance-row balance-amount">
+              <span class="label">Current Balance:</span>
+              <span class="value amount">₹{{ selectedBalanceAccount.balance | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
  
   <br />
@@ -141,11 +223,11 @@
                 <span
                   class="status"
                   [ngClass]="{
-                    'status--completed': t.status === 'Completed',
-                    'status--pending': t.status === 'Pending',
-                    'status--rejected': t.status === 'Rejected'
+                    'status--completed': formatTransactionStatus(t.status) === 'Completed',
+                    'status--pending': formatTransactionStatus(t.status) === 'Pending',
+                    'status--rejected': formatTransactionStatus(t.status) === 'Rejected'
                   }">
-                  {{ t.status || 'Completed' }}
+                  {{ formatTransactionStatus(t.status) }}
                 </span>
               </td>
               <td [attr.data-label]="'Flag'">
