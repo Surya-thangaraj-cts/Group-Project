@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TransactionStatusPipe } from '../transaction-status.pipe';
 import { OfficerService } from '../officer.service';
 import { AuthService } from '../../../auth/auth.service';
 import { Subject } from 'rxjs';
@@ -8,7 +9,7 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-officer-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TransactionStatusPipe],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

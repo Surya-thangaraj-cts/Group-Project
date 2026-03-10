@@ -67,11 +67,11 @@
             <td>
               <span class="transaction-badge"
                 [ngClass]="{
-                  'badge-completed': transaction.status === 'Completed',
-                  'badge-pending': transaction.status === 'Pending',
-                  'badge-rejected': transaction.status === 'Rejected'
+                  'badge-completed': (transaction.status | transactionStatus) === 'Completed',
+                  'badge-pending': (transaction.status | transactionStatus) === 'Pending',
+                  'badge-rejected': (transaction.status | transactionStatus) === 'Rejected'
                 }">
-                {{ transaction.status }}
+                {{ transaction.status | transactionStatus }}
               </span>
             </td>
           </tr>
