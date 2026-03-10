@@ -38,24 +38,56 @@ export class ManagerService {
     });
   }
 
-  getApprovals(pageNumber: number = 1, pageSize: number = 10, decision?: string, type?: string): Observable<PagedApprovals> {
+  /**
+   * Optional server-side sorting support via sortBy/sortDir.
+   * Keep existing signature compatibility by making them optional.
+   */
+  getApprovals(
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    decision?: string,
+    type?: string,
+    sortBy?: string,
+    sortDir: 'asc' | 'desc' = 'desc'
+  ): Observable<PagedApprovals> {
     let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
+
     if (decision) params = params.set('decision', decision);
     if (type) params = params.set('type', type);
+    if (sortBy) params = params.set('sortBy', sortBy);
+    if (sortDir) params = params.set('sortDir', sortDir);
+
     return this.http.get<PagedApprovals>(`${this.apiUrl}/approvals`, {
       headers: this.getHeaders(),
       params
     });
   }
 
-  getApprovalDetails(pageNumber: number = 1, pageSize: number = 10, decision?: string, type?: string): Observable<PagedApprovalDetails> {
+  /**
+   * Optional server-side sorting support via sortBy/sortDir.
+   * - Pending  -> sortBy: RequestedOn / CreatedDate (backend must map)
+   * - Approved -> sortBy: ApprovalDate
+   * - Rejected -> sortBy: DecisionDate / RejectedOn
+   */
+  getApprovalDetails(
+    pageNumber: number = 1,
+    pageSize: number = 10,
+    decision?: string,
+    type?: string,
+    sortBy?: string,
+    sortDir: 'asc' | 'desc' = 'desc'
+  ): Observable<PagedApprovalDetails> {
     let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
+
     if (decision) params = params.set('decision', decision);
     if (type) params = params.set('type', type);
+    if (sortBy) params = params.set('sortBy', sortBy);
+    if (sortDir) params = params.set('sortDir', sortDir);
+
     return this.http.get<PagedApprovalDetails>(`${this.apiUrl}/approvals/details`, {
       headers: this.getHeaders(),
       params
@@ -88,12 +120,14 @@ export class ManagerService {
     let params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
+
     if (accountId) params = params.set('accountId', accountId.toString());
     if (type) params = params.set('type', type);
     if (status) params = params.set('status', status);
     if (flag) params = params.set('flag', flag);
     if (fromDate) params = params.set('fromDate', fromDate);
     if (toDate) params = params.set('toDate', toDate);
+
     return this.http.get<PagedTransactions>(`${this.apiUrl}/transactions`, {
       headers: this.getHeaders(),
       params
@@ -111,6 +145,7 @@ export class ManagerService {
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
     if (status !== undefined) params = params.set('status', status.toString());
+
     return this.http.get<AccountDto[]>(`${this.apiUrl}/accounts`, {
       headers: this.getHeaders(),
       params

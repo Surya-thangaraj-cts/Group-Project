@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ManagerService } from '../../services/manager.service';
 import { ManagerNotificationService } from '../../services/manager-notification.service';
-import { ApprovalDto, ApprovalDetailsDto, PagedApprovals, PagedApprovalDetails } from '../../services/manager-dtos';
+import { ApprovalDetailsDto, PagedApprovalDetails } from '../../services/manager-dtos';
 
 @Component({
   selector: 'app-approvals',
@@ -14,7 +14,7 @@ import { ApprovalDto, ApprovalDetailsDto, PagedApprovals, PagedApprovalDetails }
   styleUrls: ['./approvals.component.css']
 })
 export class ApprovalsComponent implements OnInit {
-    typeFilter: 'all' | 'AccountCreation' | 'AccountUpdate' | 'HighValue' = 'all';
+  typeFilter: 'all' | 'AccountCreation' | 'AccountUpdate' | 'HighValue' = 'all';
   approvalDetails: ApprovalDetailsDto[] = [];
   pageNumber = 1;
   pageSize = 10;
@@ -36,7 +36,6 @@ export class ApprovalsComponent implements OnInit {
   approvedCount = 0;
   rejectedCount = 0;
 
-
   private notifService = inject(ManagerNotificationService);
 
   constructor(
@@ -54,43 +53,89 @@ export class ApprovalsComponent implements OnInit {
     // Optionally implement query param handling for backend DTOs if needed
   }
 
+  /**
+   * Chooses a server-side sort field based on the active tab.
+   * Ensure these map to valid backend sort fields.
+   */
+  private getServerSortBy(): string {
+    const sortMap: Record<'pending' | 'approved' | 'rejected', string> = {
+      pending: 'RequestedOn',   // or 'CreatedDate' on your backend
+      approved: 'ApprovalDate',
+      rejected: 'DecisionDate'  // or 'RejectedOn' on your backend
+    };
+    return sortMap[this.activeTab];
+  }
+
+  /**
+   * Client-side fallback sorting: newest first using the most relevant date per tab.
+   * This still helps if backend sorting isn't implemented yet.
+   */
+  private getComparableDate(a: ApprovalDetailsDto): number {
+    let d: string | Date | undefined;
+
+    if (this.activeTab === 'pending') {
+      d = (a as any).requestedOn ?? (a as any).createdDate ?? (a as any).submittedOn ?? (a as any).requestDate;
+    } else if (this.activeTab === 'approved') {
+      d = (a as any).approvalDate ?? (a as any).decisionDate ?? (a as any).updatedAt;
+    } else if (this.activeTab === 'rejected') {
+      d = (a as any).decisionDate ?? (a as any).rejectedOn ?? (a as any).updatedAt;
+    }
+
+    // Generic fallbacks
+    d = d ?? (a as any).updatedAt ?? (a as any).createdAt;
+
+    if (!d) return 0;
+
+    const t = new Date(d).getTime();
+    return Number.isFinite(t) ? t : 0;
+  }
+
   loadApprovals(): void {
     let decision = '';
     if (this.activeTab === 'pending') decision = 'Pending';
     else if (this.activeTab === 'approved') decision = 'Approve';
     else if (this.activeTab === 'rejected') decision = 'Reject';
-    this.managerService.getApprovalDetails(this.pageNumber, this.pageSize, decision)
+
+    // No server-side or client-side sorting; just fetch and append new items to the top
+    const typeParam = this.typeFilter !== 'all' ? this.typeFilter : undefined;
+
+    this.managerService
+      .getApprovalDetails(this.pageNumber, this.pageSize, decision, typeParam)
       .subscribe((paged: PagedApprovalDetails) => {
-        let items = paged.items || [];
-        // Sort approved tab in descending order by approvalDate
-        if (this.activeTab === 'approved') {
-          items = items.slice().sort((a, b) => new Date(b.approvalDate).getTime() - new Date(a.approvalDate).getTime());
+        // Append new items to the top (unshift)
+        const items = (paged.items || []);
+        if (this.pageNumber === 1) {
+          // On first page, replace
+          this.approvalDetails = items;
+        } else {
+          // On subsequent pages, append to top
+          this.approvalDetails = [...items, ...this.approvalDetails];
         }
-        this.approvalDetails = items;
         this.totalCount = paged.totalCount;
         this.totalPages = paged.totalPages;
+
         this.filterApprovals();
-        // Update counts after each load to stay in sync
+
+        // Keep counts in sync
         this.loadAllCounts();
       });
   }
 
-
   loadAllCounts(): void {
     // Fetch counts for each status separately from the backend
-    this.managerService.getApprovalDetails(1, 1, 'Pending').subscribe((paged: PagedApprovalDetails) => {
-      this.pendingCount = paged.totalCount;
-    });
-    this.managerService.getApprovalDetails(1, 1, 'Approve').subscribe((paged: PagedApprovalDetails) => {
-      this.approvedCount = paged.totalCount;
-    });
-    this.managerService.getApprovalDetails(1, 1, 'Reject').subscribe((paged: PagedApprovalDetails) => {
-      this.rejectedCount = paged.totalCount;
-    });
+    this.managerService.getApprovalDetails(1, 1, 'Pending')
+      .subscribe((paged: PagedApprovalDetails) => {
+        this.pendingCount = paged.totalCount;
+      });
+    this.managerService.getApprovalDetails(1, 1, 'Approve')
+      .subscribe((paged: PagedApprovalDetails) => {
+        this.approvedCount = paged.totalCount;
+      });
+    this.managerService.getApprovalDetails(1, 1, 'Reject')
+      .subscribe((paged: PagedApprovalDetails) => {
+        this.rejectedCount = paged.totalCount;
+      });
   }
-
-
-// (Removed duplicate method implementations below. Only the first occurrence of each method is kept.)
 
   selectTab(tab: 'pending' | 'approved' | 'rejected'): void {
     this.activeTab = tab;
@@ -100,16 +145,14 @@ export class ApprovalsComponent implements OnInit {
     // Do not reload all counts here to keep them stable
   }
 
-  // Removed: setPendingFilter, getPendingCountAll, getPendingCountAccountChanges, getTransaction, getNullableDate, getSelectedTransaction, getSelectedDataChange, and all data change logic
-
-  // All references to getSelectedTransaction and related methods have been removed. Only backend DTO logic remains.
-
   filterApprovals(): void {
     let items = this.approvalDetails;
+
     // Filter by type
     if (this.typeFilter !== 'all') {
       items = items.filter(a => a.type === this.typeFilter);
     }
+
     // Filter by search
     if (this.searchQuery.trim()) {
       const query = this.searchQuery.toLowerCase();
@@ -120,6 +163,7 @@ export class ApprovalsComponent implements OnInit {
         (a.decision && a.decision.toLowerCase().includes(query))
       );
     }
+
     this.filteredItems = items;
   }
 
@@ -128,11 +172,11 @@ export class ApprovalsComponent implements OnInit {
     let customerId = approval.customerId;
     if (!customerId && approval.pendingChanges) {
       try {
-        const changes = JSON.parse(approval.pendingChanges);
+        const changes = JSON.parse(approval.pendingChanges as any);
         customerId = changes['CustomerId'] || changes['customerId'];
       } catch {}
     }
-    
+
     this.selectedApproval = approval;
     if (customerId) {
       this.selectedApproval = { ...approval, customerId };
@@ -178,31 +222,32 @@ export class ApprovalsComponent implements OnInit {
       this.approvalDecision === 'Approved' ? 1 : 2,
       this.approvalComments
     )
-      .subscribe({
-        next: () => {
-          const isApproved = this.approvalDecision === 'Approved';
-          const message = isApproved 
-            ? `✓ Successfully approved! Item moved to Approved list.`
-            : `✓ Successfully rejected! Item moved to Rejected list.`;
-          this.showSuccessAlert(message);
-          this.notifService.refresh();
-          this.selectTab(isApproved ? 'approved' : 'rejected');
-          this.loadApprovals();
-          this.closeApprovalModal();
-        },
-        error: (err) => {
-          this.showAlert = true;
-          this.alertType = 'error';
-          this.alertMessage = err?.error?.error || err?.error?.message || err?.message || 'Failed to update approval.';
-        }
-      });
+    .subscribe({
+      next: () => {
+        const isApproved = this.approvalDecision === 'Approved';
+        const message = isApproved
+          ? `✓ Successfully approved! Item moved to Approved list.`
+          : `✓ Successfully rejected! Item moved to Rejected list.`;
+        this.showSuccessAlert(message);
+        this.notifService.refresh();
+        this.selectTab(isApproved ? 'approved' : 'rejected');
+        this.loadApprovals();
+        this.closeApprovalModal();
+      },
+      error: (err) => {
+        this.showAlert = true;
+        this.alertType = 'error';
+        this.alertMessage =
+          err?.error?.error || err?.error?.message || err?.message || 'Failed to update approval.';
+      }
+    });
   }
 
   showSuccessAlert(message: string): void {
     this.alertMessage = message;
     this.alertType = 'success';
     this.showAlert = true;
-    
+
     // Auto-hide alert after 4 seconds
     setTimeout(() => {
       this.showAlert = false;
@@ -222,13 +267,4 @@ export class ApprovalsComponent implements OnInit {
       minute: '2-digit'
     });
   }
-
-  // Removed all getSelectedTransaction, getSelectedDataChange, getApprovalDetails, and related helpers. Only backend DTO logic remains.
-
-  // getApprovalId and getTransactionId methods removed as getSelectedTransaction no longer exists.
-
-  // Removed getApprovalDetailsWithDefaults and all references to Approval, Transaction, and getApprovalDetails. Only backend DTO logic remains.
-
-  // No longer needed: getSelectedDataChange, getSelectedTransaction
 }
-
