@@ -1,3 +1,8 @@
+.btn-excel {
+  background: crimson !important;
+  color: white;
+  box-shadow: 0 5px 15px rgba(67, 233, 123, 0.18);
+}
 /* Reports Component - Complete Styling */
 
 .reports-container {

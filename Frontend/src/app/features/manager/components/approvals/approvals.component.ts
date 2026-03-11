@@ -96,27 +96,23 @@ export class ApprovalsComponent implements OnInit {
     else if (this.activeTab === 'approved') decision = 'Approve';
     else if (this.activeTab === 'rejected') decision = 'Reject';
 
-    // No server-side or client-side sorting; just fetch and append new items to the top
     const typeParam = this.typeFilter !== 'all' ? this.typeFilter : undefined;
 
     this.managerService
       .getApprovalDetails(this.pageNumber, this.pageSize, decision, typeParam)
       .subscribe((paged: PagedApprovalDetails) => {
-        // Append new items to the top (unshift)
-        const items = (paged.items || []);
+        // Always sort by newest relevant date first
+        const items = (paged.items || []).sort((a, b) => this.getComparableDate(b) - this.getComparableDate(a));
         if (this.pageNumber === 1) {
-          // On first page, replace
           this.approvalDetails = items;
         } else {
-          // On subsequent pages, append to top
-          this.approvalDetails = [...items, ...this.approvalDetails];
+          this.approvalDetails = [...items, ...this.approvalDetails].sort((a, b) => this.getComparableDate(b) - this.getComparableDate(a));
         }
         this.totalCount = paged.totalCount;
         this.totalPages = paged.totalPages;
 
         this.filterApprovals();
 
-        // Keep counts in sync
         this.loadAllCounts();
       });
   }
@@ -163,6 +159,9 @@ export class ApprovalsComponent implements OnInit {
         (a.decision && a.decision.toLowerCase().includes(query))
       );
     }
+
+    // Always sort by approvalDate descending (newest first)
+    items = items.slice().sort((a, b) => new Date(b.approvalDate).getTime() - new Date(a.approvalDate).getTime());
 
     this.filteredItems = items;
   }

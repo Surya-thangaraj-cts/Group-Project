@@ -127,20 +127,6 @@ export class TransactionTableComponent implements OnInit, OnDestroy {
     }
   }
 
-  exportToCSV() {
-    const filters = {
-      searchText: this.searchText || undefined,
-      status: this.selectedStatus || undefined,
-      type: this.selectedType || undefined,
-      minAmount: this.minAmount ? parseFloat(this.minAmount) : undefined,
-      maxAmount: this.maxAmount ? parseFloat(this.maxAmount) : undefined,
-      startDate: this.startDate || undefined,
-      endDate: this.endDate || undefined,
-      viewMode: this.viewMode
-    };
-    this.transactionService.exportToCSV(filters);
-  }
-
   exportToExcel() {
     const filters = {
       searchText: this.searchText || undefined,

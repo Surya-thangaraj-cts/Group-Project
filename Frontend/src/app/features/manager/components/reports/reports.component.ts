@@ -137,14 +137,7 @@ export class ReportsComponent implements OnInit {
     this.generateReport();
   }
 
-  exportToCSV(): void {
-    if (this.reportSummary.totalCount === 0) {
-      this.errorMessage = 'No data available to download.';
-      return;
-    }
-    const filters = this.buildFilters();
-    this.managerTransactionsService.exportToCSV(filters);
-  }
+
 
   exportToExcel(): void {
     if (this.reportSummary.totalCount === 0) {

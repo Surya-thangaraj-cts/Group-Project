@@ -50,9 +50,10 @@
   box-shadow: 0 10px 25px rgba(245, 87, 108, 0.4);
 }
 
+
 .excel-btn {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+  background: #6d28d9;
+  box-shadow: 0 5px 15px rgba(109, 40, 217, 0.3);
 }
 
 .excel-btn:hover {
@@ -199,7 +200,8 @@
   letter-spacing: 0.5px;
 }
 
-.status-approved {
+
+.status-completed {
   background: rgba(16, 185, 129, 0.15);
   color: #10b981;
 }
@@ -212,6 +214,11 @@
 .status-rejected {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+}
+
+.status-failed {
+  background: rgba(156, 39, 176, 0.15);
+  color: #9c27b0;
 }
 
 /* Pagination */

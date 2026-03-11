@@ -2,7 +2,6 @@
   <div class="table-header">
     <h2>Transactional History</h2>
     <div class="export-buttons">
-      <button class="export-btn csv-btn" (click)="exportToCSV()">Export CSV</button>
       <button class="export-btn excel-btn" (click)="exportToExcel()">Export Excel</button>
     </div>
   </div>
@@ -96,7 +95,7 @@
   </div>
 
   <div class="table-wrapper">
-    <table class="data-table">
+    <table class="data-table" id="transaction-table">
       <thead>
         <tr>
           <th>Transaction ID</th>
@@ -131,9 +130,9 @@
         of {{ totalCount }} transactions
     </div>
     <div class="pagination-controls">
-        <button (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
-        <span>Page {{ currentPage }} of {{ totalPages || 1 }}</span>
-        <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+        <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+        <span class="page-indicator">Page {{ currentPage }} of {{ totalPages || 1 }}</span>
+        <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
     </div>
   </div>
 </div>

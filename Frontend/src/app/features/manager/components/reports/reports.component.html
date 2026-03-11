@@ -91,8 +91,11 @@
   <div class="download-section">
     <h3 class="section-title">Export Report</h3>
     <div class="download-buttons">
-      <button class="btn btn-csv" (click)="exportToCSV()">📊 Download as CSV</button>
       <button class="btn btn-excel" (click)="exportToExcel()">📗 Download as Excel</button>
+    <!--
+      NOTE: To enable PDF export of a table, render your transaction data as a <table id="report-table">...</table> in this component.
+      The exportToPDF() method will export that table as a PDF.
+    -->
     </div>
   </div>
 
