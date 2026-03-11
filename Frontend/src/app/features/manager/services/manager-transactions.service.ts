@@ -1,33 +1,37 @@
+// Angular service for manager transaction-related API calls
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// In your Angular service or interface file
+// Transaction interface represents a single transaction record
 export interface Transaction {
-  transactionId: string;  // e.g. "TXN1234"
-  accountId: string;      // e.g. "ACC1234"
-  type: string;
-  amount: number;
-  date: string | Date;
-  status: number;
-  flag: string;
-  toAccountId?: string;
+  transactionId: string;  // Unique transaction ID
+  accountId: string;      // Associated account ID
+  type: string;           // Transaction type
+  amount: number;         // Transaction amount
+  date: string | Date;    // Date of transaction
+  status: number;         // Status code
+  flag: string;           // Flag for special status
+  toAccountId?: string;   // Optional: destination account for transfers
 }
 
+// Generic paged result for paginated API responses
 export interface PagedResult<T> {
-  items: T[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
+  items: T[];             // List of items on this page
+  pageNumber: number;     // Current page number
+  pageSize: number;       // Number of items per page
+  totalCount: number;     // Total number of items
+  totalPages: number;     // Total number of pages
 }
 
 @Injectable({ providedIn: 'root' })
 export class ManagerTransactionsService {
+  // Base URL for manager transaction APIs
   private apiUrl = 'https://localhost:7021/api/manager-transactions';
 
   constructor(private http: HttpClient) {}
 
+  // Helper to get HTTP headers with auth token
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('auth_token');
     return new HttpHeaders({
@@ -35,6 +39,10 @@ export class ManagerTransactionsService {
     });
   }
 
+  /**
+   * Fetch paginated transactions with optional filters.
+   * Accepts filters like status, type, amount range, date range, and view mode.
+   */
   getTransactions(params: {
     pageNumber?: number;
     pageSize?: number;
@@ -48,15 +56,20 @@ export class ManagerTransactionsService {
     viewMode?: 'all' | 'highvalue';
   }): Observable<PagedResult<Transaction>> {
     let httpParams = new HttpParams();
+    // Add each filter to the HTTP params if present
     Object.keys(params).forEach(key => {
       const value = (params as any)[key];
       if (value !== null && value !== undefined && value !== '') {
         httpParams = httpParams.set(key, value.toString());
       }
     });
+    // Make GET request to fetch transactions
     return this.http.get<PagedResult<Transaction>>(this.apiUrl, { params: httpParams });
   }
 
+  /**
+   * Get the count of high-value transactions.
+   */
   getHighValueCount(): Observable<{ highValueCount: number }> {
     return this.http.get<{ highValueCount: number }>(`${this.apiUrl}/high-value-count`, {
       headers: this.getHeaders()

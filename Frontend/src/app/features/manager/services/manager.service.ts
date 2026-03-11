@@ -16,6 +16,9 @@ import {
   ManagerDashboardOverviewDto
 } from './manager-dtos';
 
+// Import Angular core and HTTP modules
+// Import RxJS for observables
+// Import environment and DTOs for API calls
 @Injectable({
   providedIn: 'root'
 })

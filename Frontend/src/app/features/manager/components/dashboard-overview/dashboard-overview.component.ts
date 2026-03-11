@@ -14,27 +14,39 @@ import { ManagerDashboardOverviewDto } from '../../services/manager-dtos';
   styleUrl: './dashboard-overview.component.css'
 })
 export class DashboardOverviewComponent implements OnInit, OnDestroy {
+  // Manager's name for display
   managerName = '';
+  // Count of pending approvals
   pendingApprovalsCount = 0;
+  // Dashboard overview data
   dashboardOverview: ManagerDashboardOverviewDto | null = null;
+  // Monthly labels for charts
   monthlyLabels: string[] = [];
+  // Monthly transaction volume
   monthlyTxnVolume: number[] = [];
+  // Monthly suspicious transactions
   monthlySuspicious: number[] = [];
+  // Amount buckets for bar chart
   amountBuckets: { label: string; count: number }[] = [];
+  // Account growth data for line chart
   accountGrowth: { month: string; newAccounts: number; activeAccounts: number }[] = [];
+  // Chart dimensions
   lineChartWidth = 600;
   lineChartHeight = 220;
   lineChartPath = '';
   lineChartPoints: { x: number; y: number; val: number }[] = [];
   barChartWidth = 600;
   barChartHeight = 180;
+  // Subject to handle unsubscription
   private destroy$ = new Subject<void>();
 
+  // Inject ManagerService and ProfileService
   constructor(
     private managerService: ManagerService,
     private profileService: ProfileService
   ) {}
 
+  // Initialize dashboard data and charts
   ngOnInit() {
     // Load manager name from ProfileService
     this.profileService.profile$
@@ -43,6 +55,7 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
         this.managerName = `${profile.firstName} ${profile.lastName}`;
       });
 
+    // Load dashboard overview data
     this.managerService.getManagerDashboardOverview()
       .pipe(takeUntil(this.destroy$))
       .subscribe((overview) => {
@@ -61,11 +74,13 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Clean up subscriptions on destroy
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  // Build line chart data for account growth
   private buildLineChart(): void {
     if (!this.accountGrowth || this.accountGrowth.length === 0) return;
     const padding = 30;
@@ -77,6 +92,7 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
     const range = max - min || 1;
     const stepX = width / (values.length - 1 || 1);
 
+    // Calculate chart points
     const points: { x: number; y: number; val: number }[] = values.map((v, i) => {
       const x = Math.round(padding + i * stepX);
       const y = Math.round(padding + (1 - (v - min) / range) * height);
@@ -85,6 +101,7 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
 
     this.lineChartPoints = points;
 
+    // Build SVG path for line chart
     let d = '';
     points.forEach((p, i) => {
       d += (i === 0 ? `M ${p.x} ${p.y}` : ` L ${p.x} ${p.y}`);
@@ -92,10 +109,12 @@ export class DashboardOverviewComponent implements OnInit, OnDestroy {
     this.lineChartPath = d;
   }
 
+  // Get labels for line chart
   getLineChartLabels(): string[] {
     return this.monthlyLabels;
   }
 
+  // Get max value for bar chart scaling
   getBarChartMax(): number {
     if (!this.amountBuckets || this.amountBuckets.length === 0) return 1;
     return Math.max(...this.amountBuckets.map(a => a.count));

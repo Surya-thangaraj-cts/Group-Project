@@ -14,41 +14,54 @@ import { ApprovalDetailsDto, PagedApprovalDetails } from '../../services/manager
   styleUrls: ['./approvals.component.css']
 })
 export class ApprovalsComponent implements OnInit {
+  // Filter for approval type
   typeFilter: 'all' | 'AccountCreation' | 'AccountUpdate' | 'HighValue' = 'all';
+  // List of approval details
   approvalDetails: ApprovalDetailsDto[] = [];
+  // Pagination controls
   pageNumber = 1;
   pageSize = 10;
   totalCount = 0;
   totalPages = 1;
+  // Active tab for approvals
   activeTab: 'pending' | 'approved' | 'rejected' = 'pending';
+  // Filtered approvals for display
   filteredItems: ApprovalDetailsDto[] = [];
+  // Modal controls
   showApprovalModal = false;
   selectedApproval: ApprovalDetailsDto | null = null;
   approvalDecision: 'Approved' | 'Rejected' | null = null;
   approvalComments = '';
   commentError = '';
+  // Alert controls
   showAlert = false;
   alertMessage = '';
   alertType: 'success' | 'error' | 'info' = 'info';
+  // Search query for filtering
   searchQuery = '';
 
+  // Counts for each approval status
   pendingCount = 0;
   approvedCount = 0;
   rejectedCount = 0;
 
+  // ManagerNotificationService for refreshing notifications
   private notifService = inject(ManagerNotificationService);
 
+  // Inject ManagerService and ActivatedRoute
   constructor(
     private managerService: ManagerService,
     private route: ActivatedRoute
   ) {}
 
+  // Initialize approval counts and load approvals
   ngOnInit(): void {
     this.loadAllCounts();
     this.loadApprovals();
     this.handleQueryParams();
   }
 
+  // Handle query params if needed
   handleQueryParams(): void {
     // Optionally implement query param handling for backend DTOs if needed
   }
@@ -90,6 +103,7 @@ export class ApprovalsComponent implements OnInit {
     return Number.isFinite(t) ? t : 0;
   }
 
+  // Load approvals from backend and sort/filter
   loadApprovals(): void {
     let decision = '';
     if (this.activeTab === 'pending') decision = 'Pending';
@@ -117,6 +131,7 @@ export class ApprovalsComponent implements OnInit {
       });
   }
 
+  // Load counts for each approval status
   loadAllCounts(): void {
     // Fetch counts for each status separately from the backend
     this.managerService.getApprovalDetails(1, 1, 'Pending')
@@ -133,6 +148,7 @@ export class ApprovalsComponent implements OnInit {
       });
   }
 
+  // Select tab and reload approvals
   selectTab(tab: 'pending' | 'approved' | 'rejected'): void {
     this.activeTab = tab;
     this.searchQuery = '';
@@ -141,6 +157,7 @@ export class ApprovalsComponent implements OnInit {
     // Do not reload all counts here to keep them stable
   }
 
+  // Filter approvals by type and search
   filterApprovals(): void {
     let items = this.approvalDetails;
 
@@ -166,6 +183,7 @@ export class ApprovalsComponent implements OnInit {
     this.filteredItems = items;
   }
 
+  // Open modal to review approval
   openApprovalModal(approval: ApprovalDetailsDto): void {
     // Extract customerId from pendingChanges if not directly available
     let customerId = approval.customerId;
@@ -186,6 +204,7 @@ export class ApprovalsComponent implements OnInit {
     this.commentError = '';
   }
 
+  // Close approval modal
   closeApprovalModal(): void {
     this.showApprovalModal = false;
     this.selectedApproval = null;
@@ -194,10 +213,12 @@ export class ApprovalsComponent implements OnInit {
     this.commentError = '';
   }
 
+  // Set approval decision
   setDecision(decision: 'Approved' | 'Rejected'): void {
     this.approvalDecision = decision;
   }
 
+  // Submit approval decision to backend
   submitApproval(): void {
     if (!this.approvalComments.trim()) {
       this.commentError = 'Comments are mandatory for approval decisions';
@@ -242,6 +263,7 @@ export class ApprovalsComponent implements OnInit {
     });
   }
 
+  // Show success alert and auto-hide
   showSuccessAlert(message: string): void {
     this.alertMessage = message;
     this.alertType = 'success';
@@ -253,10 +275,12 @@ export class ApprovalsComponent implements OnInit {
     }, 4000);
   }
 
+  // Close alert
   closeAlert(): void {
     this.showAlert = false;
   }
 
+  // Format date for display
   formatDate(date: string | Date): string {
     return new Date(date).toLocaleString('en-US', {
       month: 'short',

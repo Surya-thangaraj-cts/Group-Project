@@ -1,38 +1,44 @@
+// Service for managing manager profile data
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { AuthService, User } from '../../../auth/auth.service';
 
+// Interface representing a manager's profile
 export interface ManagerProfile {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  designation: string;
-  branch: string;
-  department: string;
-  joinDate: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  employeeId: string;
-  reportingTo: string;
-  role: string;
-  status: string;
+  id: string;           // Unique manager ID
+  firstName: string;    // First name
+  lastName: string;     // Last name
+  email: string;        // Email address
+  phone: string;        // Phone number
+  designation: string;  // Job designation
+  branch: string;       // Branch name
+  department: string;   // Department name
+  joinDate: string;     // Date joined
+  address: string;      // Address
+  city: string;         // City
+  state: string;        // State
+  zipCode: string;      // Zip code
+  employeeId: string;   // Employee ID
+  reportingTo: string;  // Reporting manager
+  role: string;         // Role
+  status: string;       // Status
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileService {
+  // Holds the current manager profile
   private profileSubject = new BehaviorSubject<ManagerProfile>(this.getDefaultProfile());
+  // Observable for profile data
   public profile$ = this.profileSubject.asObservable();
 
   constructor(private authService: AuthService) {
+    // Load profile on service initialization
     this.loadCurrentUserProfile();
   }
 
+  // Loads the current user's profile from AuthService
   private loadCurrentUserProfile(): void {
     const currentUser = this.authService.getCurrentUser();
     if (currentUser) {
@@ -43,6 +49,7 @@ export class ProfileService {
     }
   }
 
+  // Maps a User object to a ManagerProfile
   private mapUserToProfile(user: User): ManagerProfile {
     const nameParts = user.name?.split(' ') || ['Unknown'];
     const firstName = nameParts[0];

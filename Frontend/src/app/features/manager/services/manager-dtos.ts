@@ -1,59 +1,65 @@
+// Dashboard overview data for manager
 export interface ManagerDashboardOverviewDto {
-  totalTransactions: number;
-  highValueCount: number;
-  pendingApprovalsCount: number;
-  totalAccounts: number;
-  activeAccounts: number;
-  pendingAccounts: number;
-  accountGrowthRate: number;
-  monthlyLabels: string[];
-  monthlyTxnVolume: number[];
-  monthlySuspicious: number[];
-  monthlyNewAccounts: number[];
-  monthlyActiveAccounts: number[];
-  amountBuckets: AmountBucketDto[];
+  totalTransactions: number;      // Total number of transactions
+  highValueCount: number;         // Number of high-value transactions
+  pendingApprovalsCount: number;  // Number of pending approvals
+  totalAccounts: number;          // Total accounts
+  activeAccounts: number;         // Active accounts
+  pendingAccounts: number;        // Pending accounts
+  accountGrowthRate: number;      // Account growth rate
+  monthlyLabels: string[];        // Labels for monthly data
+  monthlyTxnVolume: number[];     // Monthly transaction volume
+  monthlySuspicious: number[];    // Monthly suspicious transactions
+  monthlyNewAccounts: number[];   // Monthly new accounts
+  monthlyActiveAccounts: number[];// Monthly active accounts
+  amountBuckets: AmountBucketDto[];// Amount bucket breakdown
 }
 
+// Paginated approvals result
 export interface PagedApprovals {
-  items: ApprovalDto[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
+  items: ApprovalDto[];           // List of approvals
+  pageNumber: number;             // Current page number
+  pageSize: number;               // Items per page
+  totalCount: number;             // Total approvals
+  totalPages: number;             // Total pages
 }
 
+// Single approval record
 export interface ApprovalDto {
-  approvalId: string;
-  type: string;
-  accountId: string | null;
-  reviewerId: string;
-  decision: string;
-  pendingChanges: string;
-  approvalDate: string;
-  comments: string;
+  approvalId: string;             // Approval ID
+  type: string;                   // Approval type
+  accountId: string | null;       // Related account ID
+  reviewerId: string;             // Reviewer ID
+  decision: string;               // Decision status
+  pendingChanges: string;         // Pending changes
+  approvalDate: string;           // Date of approval
+  comments: string;               // Comments
 }
 
+// Paginated approval details
 export interface PagedApprovalDetails {
-  items: ApprovalDetailsDto[];
-  pageNumber: number;
-  pageSize: number;
-  totalCount: number;
-  totalPages: number;
+  items: ApprovalDetailsDto[];    // List of approval details
+  pageNumber: number;             // Current page number
+  pageSize: number;               // Items per page
+  totalCount: number;             // Total approval details
+  totalPages: number;             // Total pages
 }
 
+// Detailed approval record
 export interface ApprovalDetailsDto {
-  approvalId: string;
-  type: string;
-  accountId: string | null;
-  customerName: string | null;
-  customerId: string | null;
-  reviewerId: string;
-  decision: string;
-  pendingChanges: string;
-  approvalDate: string;
-  comments: string;
+  approvalId: string;             // Approval ID
+  type: string;                   // Approval type
+  accountId: string | null;       // Related account ID
+  customerName: string | null;    // Customer name
+  customerId: string | null;      // Customer ID
+  reviewerId: string;             // Reviewer ID
+  decision: string;               // Decision status
+  pendingChanges: string;         // Pending changes
+  approvalDate: string;           // Date of approval
+  comments: string;               // Comments
 }
 
+// Paginated transactions result
 export interface PagedTransactions {
   items: TransactionDto[];
   pageNumber: number;

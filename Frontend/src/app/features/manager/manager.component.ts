@@ -9,6 +9,8 @@ import { ProfileComponent } from './components/profile/profile.component';
 import { ReportsComponent } from './components/reports/reports.component';
 import { ProfileService } from './services/profile.service';
 
+  // Import necessary Angular modules and manager section components
+  // Import ProfileService for manager profile operations
 @Component({
   selector: 'app-manager',
   standalone: true,
@@ -26,9 +28,12 @@ import { ProfileService } from './services/profile.service';
   styleUrl: './manager.component.css'
 })
 export class ManagerComponent implements OnInit {
-  activeSection = 'dashboard';
-  showProfileSidebar = false;
-  managerProfile: any = {};
+    // Tracks which section is currently active (dashboard, approvals, etc.)
+    activeSection = 'dashboard';
+    // Controls visibility of the profile sidebar
+    showProfileSidebar = false;
+    // Stores manager profile data
+    managerProfile: any = {};
 
   constructor(private profileService: ProfileService) {}
 

@@ -1,44 +1,58 @@
+// Service for managing manager notifications and polling for updates
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, Observable, interval, Subscription, of, forkJoin } from 'rxjs';
 import { switchMap, catchError, map } from 'rxjs/operators';
 import { ManagerService } from './manager.service';
 import { NotificationDto, ApprovalDetailsDto } from './manager-dtos';
 
+// Extended notification interface for manager-specific fields
 export interface ManagerNotification extends NotificationDto {
-  _fromApproval?: boolean;
-  _approvalType?: string;
-  _customerName?: string;
-  _customerId?: string;
-  _accountId?: string | null;
-  _pendingChanges?: string;
+  _fromApproval?: boolean;    // Indicates if notification is from approval
+  _approvalType?: string;     // Type of approval
+  _customerName?: string;     // Customer name
+  _customerId?: string;       // Customer ID
+  _accountId?: string | null; // Account ID
+  _pendingChanges?: string;   // Pending changes description
 }
 
 @Injectable({ providedIn: 'root' })
 export class ManagerNotificationService implements OnDestroy {
+  // Holds the current list of notifications
   private notificationsSubject = new BehaviorSubject<ManagerNotification[]>([]);
+  // Subscription for polling
   private pollSub?: Subscription;
+  // Polling interval in milliseconds
   private readonly POLL_INTERVAL = 10_000;
+  // Track dismissed and read approval IDs
   private dismissedApprovalIds = new Set<string>();
   private readApprovalIds = new Set<string>();
 
+  // Observable for notifications
   notifications$ = this.notificationsSubject.asObservable();
+  // Observable for unread notification count
   unreadCount$: Observable<number> = this.notificationsSubject.pipe(
     map(list => list.filter(n => n.status === 0).length)
   );
 
   constructor(private managerService: ManagerService) {
+    // Load dismissed/read IDs and fetch notifications on service init
     this.loadDismissedIds();
     this.loadReadIds();
     this.loadAll();
     this.startPolling();
   }
 
+  // Clean up polling subscription on destroy
   ngOnDestroy(): void {
     this.pollSub?.unsubscribe();
   }
 
+  /**
+   * Load all notifications and approvals, then merge and publish them.
+   */
   loadAll(): void {
     forkJoin({
+      // Fetch notifications and approvals in parallel, handle errors gracefully
       notifications: this.managerService.getNotifications().pipe(catchError(() => of([]))),
       pendingApprovals: this.managerService.getApprovalDetails(1, 100, 'Pending').pipe(
         catchError(() => of({ items: [] as ApprovalDetailsDto[], totalCount: 0, totalPages: 0, pageNumber: 1, pageSize: 100 }))
@@ -50,11 +64,13 @@ export class ManagerNotificationService implements OnDestroy {
         catchError(() => of({ items: [] as ApprovalDetailsDto[], totalCount: 0, totalPages: 0, pageNumber: 1, pageSize: 20 }))
       )
     }).subscribe(({ notifications, pendingApprovals, approvedApprovals, rejectedApprovals }) => {
+      // Combine all approvals into a single array
       const allApprovals = [
         ...(pendingApprovals.items || []),
         ...(approvedApprovals.items || []),
         ...(rejectedApprovals.items || [])
       ];
+      // Merge notifications and approvals, then publish
       this.mergeAndPublish(notifications || [], allApprovals);
     });
   }
@@ -64,11 +80,17 @@ export class ManagerNotificationService implements OnDestroy {
       backendNotifs.filter(n => n.approvalId).map(n => n.approvalId!)
     );
 
+
+    // Always create a synthetic notification for every approval (pending, approved, rejected)
+    // unless it is already covered by a backend notification or dismissed
     const synthetic: ManagerNotification[] = allApprovals
       .filter(a => !coveredApprovalIds.has(a.approvalId) && !this.dismissedApprovalIds.has(a.approvalId))
       .map(a => {
         const notif = this.approvalToNotification(a);
-        if (this.readApprovalIds.has(a.approvalId)) notif.status = 1;
+        // Always restore read state from localStorage
+        if (this.readApprovalIds.has(a.approvalId)) {
+          notif.status = 1;
+        }
         return notif;
       });
 
@@ -233,17 +255,20 @@ export class ManagerNotificationService implements OnDestroy {
   }
 
   markAsRead(notification: ManagerNotification): void {
+    // Always update localStorage for synthetic notifications
+    if (notification._fromApproval && notification.approvalId) {
+      this.readApprovalIds.add(notification.approvalId);
+      this.saveReadIds();
+    }
+
+    // Update the notification status in the observable list
     const current = this.notificationsSubject.value.map(n =>
       n.notificationId === notification.notificationId ? { ...n, status: 1 } : n
     );
     this.notificationsSubject.next(current);
 
-    if (notification._fromApproval) {
-      if (notification.approvalId) {
-        this.readApprovalIds.add(notification.approvalId);
-        this.saveReadIds();
-      }
-    } else {
+    // For backend notifications, also update on backend
+    if (!notification._fromApproval) {
       this.managerService.markNotificationAsRead(notification.notificationId)
         .pipe(catchError(() => of(null)))
         .subscribe();
